@@ -42,5 +42,16 @@ namespace Wanwan.Tests.EditMode
                 Assert.That(stage.BackgroundSpeedMultiplier, Is.GreaterThan(0.8f));
             }
         }
+
+        [Test]
+        public void BuildPreviewSummary_DescribesStageBossAndCombat()
+        {
+            string preview = StageCatalog.BuildPreviewSummary(0);
+
+            Assert.That(preview, Does.Contain("第1关"));
+            Assert.That(preview, Does.Contain("城市上空"));
+            Assert.That(preview, Does.Contain("城市防卫旗舰"));
+            Assert.That(preview, Does.Contain("均衡"));
+        }
     }
 }

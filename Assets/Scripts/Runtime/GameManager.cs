@@ -57,6 +57,7 @@ namespace Wanwan.Runtime
         public bool EnemyUsesScatterShot => Difficulty == GameDifficulty.High;
         public int EnemiesDestroyed => enemiesDestroyed;
         public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty, SessionState.CurrentStageIndex, SessionState.CurrentLoopIndex);
+        public bool AudioEnabled => SessionState.AudioEnabled;
         public int StageNumber => SessionState.CurrentStageNumber;
         public int LoopNumber => SessionState.CurrentLoopNumber;
         public string StageName => SessionState.CurrentStage.Name;
@@ -285,6 +286,13 @@ namespace Wanwan.Runtime
             }
 
             SetPaused(!paused);
+        }
+
+        public void ToggleAudio()
+        {
+            SessionState.SetAudioEnabled(!SessionState.AudioEnabled);
+            effectsController.RefreshAudioSettings();
+            uiController.RefreshHud();
         }
 
         private void OnApplicationPause(bool pauseStatus)

@@ -19,13 +19,17 @@ namespace Wanwan.Runtime
         private Image pauseOverlay;
         private Text pauseOverlayTitle;
         private Text pauseOverlayHighScore;
+        private Text pauseOverlayMission;
+        private Text pauseOverlayAudioText;
         private Image bossBarRoot;
         private Image bossBarFill;
         private Text bossBarLabel;
         private Image overlay;
         private Text overlayTitle;
+        private Text overlayStage;
         private Text overlayScore;
         private Text overlayBestScore;
+        private Text overlaySummary;
 
         public void Bind(GameManager manager)
         {
@@ -56,6 +60,8 @@ namespace Wanwan.Runtime
             pauseButtonText.text = gameManager.IsPaused ? "继续" : "暂停";
             pauseOverlay.gameObject.SetActive(gameManager.IsPaused);
             pauseOverlayHighScore.text = $"最高分 {SessionState.HighScore:0000000}";
+            pauseOverlayMission.text = $"第{gameManager.StageNumber}关 {gameManager.StageName}\n目标 {gameManager.BossDisplayName}\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  BOMB {gameManager.BombCount}";
+            pauseOverlayAudioText.text = gameManager.AudioEnabled ? "声音 开" : "声音 关";
             bossBarRoot.gameObject.SetActive(gameManager.HasBoss);
             if (gameManager.HasBoss)
             {
@@ -71,11 +77,14 @@ namespace Wanwan.Runtime
         {
             overlay.gameObject.SetActive(true);
             overlayTitle.text = title;
+            overlayStage.text = $"L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}  {BuildDifficultyText()}";
             overlayScore.text = $"本局得分 {score:0000000}";
             overlayBestScore.text = $"最高分 {SessionState.HighScore:0000000}";
+            overlaySummary.text = $"击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  目标 {gameManager.BossDisplayName}";
             if (title == "游戏胜利")
             {
                 overlayBestScore.text = "3秒后进入下一关";
+                overlaySummary.text = $"目标肃清  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}";
             }
         }
 
@@ -122,19 +131,25 @@ namespace Wanwan.Runtime
             Image pauseCard = UiFactory.CreateArcadePanel(pauseOverlay.transform, "PauseCard", new Color(0.05f, 0.08f, 0.16f, 0.97f), new Color(0.26f, 0.62f, 1f, 0.96f), new Vector2(0.12f, 0.22f), new Vector2(0.88f, 0.7f), new Vector2(12f, 12f));
             pauseOverlayTitle = UiFactory.CreateArcadeLabel(pauseCard.transform, "暂停中", 80, TextAnchor.MiddleCenter, new Color(0.92f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.72f), new Vector2(0.88f, 0.9f), Vector2.zero);
             pauseOverlayHighScore = UiFactory.CreateArcadeLabel(pauseCard.transform, "最高分 0000000", 32, TextAnchor.MiddleCenter, new Color(0.48f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.56f), new Vector2(0.85f, 0.66f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(pauseCard.transform, "红色主武器  蓝色追踪/导弹  紫色特殊强化\n重复拾取同类火力包可提升等级", 28, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.34f), new Vector2(0.88f, 0.52f), Vector2.zero);
+            pauseOverlayMission = UiFactory.CreateArcadeLabel(pauseCard.transform, "第1关 城市上空\n目标 城市防卫旗舰", 30, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.38f), new Vector2(0.9f, 0.54f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(pauseCard.transform, "红色主武器  蓝色追踪/导弹  紫色特殊强化", 24, TextAnchor.MiddleCenter, new Color(1f, 0.58f, 0.76f), FontStyle.Bold, new Vector2(0.12f, 0.29f), new Vector2(0.88f, 0.36f), Vector2.zero);
             Button resumeButton = UiFactory.CreateButton(pauseCard.transform, "继续战斗", new Color(0.22f, 0.64f, 1f), Color.white, new Vector2(340f, 112f), new Vector2(0f, -54f));
             resumeButton.onClick.AddListener(() => gameManager.TogglePause());
-            Button restartButton = UiFactory.CreateButton(pauseCard.transform, "重新开始", new Color(1f, 0.42f, 0.34f), Color.white, new Vector2(340f, 112f), new Vector2(0f, -186f));
+            Button audioButton = UiFactory.CreateButton(pauseCard.transform, "声音 开", new Color(0.18f, 0.58f, 0.88f), Color.white, new Vector2(340f, 96f), new Vector2(0f, -172f));
+            pauseOverlayAudioText = audioButton.GetComponentInChildren<Text>();
+            audioButton.onClick.AddListener(() => gameManager.ToggleAudio());
+            Button restartButton = UiFactory.CreateButton(pauseCard.transform, "重新开始", new Color(1f, 0.42f, 0.34f), Color.white, new Vector2(340f, 96f), new Vector2(0f, -288f));
             restartButton.onClick.AddListener(SceneNavigator.LoadGame);
-            Button menuButton = UiFactory.CreateButton(pauseCard.transform, "返回主页", new Color(0.48f, 0.32f, 0.88f), Color.white, new Vector2(340f, 112f), new Vector2(0f, -318f));
+            Button menuButton = UiFactory.CreateButton(pauseCard.transform, "返回主页", new Color(0.48f, 0.32f, 0.88f), Color.white, new Vector2(340f, 96f), new Vector2(0f, -404f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
 
             overlay = UiFactory.CreatePanel(canvas.transform, "Overlay", new Color(0.02f, 0.05f, 0.11f, 0.8f), Vector2.zero, Vector2.one);
             overlay.gameObject.SetActive(false);
-            overlayTitle = UiFactory.CreateArcadeLabel(overlay.transform, "任务失败", 84, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.15f, 0.54f), new Vector2(0.85f, 0.7f), Vector2.zero);
-            overlayScore = UiFactory.CreateArcadeLabel(overlay.transform, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.42f), new Vector2(0.85f, 0.52f), Vector2.zero);
-            overlayBestScore = UiFactory.CreateArcadeLabel(overlay.transform, "最高分 0000000", 38, TextAnchor.MiddleCenter, new Color(0.54f, 0.85f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.34f), new Vector2(0.85f, 0.42f), Vector2.zero);
+            overlayTitle = UiFactory.CreateArcadeLabel(overlay.transform, "任务失败", 84, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.15f, 0.58f), new Vector2(0.85f, 0.72f), Vector2.zero);
+            overlayStage = UiFactory.CreateArcadeLabel(overlay.transform, "L1-1 城市上空", 34, TextAnchor.MiddleCenter, new Color(0.7f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.5f), new Vector2(0.88f, 0.57f), Vector2.zero);
+            overlayScore = UiFactory.CreateArcadeLabel(overlay.transform, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.4f), new Vector2(0.85f, 0.49f), Vector2.zero);
+            overlayBestScore = UiFactory.CreateArcadeLabel(overlay.transform, "最高分 0000000", 38, TextAnchor.MiddleCenter, new Color(0.54f, 0.85f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.32f), new Vector2(0.85f, 0.4f), Vector2.zero);
+            overlaySummary = UiFactory.CreateArcadeLabel(overlay.transform, "击落 0/0", 30, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.82f), FontStyle.Bold, new Vector2(0.12f, 0.24f), new Vector2(0.88f, 0.31f), Vector2.zero);
         }
 
         private string BuildPowerupHudText()

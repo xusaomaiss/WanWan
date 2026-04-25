@@ -23,12 +23,10 @@ namespace Wanwan.Runtime
             targetCamera = mainCamera;
             sfxSource = gameObject.AddComponent<AudioSource>();
             sfxSource.playOnAwake = false;
-            sfxSource.volume = 0.24f;
 
             musicSource = gameObject.AddComponent<AudioSource>();
             musicSource.playOnAwake = false;
             musicSource.loop = true;
-            musicSource.volume = 0.075f;
 
             playerShotClip = BuildPulseTone("shoot_player", 760f, 0.055f, 0.28f);
             laserShotClip = BuildSweep("shoot_laser", 1180f, 620f, 0.09f, 0.24f);
@@ -41,7 +39,27 @@ namespace Wanwan.Runtime
             bossAlarmClip = BuildBossAlarmClip();
 
             musicSource.clip = BuildArcadeLoop();
+            RefreshAudioSettings();
             musicSource.Play();
+        }
+
+        private void Update()
+        {
+            RefreshAudioSettings();
+        }
+
+        public void RefreshAudioSettings()
+        {
+            float enabledScale = SessionState.AudioEnabled ? 1f : 0f;
+            if (sfxSource != null)
+            {
+                sfxSource.volume = 0.24f * SessionState.SfxVolume * enabledScale;
+            }
+
+            if (musicSource != null)
+            {
+                musicSource.volume = 0.075f * SessionState.MusicVolume * enabledScale;
+            }
         }
 
         public void PlayPlayerShot(AmmoPowerupType type)

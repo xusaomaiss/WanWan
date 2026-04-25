@@ -5,9 +5,15 @@ namespace Wanwan.Runtime
     public static class SessionState
     {
         private const string HighScoreKey = "wanwan.high_score";
+        private const string AudioEnabledKey = "wanwan.audio_enabled";
+        private const string MusicVolumeKey = "wanwan.music_volume";
+        private const string SfxVolumeKey = "wanwan.sfx_volume";
 
         public static int LastScore { get; private set; }
         public static int HighScore => PlayerPrefs.GetInt(HighScoreKey, 0);
+        public static bool AudioEnabled => PlayerPrefs.GetInt(AudioEnabledKey, 1) == 1;
+        public static float MusicVolume => PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
+        public static float SfxVolume => PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
         public static GameDifficulty SelectedDifficulty { get; private set; } = GameDifficulty.Low;
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "B";
@@ -60,6 +66,27 @@ namespace Wanwan.Runtime
             LastRunDifficulty = GameDifficulty.Low;
             ResetCampaign();
             PlayerPrefs.DeleteKey(HighScoreKey);
+            PlayerPrefs.DeleteKey(AudioEnabledKey);
+            PlayerPrefs.DeleteKey(MusicVolumeKey);
+            PlayerPrefs.DeleteKey(SfxVolumeKey);
+            PlayerPrefs.Save();
+        }
+
+        public static void SetAudioEnabled(bool enabled)
+        {
+            PlayerPrefs.SetInt(AudioEnabledKey, enabled ? 1 : 0);
+            PlayerPrefs.Save();
+        }
+
+        public static void SetMusicVolume(float volume)
+        {
+            PlayerPrefs.SetFloat(MusicVolumeKey, Mathf.Clamp01(volume));
+            PlayerPrefs.Save();
+        }
+
+        public static void SetSfxVolume(float volume)
+        {
+            PlayerPrefs.SetFloat(SfxVolumeKey, Mathf.Clamp01(volume));
             PlayerPrefs.Save();
         }
 

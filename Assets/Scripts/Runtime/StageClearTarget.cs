@@ -19,7 +19,7 @@ namespace Wanwan.Runtime
                     baseTarget = 30;
                     break;
                 default:
-                    baseTarget = 20;
+                    baseTarget = 6;
                     break;
             }
 

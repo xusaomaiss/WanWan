@@ -69,5 +69,20 @@ namespace Wanwan.Tests.EditMode
             Assert.That(SessionState.CurrentStageNumber, Is.EqualTo(1));
             Assert.That(SessionState.CurrentLoopNumber, Is.EqualTo(2));
         }
+
+        [Test]
+        public void AudioSettings_PersistAndClampVolumes()
+        {
+            SessionState.SetAudioEnabled(false);
+            SessionState.SetMusicVolume(1.4f);
+            SessionState.SetSfxVolume(-0.2f);
+
+            Assert.That(SessionState.AudioEnabled, Is.False);
+            Assert.That(SessionState.MusicVolume, Is.EqualTo(1f));
+            Assert.That(SessionState.SfxVolume, Is.EqualTo(0f));
+            Assert.That(PlayerPrefs.GetInt("wanwan.audio_enabled", 1), Is.EqualTo(0));
+            Assert.That(PlayerPrefs.GetFloat("wanwan.music_volume", 0f), Is.EqualTo(1f));
+            Assert.That(PlayerPrefs.GetFloat("wanwan.sfx_volume", 1f), Is.EqualTo(0f));
+        }
     }
 }

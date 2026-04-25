@@ -43,5 +43,34 @@ namespace Wanwan.Runtime
         {
             return stageIndex >= StageCount - 1;
         }
+
+        public static string BuildPreviewSummary(int stageIndex)
+        {
+            StageDefinition stage = GetStage(stageIndex);
+            return $"第{stage.Number}关 {stage.Name}\n目标 {stage.BossName}\n战况 {BuildCombatStyleLabel(stage.CombatStyle)}";
+        }
+
+        public static string BuildCombatStyleLabel(StageCombatStyle combatStyle)
+        {
+            switch (combatStyle)
+            {
+                case StageCombatStyle.Flanking:
+                    return "侧翼包抄";
+                case StageCombatStyle.Swarm:
+                    return "密集蜂群";
+                case StageCombatStyle.Sniper:
+                    return "远程狙击";
+                case StageCombatStyle.Heavy:
+                    return "重装压制";
+                case StageCombatStyle.Agile:
+                    return "高速截击";
+                case StageCombatStyle.Spiral:
+                    return "螺旋封锁";
+                case StageCombatStyle.Finale:
+                    return "最终核心";
+                default:
+                    return "均衡突袭";
+            }
+        }
     }
 }
