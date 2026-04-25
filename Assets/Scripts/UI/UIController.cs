@@ -148,31 +148,31 @@ namespace Wanwan.Runtime
             switch (gameManager.ActivePowerupType)
             {
                 case AmmoPowerupType.Scatter:
-                    name = "散射";
+                    name = "红色散射";
                     break;
                 case AmmoPowerupType.RapidFire:
-                    name = "连发";
+                    name = "红色连发";
                     break;
                 case AmmoPowerupType.Pierce:
-                    name = "穿透";
+                    name = "蓝色穿透";
                     break;
                 case AmmoPowerupType.Laser:
-                    name = "激光";
+                    name = "蓝色激光";
                     break;
                 case AmmoPowerupType.Plasma:
-                    name = "等离子";
+                    name = "紫色等离子";
                     break;
                 case AmmoPowerupType.Burst:
-                    name = "爆裂";
+                    name = "红色爆裂";
                     break;
                 case AmmoPowerupType.Homing:
-                    name = "追踪";
+                    name = "蓝色追踪";
                     break;
                 case AmmoPowerupType.Wave:
-                    name = "波刃";
+                    name = "紫色波刃";
                     break;
                 case AmmoPowerupType.Guard:
-                    name = "护航";
+                    name = "紫色护航";
                     break;
                 default:
                     name = "普通";

@@ -10,10 +10,13 @@ namespace Wanwan.Runtime
         private EffectsController effectsController;
         private SpriteRenderer spriteRenderer;
         private TextMesh labelText;
+        private AmmoPowerupType startingType;
         private AmmoPowerupType powerupType;
         private float fallSpeed;
         private float bottomDespawnY;
         private float animationTime;
+        private float cycleTimer;
+        private int cycleIndex;
         private float phaseOffset;
         private bool resolved;
         private Vector3 baseScale;
@@ -22,6 +25,7 @@ namespace Wanwan.Runtime
         {
             gameManager = manager;
             effectsController = effects;
+            startingType = type;
             powerupType = type;
             fallSpeed = speed;
             bottomDespawnY = despawnY;
@@ -30,7 +34,8 @@ namespace Wanwan.Runtime
             baseScale = transform.localScale;
             phaseOffset = Random.Range(0f, Mathf.PI * 2f);
             BuildLabel(label);
-            effectsController.PlayPowerupSpawn(transform.position, color);
+            RefreshDisplayedPowerup();
+            effectsController.PlayPowerupSpawn(transform.position, spriteRenderer.color);
         }
 
         private void Update()
@@ -41,6 +46,14 @@ namespace Wanwan.Runtime
             }
 
             animationTime += Time.deltaTime;
+            cycleTimer += Time.deltaTime;
+            if (cycleTimer >= 0.8f)
+            {
+                cycleTimer = 0f;
+                cycleIndex++;
+                RefreshDisplayedPowerup();
+            }
+
             transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
             float pulse = 1f + (Mathf.Sin((animationTime * 6f) + phaseOffset) * 0.08f);
             transform.localScale = baseScale * pulse;
@@ -87,6 +100,17 @@ namespace Wanwan.Runtime
             labelText.characterSize = 0.13f;
             labelText.fontSize = 52;
             labelText.color = Color.white;
+        }
+
+        private void RefreshDisplayedPowerup()
+        {
+            powerupType = PowerupCycle.GetTypeAt(startingType, cycleIndex);
+            spriteRenderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(powerupType);
+            spriteRenderer.color = PowerupCycle.GetCategoryColor(powerupType);
+            if (labelText != null)
+            {
+                labelText.text = PowerupCycle.GetLabel(powerupType);
+            }
         }
 
         private static string GetDisplayName(AmmoPowerupType type)

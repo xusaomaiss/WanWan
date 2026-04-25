@@ -263,6 +263,7 @@ namespace Wanwan.Runtime
                 boss.ApplyHit(5);
             }
 
+            effectsController.PlayBombDetonation(Vector3.zero);
             ShowStageBanner("BOMB");
             uiController.RefreshHud();
             return true;

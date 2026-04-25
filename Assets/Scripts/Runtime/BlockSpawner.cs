@@ -171,7 +171,8 @@ namespace Wanwan.Runtime
                         new EnemySpawnInstruction(2.0f, EnemyFormationType.SideCutInLeft, 4),
                         new EnemySpawnInstruction(3.7f, EnemyFormationType.VShape, 5),
                         new EnemySpawnInstruction(5.8f, EnemyFormationType.SnakeSweep, 5, false, AmmoPowerupType.Scatter),
-                        new EnemySpawnInstruction(7.6f, EnemyFormationType.SideCutInRight, 4)
+                        new EnemySpawnInstruction(7.1f, EnemyFormationType.DiveLine, 4),
+                        new EnemySpawnInstruction(8.2f, EnemyFormationType.SideCutInRight, 4)
                     }),
                 new StageWaveConfig(
                     StagePhase.Pressure,
@@ -184,8 +185,9 @@ namespace Wanwan.Runtime
                         new EnemySpawnInstruction(1.8f, EnemyFormationType.DiveLine, 4),
                         new EnemySpawnInstruction(3.4f, EnemyFormationType.SnakeSweep, 6),
                         new EnemySpawnInstruction(5.5f, EnemyFormationType.VShape, 5, false, AmmoPowerupType.RapidFire),
-                        new EnemySpawnInstruction(7.9f, EnemyFormationType.SideCutInLeft, 5),
-                        new EnemySpawnInstruction(9.2f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Laser)
+                        new EnemySpawnInstruction(7.2f, EnemyFormationType.SideCutInLeft, 5),
+                        new EnemySpawnInstruction(8.4f, EnemyFormationType.DiveLine, 5, false, AmmoPowerupType.Laser),
+                        new EnemySpawnInstruction(9.5f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Laser)
                     }),
                 new StageWaveConfig(
                     StagePhase.Elite,
@@ -197,7 +199,8 @@ namespace Wanwan.Runtime
                         new EnemySpawnInstruction(0.4f, EnemyFormationType.VShape, 2),
                         new EnemySpawnInstruction(1.2f, EnemyFormationType.DiveLine, 1, true, AmmoPowerupType.Pierce),
                         new EnemySpawnInstruction(2.8f, EnemyFormationType.SideCutInRight, 2),
-                        new EnemySpawnInstruction(4.8f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing)
+                        new EnemySpawnInstruction(4.2f, EnemyFormationType.SnakeSweep, 2, true, AmmoPowerupType.Plasma),
+                        new EnemySpawnInstruction(5.6f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing)
                     }),
                 new StageWaveConfig(StagePhase.Boss, "危险警报", 999f, true, new EnemySpawnInstruction[0])
             };
@@ -326,32 +329,38 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BossController boss = bossObject.AddComponent<BossController>();
-            boss.Initialize(gameManager, this, effectsController, GetBossHitPoints(), BuildBossPhases(), gameManager.TopBound - 3.2f);
+            boss.Initialize(gameManager, this, effectsController, GetBossHitPoints(), BuildBossPhases(gameManager.Difficulty), gameManager.TopBound - 3.2f);
             bossActive = true;
             activeEnemyCount++;
         }
 
-        private BossPhaseConfig[] BuildBossPhases()
+        public static BossPhaseConfig[] BuildBossPhases(GameDifficulty difficulty)
         {
-            switch (gameManager.Difficulty)
+            switch (difficulty)
             {
                 case GameDifficulty.High:
                     return new[]
                     {
-                        new BossPhaseConfig(0.52f, 1.25f, 5, 50f, true),
-                        new BossPhaseConfig(0f, 0.88f, 7, 74f, true)
+                        new BossPhaseConfig(0.7f, 1.28f, 5, 48f, true),
+                        new BossPhaseConfig(0.4f, 1.02f, 6, 66f, true),
+                        new BossPhaseConfig(0.1f, 0.78f, 8, 88f, true, true),
+                        new BossPhaseConfig(0f, 0.62f, 10, 112f, true, true)
                     };
                 case GameDifficulty.Medium:
                     return new[]
                     {
-                        new BossPhaseConfig(0.5f, 1.45f, 5, 42f, true),
-                        new BossPhaseConfig(0f, 1.08f, 6, 60f, true)
+                        new BossPhaseConfig(0.7f, 1.48f, 4, 40f, false),
+                        new BossPhaseConfig(0.4f, 1.2f, 5, 56f, true),
+                        new BossPhaseConfig(0.1f, 0.96f, 6, 76f, true, true),
+                        new BossPhaseConfig(0f, 0.78f, 8, 96f, true, true)
                     };
                 default:
                     return new[]
                     {
-                        new BossPhaseConfig(0.5f, 1.68f, 4, 34f, false),
-                        new BossPhaseConfig(0f, 1.22f, 5, 48f, true)
+                        new BossPhaseConfig(0.7f, 1.72f, 3, 30f, false),
+                        new BossPhaseConfig(0.4f, 1.38f, 4, 44f, true),
+                        new BossPhaseConfig(0.1f, 1.08f, 5, 58f, true, true),
+                        new BossPhaseConfig(0f, 0.88f, 6, 72f, true, true)
                     };
             }
         }
@@ -384,34 +393,12 @@ namespace Wanwan.Runtime
 
         private Color GetAmmoPackColor(AmmoPowerupType type)
         {
-            return RuntimeSpriteFactory.GetWeaponColor(type);
+            return PowerupCycle.GetCategoryColor(type);
         }
 
         private static string GetAmmoPackLabel(AmmoPowerupType type)
         {
-            switch (type)
-            {
-                case AmmoPowerupType.Scatter:
-                    return "S";
-                case AmmoPowerupType.RapidFire:
-                    return "R";
-                case AmmoPowerupType.Pierce:
-                    return "P";
-                case AmmoPowerupType.Laser:
-                    return "L";
-                case AmmoPowerupType.Plasma:
-                    return "O";
-                case AmmoPowerupType.Burst:
-                    return "B";
-                case AmmoPowerupType.Homing:
-                    return "H";
-                case AmmoPowerupType.Wave:
-                    return "W";
-                case AmmoPowerupType.Guard:
-                    return "G";
-                default:
-                    return "N";
-            }
+            return PowerupCycle.GetLabel(type);
         }
 
         private static AmmoPowerupType GetRandomPowerupType()

@@ -34,8 +34,22 @@ namespace Wanwan.Runtime
         {
             EmitExplosionImage(position);
             EmitParticles(position, color, 12, 0.24f, 0.55f);
+            EmitDebris(position, color, 10);
             audioSource.PlayOneShot(burstClip);
             StartCoroutine(Shake(0.07f, 0.08f));
+        }
+
+        public void PlayScorePopup(Vector3 position, int scoreValue)
+        {
+            StartCoroutine(AnimateScoreLabel(position, scoreValue));
+        }
+
+        public void PlayBombDetonation(Vector3 center)
+        {
+            audioSource.PlayOneShot(baseClip);
+            StartCoroutine(Shake(0.18f, 0.2f));
+            StartCoroutine(AnimateBombFlash(center));
+            StartCoroutine(AnimateBombShockwave(center));
         }
 
         public void PlayBaseHit()
@@ -99,6 +113,24 @@ namespace Wanwan.Runtime
             StartCoroutine(AnimateExplosionImage(explosion, renderer));
         }
 
+        private void EmitDebris(Vector3 position, Color color, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                GameObject debris = new GameObject("ExplosionDebris");
+                SpriteRenderer renderer = debris.AddComponent<SpriteRenderer>();
+                renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+                renderer.color = Color.Lerp(color, new Color(1f, 0.82f, 0.32f), 0.55f);
+                renderer.sortingOrder = 23;
+                debris.transform.position = position;
+                debris.transform.localScale = new Vector3(Random.Range(0.035f, 0.075f), Random.Range(0.08f, 0.18f), 1f);
+                debris.transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
+                Vector2 velocity = Random.insideUnitCircle.normalized * Random.Range(0.65f, 1.55f);
+                velocity.y -= Random.Range(0f, 0.45f);
+                StartCoroutine(AnimateDebris(debris, renderer, velocity));
+            }
+        }
+
         private IEnumerator AnimateExplosionImage(GameObject explosion, SpriteRenderer renderer)
         {
             float duration = 0.36f;
@@ -139,6 +171,28 @@ namespace Wanwan.Runtime
             }
 
             Destroy(particle);
+        }
+
+        private IEnumerator AnimateDebris(GameObject debris, SpriteRenderer renderer, Vector2 velocity)
+        {
+            float duration = 0.48f;
+            float elapsed = 0f;
+            Vector3 start = debris.transform.position;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                Vector2 gravity = Vector2.down * (1.2f * t * t);
+                debris.transform.position = start + (Vector3)((velocity * elapsed) + gravity);
+                debris.transform.Rotate(0f, 0f, 360f * Time.deltaTime);
+                Color color = renderer.color;
+                color.a = 1f - t;
+                renderer.color = color;
+                yield return null;
+            }
+
+            Destroy(debris);
         }
 
         private IEnumerator Shake(float duration, float magnitude)
@@ -190,6 +244,88 @@ namespace Wanwan.Runtime
             }
 
             Destroy(labelObject);
+        }
+
+        private IEnumerator AnimateScoreLabel(Vector3 position, int scoreValue)
+        {
+            GameObject labelObject = new GameObject("ScorePopup");
+            TextMesh textMesh = labelObject.AddComponent<TextMesh>();
+            textMesh.text = "+" + scoreValue;
+            textMesh.anchor = TextAnchor.MiddleCenter;
+            textMesh.alignment = TextAlignment.Center;
+            textMesh.characterSize = 0.15f;
+            textMesh.fontSize = 54;
+            textMesh.color = new Color(1f, 0.92f, 0.52f);
+            labelObject.transform.position = position + Vector3.up * 0.22f;
+
+            Vector3 start = labelObject.transform.position;
+            Vector3 end = start + Vector3.up * 0.82f;
+            float duration = 0.65f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                labelObject.transform.position = Vector3.Lerp(start, end, t);
+                Color textColor = textMesh.color;
+                textColor.a = 1f - t;
+                textMesh.color = textColor;
+                yield return null;
+            }
+
+            Destroy(labelObject);
+        }
+
+        private IEnumerator AnimateBombFlash(Vector3 center)
+        {
+            GameObject flash = new GameObject("BombFlash");
+            SpriteRenderer renderer = flash.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+            renderer.color = new Color(0.72f, 0.95f, 1f, 0.58f);
+            renderer.sortingOrder = 40;
+            flash.transform.position = new Vector3(center.x, center.y, -0.5f);
+            flash.transform.localScale = new Vector3(28f, 36f, 1f);
+
+            float duration = 0.22f;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                Color color = renderer.color;
+                color.a = Mathf.Lerp(0.58f, 0f, t);
+                renderer.color = color;
+                yield return null;
+            }
+
+            Destroy(flash);
+        }
+
+        private IEnumerator AnimateBombShockwave(Vector3 center)
+        {
+            GameObject shockwave = new GameObject("BombShockwave");
+            SpriteRenderer renderer = shockwave.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            renderer.color = new Color(0.34f, 0.86f, 1f, 0.52f);
+            renderer.sortingOrder = 39;
+            shockwave.transform.position = new Vector3(center.x, center.y, -0.45f);
+            shockwave.transform.localScale = Vector3.one * 0.4f;
+
+            float duration = 0.42f;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                shockwave.transform.localScale = Vector3.one * Mathf.Lerp(0.4f, 9.5f, t);
+                Color color = renderer.color;
+                color.a = Mathf.Lerp(0.52f, 0f, t);
+                renderer.color = color;
+                yield return null;
+            }
+
+            Destroy(shockwave);
         }
 
         private static AudioClip BuildTone(float frequency, float duration)

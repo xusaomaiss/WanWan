@@ -132,6 +132,23 @@ namespace Wanwan.Runtime
             {
                 blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.9f), Vector2.down, new Color(1f, 0.9f, 0.52f), true);
             }
+
+            if (active.ExtraRingShot)
+            {
+                FireRingBurst(active);
+            }
+        }
+
+        private void FireRingBurst(BossPhaseConfig active)
+        {
+            int count = Mathf.Max(6, active.SalvoCount);
+            for (int i = 0; i < count; i++)
+            {
+                float angle = Mathf.Lerp(-120f, 120f, count == 1 ? 0.5f : i / (float)(count - 1));
+                Vector2 direction = Quaternion.Euler(0f, 0f, angle) * Vector2.down;
+                Color ringColor = i % 2 == 0 ? new Color(0.35f, 0.95f, 1f) : new Color(1f, 0.82f, 0.28f);
+                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.68f), direction, ringColor, true);
+            }
         }
 
         private void ResolveDefeat()
@@ -149,6 +166,7 @@ namespace Wanwan.Runtime
             }
 
             gameManager.AddScore(900);
+            effectsController.PlayScorePopup(transform.position, 900);
             gameManager.MarkStageClear();
             blockSpawner.NotifyBossResolved();
             Destroy(gameObject);
