@@ -532,7 +532,7 @@ namespace Wanwan.Runtime
 
                     if (engineGlow)
                     {
-                        texture.SetPixel(x, y, new Color(0.49f, 0.95f, 1f, 1f));
+                        texture.SetPixel(x, y, new Color(0.28f, 1f, 1f, 1f));
                         continue;
                     }
 
@@ -544,13 +544,13 @@ namespace Wanwan.Runtime
 
                     if (cockpitGlow)
                     {
-                        texture.SetPixel(x, y, new Color(0.92f, 0.98f, 1f, 1f));
+                        texture.SetPixel(x, y, new Color(0.78f, 1f, 1f, 1f));
                         continue;
                     }
 
                     if (cockpit)
                     {
-                        texture.SetPixel(x, y, new Color(0.2f, 0.75f, 1f, 1f));
+                        texture.SetPixel(x, y, new Color(0.06f, 0.82f, 1f, 1f));
                         continue;
                     }
 
@@ -568,7 +568,7 @@ namespace Wanwan.Runtime
                         shade = 0.35f;
                     }
 
-                    Color hullColor = Color.Lerp(new Color(0.16f, 0.34f, 0.7f), new Color(0.96f, 0.98f, 1f), shade);
+                    Color hullColor = Color.Lerp(new Color(0.06f, 0.18f, 0.52f), new Color(0.96f, 0.98f, 1f), shade);
                     texture.SetPixel(x, y, hullColor);
                 }
             }
@@ -607,13 +607,13 @@ namespace Wanwan.Runtime
 
                     if (cockpit)
                     {
-                        texture.SetPixel(x, y, new Color(1f, 0.5f, 0.62f, 1f));
+                        texture.SetPixel(x, y, new Color(1f, 0.12f, 0.32f, 1f));
                         continue;
                     }
 
                     if (weaponPort)
                     {
-                        texture.SetPixel(x, y, new Color(1f, 0.28f, 0.3f, 1f));
+                        texture.SetPixel(x, y, new Color(1f, 0.04f, 0.14f, 1f));
                         continue;
                     }
 
@@ -623,7 +623,7 @@ namespace Wanwan.Runtime
                         shade = 0.88f;
                     }
 
-                    Color hullColor = Color.Lerp(new Color(0.35f, 0.08f, 0.18f), new Color(0.9f, 0.44f, 0.54f), shade);
+                    Color hullColor = Color.Lerp(new Color(0.06f, 0.02f, 0.08f), new Color(0.58f, 0.14f, 0.26f), shade);
                     texture.SetPixel(x, y, hullColor);
                 }
             }
@@ -663,13 +663,13 @@ namespace Wanwan.Runtime
 
                     if (coreGlow)
                     {
-                        texture.SetPixel(x, y, new Color(1f, 0.78f, 0.38f, 1f));
+                        texture.SetPixel(x, y, new Color(1f, 0.72f, 0.04f, 1f));
                         continue;
                     }
 
                     if (cockpit)
                     {
-                        texture.SetPixel(x, y, new Color(1f, 0.86f, 0.52f, 1f));
+                        texture.SetPixel(x, y, new Color(1f, 0.92f, 0.22f, 1f));
                         continue;
                     }
 
@@ -683,7 +683,7 @@ namespace Wanwan.Runtime
                         shade = 0.45f;
                     }
 
-                    Color hullColor = Color.Lerp(new Color(0.27f, 0.1f, 0.28f), new Color(0.98f, 0.64f, 0.26f), shade);
+                    Color hullColor = Color.Lerp(new Color(0.04f, 0.03f, 0.08f), new Color(0.56f, 0.28f, 0.04f), shade);
                     texture.SetPixel(x, y, hullColor);
                 }
             }
@@ -725,13 +725,13 @@ namespace Wanwan.Runtime
 
                     if (reactor)
                     {
-                        texture.SetPixel(x, y, new Color(1f, 0.22f, 0.34f, 1f));
+                        texture.SetPixel(x, y, new Color(1f, 0.04f, 0.22f, 1f));
                         continue;
                     }
 
                     if (bridge)
                     {
-                        texture.SetPixel(x, y, new Color(0.82f, 0.94f, 1f, 1f));
+                        texture.SetPixel(x, y, new Color(0.58f, 1f, 1f, 1f));
                         continue;
                     }
 
@@ -745,7 +745,7 @@ namespace Wanwan.Runtime
                         shade = 0.9f;
                     }
 
-                    Color hullColor = Color.Lerp(new Color(0.18f, 0.08f, 0.18f), new Color(0.84f, 0.38f, 0.56f), shade);
+                    Color hullColor = Color.Lerp(new Color(0.03f, 0.01f, 0.05f), new Color(0.44f, 0.08f, 0.28f), shade);
                     texture.SetPixel(x, y, hullColor);
                 }
             }
@@ -763,12 +763,26 @@ namespace Wanwan.Runtime
             for (int y = 0; y < height; y++)
             {
                 float v = y / (float)(height - 1);
-                Color row = Color.Lerp(new Color(0.43f, 0.78f, 1f), new Color(0.1f, 0.42f, 0.82f), v);
+                Color baseColor = Color.Lerp(new Color(0.01f, 0.02f, 0.06f), new Color(0.02f, 0.04f, 0.12f), v);
                 for (int x = 0; x < width; x++)
                 {
                     float u = x / (float)(width - 1);
-                    float glow = Mathf.PerlinNoise(u * 2.4f, v * 3.2f) * 0.08f;
-                    texture.SetPixel(x, y, Color.Lerp(row, Color.white, glow));
+                    float hash = Mathf.Repeat(Mathf.Abs(Mathf.Sin(x * 127.1f + y * 311.7f) * 43758.5453f), 1.0f);
+                    if (hash > 0.986f)
+                    {
+                        float brightness = Mathf.InverseLerp(0.986f, 1.0f, hash);
+                        float ch = Mathf.Repeat(Mathf.Abs(Mathf.Sin(x * 94.3f + y * 232.1f) * 37281.9f), 1.0f);
+                        Color star = ch > 0.7f
+                            ? new Color(0.72f, 0.92f, 1f, brightness)
+                            : ch > 0.4f ? new Color(1f, 0.95f, 0.80f, brightness)
+                            : new Color(1f, 1f, 1f, brightness);
+                        texture.SetPixel(x, y, star);
+                    }
+                    else
+                    {
+                        float nebula = Mathf.PerlinNoise(u * 1.8f + 2.4f, v * 2.6f + 1.1f) * 0.06f;
+                        texture.SetPixel(x, y, Color.Lerp(baseColor, new Color(0.08f, 0.04f, 0.18f), nebula));
+                    }
                 }
             }
 
@@ -788,9 +802,22 @@ namespace Wanwan.Runtime
                 for (int x = 0; x < width; x++)
                 {
                     float u = x / (float)(width - 1);
-                    float noise = Mathf.PerlinNoise((u * 4.5f) + 1.7f, (v * 8.2f) + 0.4f);
-                    float alpha = Mathf.InverseLerp(0.54f, 0.86f, noise) * 0.58f;
-                    texture.SetPixel(x, y, new Color(0.92f, 0.97f, 1f, alpha));
+                    float hash = Mathf.Repeat(Mathf.Abs(Mathf.Sin(x * 213.1f + y * 471.7f) * 73219.4f), 1.0f);
+                    if (hash > 0.976f)
+                    {
+                        float brightness = Mathf.InverseLerp(0.976f, 1.0f, hash);
+                        float ch = Mathf.Repeat(Mathf.Abs(Mathf.Sin(x * 184.7f + y * 96.3f) * 51847.2f), 1.0f);
+                        Color star = ch > 0.6f
+                            ? new Color(0.5f, 0.95f, 1f, brightness * 0.82f)
+                            : new Color(1f, 1f, 1f, brightness * 0.72f);
+                        texture.SetPixel(x, y, star);
+                    }
+                    else
+                    {
+                        float nebula = Mathf.PerlinNoise((u * 3.2f) + 1.4f, (v * 5.8f) + 2.7f);
+                        float alpha = Mathf.InverseLerp(0.68f, 0.88f, nebula) * 0.12f;
+                        texture.SetPixel(x, y, new Color(0.28f, 0.14f, 0.58f, alpha));
+                    }
                 }
             }
 
@@ -810,10 +837,12 @@ namespace Wanwan.Runtime
                 for (int x = 0; x < width; x++)
                 {
                     float u = x / (float)(width - 1);
-                    float stripe = Mathf.Abs(Mathf.Sin((v * 34f) + (u * 4f)));
-                    float noise = Mathf.PerlinNoise((u * 8f) + 2.1f, (v * 18f) + 3.5f);
-                    float alpha = stripe > 0.93f && noise > 0.38f ? 0.22f : 0f;
-                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                    float colNoise = Mathf.PerlinNoise(u * 64f, 0.5f);
+                    float lenNoise = Mathf.PerlinNoise(u * 64f, v * 2.4f + 1.8f);
+                    float hasStreak = colNoise > 0.74f ? 1f : 0f;
+                    float brightness = lenNoise > 0.46f ? Mathf.InverseLerp(0.46f, 0.82f, lenNoise) : 0f;
+                    float alpha = hasStreak * brightness * 0.44f;
+                    texture.SetPixel(x, y, new Color(0.72f, 0.96f, 1f, alpha));
                 }
             }
 

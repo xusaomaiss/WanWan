@@ -8,7 +8,7 @@ namespace Wanwan.Runtime
         private void Awake()
         {
             Screen.orientation = ScreenOrientation.Portrait;
-            Camera cameraComponent = EnsureCamera(new Color(0.38f, 0.72f, 1f));
+            Camera cameraComponent = EnsureCamera(new Color(0.01f, 0.02f, 0.08f));
             float orthographicSize = 9f;
             cameraComponent.orthographicSize = orthographicSize;
 

@@ -284,7 +284,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
             renderer.sprite = elite ? RuntimeSpriteFactory.GetEliteInterceptorSprite() : RuntimeSpriteFactory.GetEnemyInterceptorSprite();
-            renderer.color = elite ? new Color(1f, 0.74f, 0.48f) : (tough ? new Color(1f, 0.54f, 0.58f) : new Color(0.92f, 0.48f, 0.62f));
+            renderer.color = elite ? new Color(1f, 0.88f, 0.24f) : (tough ? new Color(1f, 0.38f, 0.52f) : new Color(0.88f, 0.26f, 0.46f));
             renderer.sortingOrder = elite ? 12 : 10;
 
             float width = elite ? 0.92f : (tough ? 0.82f : 0.72f);
@@ -312,7 +312,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = bossObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBossFlagshipSprite();
-            renderer.color = new Color(0.98f, 0.58f, 0.82f);
+            renderer.color = new Color(1f, 0.22f, 0.58f);
             renderer.sortingOrder = 13;
             bossObject.transform.localScale = new Vector3(1.72f, 1.42f, 1f);
             bossObject.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
