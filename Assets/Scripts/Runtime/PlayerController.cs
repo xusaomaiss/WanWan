@@ -4,7 +4,8 @@ namespace Wanwan.Runtime
 {
     public class PlayerController : MonoBehaviour
     {
-        private const float MoveSmoothing = 16f;
+        private const float MoveSmoothTime = 0.045f;
+        private const float MaxHorizontalSpeed = 27f;
         private const float DefaultFireCooldown = 0.16f;
         private const float RapidFireCooldown = 0.07f;
         private const float BulletSpeed = 21.25f;
@@ -15,6 +16,7 @@ namespace Wanwan.Runtime
         private float leftBound;
         private float rightBound;
         private float targetX;
+        private float horizontalVelocity;
         private float fireTimer;
         private bool combatEnabled = true;
 
@@ -43,7 +45,7 @@ namespace Wanwan.Runtime
 
             float clampedX = Mathf.Clamp(targetX, leftBound, rightBound);
             Vector3 current = transform.position;
-            current.x = Mathf.Lerp(current.x, clampedX, Time.deltaTime * MoveSmoothing);
+            current.x = Mathf.SmoothDamp(current.x, clampedX, ref horizontalVelocity, MoveSmoothTime, MaxHorizontalSpeed, Time.deltaTime);
             transform.position = current;
 
             fireTimer -= Time.deltaTime;

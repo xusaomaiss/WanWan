@@ -92,7 +92,7 @@ namespace Wanwan.Runtime
 
             BoxCollider2D collider = fireballObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = fromBoss ? new Vector2(0.248f, 0.68f) : new Vector2(0.224f, 0.624f);
+            collider.size = fromBoss ? new Vector2(0.18f, 0.52f) : new Vector2(0.15f, 0.46f);
 
             Rigidbody2D rigidbody2D = fireballObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -299,7 +299,7 @@ namespace Wanwan.Runtime
 
             BoxCollider2D collider = enemyObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = elite ? new Vector2(0.62f, 0.72f) : new Vector2(0.56f, 0.66f);
+            collider.size = elite ? new Vector2(0.5f, 0.58f) : new Vector2(0.44f, 0.52f);
 
             Rigidbody2D rigidbody2D = enemyObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -324,7 +324,7 @@ namespace Wanwan.Runtime
 
             BoxCollider2D collider = bossObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = new Vector2(1.08f, 1.12f);
+            collider.size = new Vector2(0.88f, 0.9f);
 
             Rigidbody2D rigidbody2D = bossObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -343,26 +343,26 @@ namespace Wanwan.Runtime
                 case GameDifficulty.High:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.28f, 5, 48f, true),
-                        new BossPhaseConfig(0.4f, 1.02f, 6, 66f, true),
-                        new BossPhaseConfig(0.1f, 0.78f, 8, 88f, true, true),
-                        new BossPhaseConfig(0f, 0.62f, 10, 112f, true, true)
+                        new BossPhaseConfig(0.7f, 1.38f, 5, 46f, true),
+                        new BossPhaseConfig(0.4f, 1.12f, 6, 62f, true),
+                        new BossPhaseConfig(0.1f, 0.9f, 7, 82f, true, true),
+                        new BossPhaseConfig(0f, 0.74f, 9, 102f, true, true)
                     };
                 case GameDifficulty.Medium:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.48f, 4, 40f, false),
-                        new BossPhaseConfig(0.4f, 1.2f, 5, 56f, true),
-                        new BossPhaseConfig(0.1f, 0.96f, 6, 76f, true, true),
-                        new BossPhaseConfig(0f, 0.78f, 8, 96f, true, true)
+                        new BossPhaseConfig(0.7f, 1.58f, 4, 38f, false),
+                        new BossPhaseConfig(0.4f, 1.32f, 5, 52f, true),
+                        new BossPhaseConfig(0.1f, 1.08f, 6, 70f, true, true),
+                        new BossPhaseConfig(0f, 0.9f, 7, 86f, true, true)
                     };
                 default:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.72f, 3, 30f, false),
-                        new BossPhaseConfig(0.4f, 1.38f, 4, 44f, true),
-                        new BossPhaseConfig(0.1f, 1.08f, 5, 58f, true, true),
-                        new BossPhaseConfig(0f, 0.88f, 6, 72f, true, true)
+                        new BossPhaseConfig(0.7f, 1.82f, 3, 28f, false),
+                        new BossPhaseConfig(0.4f, 1.5f, 4, 40f, true),
+                        new BossPhaseConfig(0.1f, 1.2f, 5, 54f, true, true),
+                        new BossPhaseConfig(0f, 1f, 6, 66f, true, true)
                     };
             }
         }

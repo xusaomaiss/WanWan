@@ -1,9 +1,12 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Wanwan.Runtime
 {
     public class BossController : MonoBehaviour
     {
+        private const float TelegraphDuration = 0.34f;
+
         private GameManager gameManager;
         private BlockSpawner blockSpawner;
         private EffectsController effectsController;
@@ -16,7 +19,11 @@ namespace Wanwan.Runtime
         private float hoverSpeed;
         private float fireTimer;
         private float elapsed;
+        private float telegraphTimer;
+        private Color baseColor;
+        private BossPhaseConfig pendingPhase;
         private bool entering = true;
+        private bool telegraphing;
         private bool resolved;
 
         public void Initialize(GameManager manager, BlockSpawner spawner, EffectsController effects, int startingHitPoints, BossPhaseConfig[] phaseConfigs, float hoverY)
@@ -31,6 +38,7 @@ namespace Wanwan.Runtime
             hoverAmplitude = manager.Difficulty == GameDifficulty.High ? 2f : 1.45f;
             hoverSpeed = manager.Difficulty == GameDifficulty.High ? 1.35f : 1.05f;
             spriteRenderer = GetComponent<SpriteRenderer>();
+            baseColor = spriteRenderer.color;
             gameManager.NotifyBossSpawn(manager.BossDisplayName, hitPoints, maxHitPoints);
             effectsController.PlayBossArrival(transform.position, spriteRenderer.color);
         }
@@ -58,11 +66,16 @@ namespace Wanwan.Runtime
             hoverPosition.y = anchorY + (Mathf.Sin(elapsed * 0.55f) * 0.18f);
             transform.position = hoverPosition;
 
+            if (telegraphing)
+            {
+                UpdateTelegraph();
+                return;
+            }
+
             fireTimer -= Time.deltaTime;
             if (fireTimer <= 0f)
             {
-                FirePattern();
-                fireTimer = GetActivePhase().FireInterval;
+                StartTelegraph(GetActivePhase());
             }
         }
 
@@ -114,9 +127,34 @@ namespace Wanwan.Runtime
             return phases[phases.Length - 1];
         }
 
-        private void FirePattern()
+        private void StartTelegraph(BossPhaseConfig active)
         {
-            BossPhaseConfig active = GetActivePhase();
+            pendingPhase = active;
+            telegraphTimer = TelegraphDuration;
+            telegraphing = true;
+            EmitTelegraph(active);
+        }
+
+        private void UpdateTelegraph()
+        {
+            telegraphTimer -= Time.deltaTime;
+            float pulse = 0.45f + (Mathf.Sin(Time.time * 34f) * 0.25f);
+            spriteRenderer.color = Color.Lerp(baseColor, Color.white, pulse);
+
+            if (telegraphTimer > 0f)
+            {
+                return;
+            }
+
+            spriteRenderer.color = baseColor;
+            telegraphing = false;
+            BossPhaseConfig active = pendingPhase ?? GetActivePhase();
+            FirePattern(active);
+            fireTimer = active.FireInterval;
+        }
+
+        private void FirePattern(BossPhaseConfig active)
+        {
             int salvoCount = Mathf.Max(1, active.SalvoCount);
             float step = salvoCount == 1 ? 0f : active.SpreadAngle / (salvoCount - 1);
             float startAngle = -active.SpreadAngle * 0.5f;
@@ -136,6 +174,74 @@ namespace Wanwan.Runtime
             if (active.ExtraRingShot)
             {
                 FireRingBurst(active);
+            }
+        }
+
+        private void EmitTelegraph(BossPhaseConfig active)
+        {
+            int salvoCount = Mathf.Max(1, active.SalvoCount);
+            float step = salvoCount == 1 ? 0f : active.SpreadAngle / (salvoCount - 1);
+            float startAngle = -active.SpreadAngle * 0.5f;
+
+            for (int i = 0; i < salvoCount; i++)
+            {
+                float angle = startAngle + (step * i);
+                Vector2 direction = Quaternion.Euler(0f, 0f, angle) * Vector2.down;
+                SpawnTelegraphIndicator(transform.position + (Vector3.down * 0.78f), direction, spriteRenderer.color, 0.32f);
+            }
+
+            if (active.AimedCoreShot)
+            {
+                SpawnTelegraphIndicator(transform.position + (Vector3.down * 0.9f), Vector2.down, new Color(1f, 0.9f, 0.52f), 0.4f);
+            }
+
+            if (!active.ExtraRingShot)
+            {
+                return;
+            }
+
+            int count = Mathf.Max(6, active.SalvoCount);
+            for (int i = 0; i < count; i += 2)
+            {
+                float angle = Mathf.Lerp(-120f, 120f, count == 1 ? 0.5f : i / (float)(count - 1));
+                Vector2 direction = Quaternion.Euler(0f, 0f, angle) * Vector2.down;
+                SpawnTelegraphIndicator(transform.position + (Vector3.down * 0.68f), direction, new Color(0.35f, 0.95f, 1f), 0.26f);
+            }
+        }
+
+        private void SpawnTelegraphIndicator(Vector3 origin, Vector2 direction, Color color, float scale)
+        {
+            GameObject indicator = new GameObject("BossFireWarning");
+            indicator.transform.position = origin + ((Vector3)direction.normalized * 0.34f);
+            indicator.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f);
+            indicator.transform.localScale = new Vector3(scale, scale * 1.85f, 1f);
+
+            SpriteRenderer renderer = indicator.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            renderer.color = new Color(color.r, color.g, color.b, 0.38f);
+            renderer.sortingOrder = 16;
+
+            StartCoroutine(AnimateTelegraphIndicator(indicator, renderer, color));
+        }
+
+        private IEnumerator AnimateTelegraphIndicator(GameObject indicator, SpriteRenderer renderer, Color color)
+        {
+            float elapsedTime = 0f;
+            Vector3 startScale = indicator.transform.localScale;
+            Vector3 endScale = startScale * 1.75f;
+
+            while (elapsedTime < TelegraphDuration && indicator != null)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / TelegraphDuration);
+                indicator.transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                renderer.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.46f, 0.08f, t));
+                yield return null;
+            }
+
+            if (indicator != null)
+            {
+                Destroy(indicator);
             }
         }
 

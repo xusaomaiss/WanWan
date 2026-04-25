@@ -138,7 +138,8 @@ namespace Wanwan.Runtime
 
             BoxCollider2D collider = playerObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = new Vector2(0.58f, 0.72f);
+            collider.size = new Vector2(0.38f, 0.5f);
+            collider.offset = new Vector2(0f, -0.04f);
 
             PlayerController playerController = playerObject.AddComponent<PlayerController>();
             return playerController;

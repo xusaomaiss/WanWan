@@ -10,18 +10,21 @@ namespace Wanwan.Runtime
 
         public static float GetSpawnInterval(float elapsedSeconds)
         {
-            return Mathf.Max(0.35f, 1.1f - (elapsedSeconds * 0.006f));
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 8f);
+            return Mathf.Max(0.42f, 1.18f - (rampSeconds * 0.0052f));
         }
 
         public static float GetBlockSpeed(float elapsedSeconds, bool isTough)
         {
-            float baseSpeed = 2.25f + (elapsedSeconds * 0.03f);
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 10f);
+            float baseSpeed = 2.18f + (rampSeconds * 0.024f);
             return isTough ? baseSpeed * 0.85f : baseSpeed;
         }
 
         public static float GetToughChance(float elapsedSeconds)
         {
-            return Mathf.Clamp(0.12f + (elapsedSeconds * 0.0035f), 0f, MaxToughChance);
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 14f);
+            return Mathf.Clamp(0.08f + (rampSeconds * 0.0031f), 0f, MaxToughChance);
         }
 
         public static float GetAmmoPackChance(float elapsedSeconds)
@@ -31,19 +34,22 @@ namespace Wanwan.Runtime
 
         public static float GetAmmoPackSpeed(float elapsedSeconds)
         {
-            return 2.05f + (elapsedSeconds * 0.022f);
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 10f);
+            return 1.95f + (rampSeconds * 0.018f);
         }
 
         public static float GetEnemyFireInterval(float elapsedSeconds, bool isTough)
         {
-            float baseInterval = Mathf.Max(1.55f, 3.6f - (elapsedSeconds * 0.01f));
-            return isTough ? baseInterval * 0.78f : baseInterval;
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 12f);
+            float baseInterval = Mathf.Max(1.72f, 3.82f - (rampSeconds * 0.0088f));
+            return isTough ? baseInterval * 0.82f : baseInterval;
         }
 
         public static float GetEnemyFireballSpeed(float elapsedSeconds, bool isTough)
         {
-            float baseSpeed = 3.2f + (elapsedSeconds * 0.02f);
-            return isTough ? baseSpeed * 1.12f : baseSpeed;
+            float rampSeconds = Mathf.Max(0f, elapsedSeconds - 10f);
+            float baseSpeed = 3.05f + (rampSeconds * 0.016f);
+            return isTough ? baseSpeed * 1.08f : baseSpeed;
         }
 
         public static int GetHitPoints(bool isTough, float elapsedSeconds)

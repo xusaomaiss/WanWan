@@ -61,5 +61,30 @@ namespace Wanwan.Tests.EditMode
 
             Assert.That(toughInterval, Is.LessThan(normalInterval));
         }
+
+        [Test]
+        public void OpeningEnemyFireballs_AreReadableBeforeDifficultyRamps()
+        {
+            float openingSpeed = DifficultyProgression.GetEnemyFireballSpeed(0f, false);
+            float earlySpeed = DifficultyProgression.GetEnemyFireballSpeed(20f, false);
+            float lateSpeed = DifficultyProgression.GetEnemyFireballSpeed(120f, false);
+
+            Assert.That(openingSpeed, Is.LessThanOrEqualTo(3.1f));
+            Assert.That(earlySpeed, Is.LessThanOrEqualTo(3.25f));
+            Assert.That(lateSpeed, Is.GreaterThan(earlySpeed));
+        }
+
+        [Test]
+        public void OpeningFireInterval_GivesPlayerBreathingRoom()
+        {
+            float openingInterval = DifficultyProgression.GetEnemyFireInterval(0f, false);
+            float midInterval = DifficultyProgression.GetEnemyFireInterval(60f, false);
+            float lateInterval = DifficultyProgression.GetEnemyFireInterval(140f, false);
+
+            Assert.That(openingInterval, Is.GreaterThanOrEqualTo(3.7f));
+            Assert.That(midInterval, Is.LessThan(openingInterval));
+            Assert.That(lateInterval, Is.LessThan(midInterval));
+            Assert.That(lateInterval, Is.GreaterThanOrEqualTo(1.72f));
+        }
     }
 }
