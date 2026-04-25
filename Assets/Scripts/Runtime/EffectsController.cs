@@ -32,6 +32,7 @@ namespace Wanwan.Runtime
 
         public void PlayBurst(Vector3 position, Color color)
         {
+            EmitExplosionImage(position);
             EmitParticles(position, color, 12, 0.24f, 0.55f);
             audioSource.PlayOneShot(burstClip);
             StartCoroutine(Shake(0.07f, 0.08f));
@@ -84,6 +85,39 @@ namespace Wanwan.Runtime
                 particle.transform.localScale = Vector3.one * scale;
                 StartCoroutine(AnimateParticle(particle, renderer, duration, Random.insideUnitCircle * radius));
             }
+        }
+
+        private void EmitExplosionImage(Vector3 position)
+        {
+            GameObject explosion = new GameObject("ExplosionImage");
+            SpriteRenderer renderer = explosion.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetExplosionSprite();
+            renderer.color = Color.white;
+            renderer.sortingOrder = 24;
+            explosion.transform.position = position;
+            explosion.transform.localScale = Vector3.one * Random.Range(0.62f, 0.86f);
+            StartCoroutine(AnimateExplosionImage(explosion, renderer));
+        }
+
+        private IEnumerator AnimateExplosionImage(GameObject explosion, SpriteRenderer renderer)
+        {
+            float duration = 0.36f;
+            float elapsed = 0f;
+            Vector3 startScale = explosion.transform.localScale;
+            Vector3 endScale = startScale * 1.85f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                explosion.transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                Color color = renderer.color;
+                color.a = 1f - t;
+                renderer.color = color;
+                yield return null;
+            }
+
+            Destroy(explosion);
         }
 
         private IEnumerator AnimateParticle(GameObject particle, SpriteRenderer renderer, float duration, Vector2 offset)

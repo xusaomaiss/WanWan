@@ -16,6 +16,7 @@ namespace Wanwan.Runtime
         private bool gameEnded;
         private bool paused;
         private bool stageClear;
+        private bool launchSequenceActive = true;
         private float elapsedTime;
         private float stageProgress;
         private string stageBannerText = string.Empty;
@@ -25,6 +26,7 @@ namespace Wanwan.Runtime
         private string bossName = "敌方旗舰";
         private int bossCurrentHitPoints;
         private int bossMaxHitPoints;
+        private int enemiesDestroyed;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
         public int Score { get; private set; }
@@ -33,7 +35,7 @@ namespace Wanwan.Runtime
         public float RightBound { get; private set; }
         public float TopBound { get; private set; }
         public float BottomBound { get; private set; }
-        public bool IsPlaying => !gameEnded && !paused;
+        public bool IsPlaying => !gameEnded && !paused && !launchSequenceActive;
         public bool IsPaused => paused;
         public float ElapsedTime => elapsedTime;
         public GameDifficulty Difficulty => SessionState.SelectedDifficulty;
@@ -53,6 +55,8 @@ namespace Wanwan.Runtime
         public bool LastRunWasVictory => stageClear;
         public bool EnemyCollisionEndsRun => Difficulty != GameDifficulty.Low;
         public bool EnemyUsesScatterShot => Difficulty == GameDifficulty.High;
+        public int EnemiesDestroyed => enemiesDestroyed;
+        public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty);
 
         public void Initialize(UIController ui, EffectsController effects, BlockSpawner spawner, PlayerController player, float leftBound, float rightBound, float topBound, float bottomBound)
         {
@@ -66,6 +70,30 @@ namespace Wanwan.Runtime
             BottomBound = bottomBound;
 
             uiController.Bind(this);
+        }
+
+        public void BeginLaunchSequence()
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            stageLabel = "航母起飞";
+            ShowStageBanner("航母起飞");
+            uiController.RefreshHud();
+        }
+
+        public void CompleteLaunchSequence()
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            launchSequenceActive = false;
+            ShowStageBanner("起飞完成");
+            uiController.RefreshHud();
         }
 
         private void Update()
@@ -92,6 +120,21 @@ namespace Wanwan.Runtime
 
             Score += amount;
             uiController.RefreshHud();
+        }
+
+        public void NotifyEnemyDestroyed()
+        {
+            if (gameEnded || stageClear)
+            {
+                return;
+            }
+
+            enemiesDestroyed++;
+            uiController.RefreshHud();
+            if (enemiesDestroyed >= RequiredKillsToClear)
+            {
+                MarkStageClear();
+            }
         }
 
         public void DamageBase(int amount)
@@ -182,8 +225,8 @@ namespace Wanwan.Runtime
             bossCurrentHitPoints = 0;
             bossMaxHitPoints = 0;
             gameOverTitle = "任务完成";
-            ShowStageBanner("任务完成");
-            StartCoroutine(EndRun());
+            ShowStageBanner("游戏胜利");
+            StartCoroutine(EndVictoryRun());
         }
 
         public void ActivatePowerup(AmmoPowerupType type, float durationSeconds = PowerupDurationSeconds)
@@ -264,6 +307,24 @@ namespace Wanwan.Runtime
             SessionState.CommitRunScore(Score, stageClear, BuildRunRating(), BuildRunSummary());
             yield return new WaitForSeconds(1.15f);
             SceneNavigator.LoadGameOver();
+        }
+
+        private IEnumerator EndVictoryRun()
+        {
+            if (gameEnded)
+            {
+                yield break;
+            }
+
+            gameEnded = true;
+            SetPaused(false);
+            activePowerup.Clear();
+            blockSpawner.StopSpawning();
+            playerController.StopCombat();
+            uiController.ShowGameOverOverlay("游戏胜利", Score);
+            SessionState.CommitRunScore(Score, true, BuildRunRating(), BuildRunSummary());
+            yield return new WaitForSeconds(3f);
+            SceneNavigator.LoadGame();
         }
 
         private void SetPaused(bool value)

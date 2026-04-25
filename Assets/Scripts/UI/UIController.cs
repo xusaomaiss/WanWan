@@ -45,7 +45,7 @@ namespace Wanwan.Runtime
             livesText.text = $"战机 {gameManager.Lives}\n待命";
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
-            stageProgressText.text = $"第一关 {(gameManager.StageProgress * 100f):0}%";
+            stageProgressText.text = $"第一关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
             powerupText.text = BuildPowerupHudText();
             pauseHintText.text = gameManager.IsPaused ? "已暂停" : string.Empty;
             stageBannerText.text = gameManager.StageBannerText;
@@ -73,6 +73,10 @@ namespace Wanwan.Runtime
             overlayTitle.text = title;
             overlayScore.text = $"本局得分 {score:0000000}";
             overlayBestScore.text = $"最高分 {SessionState.HighScore:0000000}";
+            if (title == "游戏胜利")
+            {
+                overlayBestScore.text = "3秒后进入下一关";
+            }
         }
 
         private void Build()

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Wanwan.Runtime
@@ -24,12 +25,15 @@ namespace Wanwan.Runtime
             UIController ui = new GameObject("UIController").AddComponent<UIController>();
             GameManager manager = new GameObject("GameManager").AddComponent<GameManager>();
             BlockSpawner spawner = new GameObject("BlockSpawner").AddComponent<BlockSpawner>();
-            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + 2f);
+            CreateCarrierDeck(orthographicSize, horizontalExtent, bottomBound + 0.45f);
+            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + 0.72f);
             CreateBaseBoundary(leftBound, rightBound, bottomBound + 0.85f);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
             player.Initialize(manager, effects, cameraComponent, leftBound, rightBound);
             spawner.Initialize(manager, effects, cameraComponent, leftBound, rightBound, topBound);
+            manager.BeginLaunchSequence();
+            StartCoroutine(PlayCarrierLaunch(player.transform, bottomBound + 2.35f, manager));
         }
 
         private static Camera EnsureCamera(Color background)
@@ -75,6 +79,41 @@ namespace Wanwan.Runtime
             Vector2 spriteSize = renderer.sprite.bounds.size;
             backgroundObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
             backgroundObject.AddComponent<ScrollingBackgroundLayer>().Initialize(speed, targetHeight);
+        }
+
+        private static void CreateCarrierDeck(float orthographicSize, float horizontalExtent, float y)
+        {
+            GameObject deckObject = new GameObject("CarrierDeck");
+            deckObject.transform.position = new Vector3(0f, y, 4f);
+
+            SpriteRenderer renderer = deckObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetCarrierDeckSprite();
+            renderer.sortingOrder = -20;
+
+            Vector2 spriteSize = renderer.sprite.bounds.size;
+            float targetWidth = (horizontalExtent * 2f) + 2f;
+            float targetHeight = orthographicSize * 0.42f;
+            deckObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
+        }
+
+        private static IEnumerator PlayCarrierLaunch(Transform playerTransform, float targetY, GameManager manager)
+        {
+            Vector3 start = playerTransform.position;
+            Vector3 end = new Vector3(start.x, targetY, start.z);
+            float duration = 1.85f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                playerTransform.position = Vector3.Lerp(start, end, t);
+                yield return null;
+            }
+
+            playerTransform.position = end;
+            yield return new WaitForSeconds(1f);
+            manager.CompleteLaunchSequence();
         }
 
         private static PlayerController CreatePlayer(float leftBound, float rightBound, float y)

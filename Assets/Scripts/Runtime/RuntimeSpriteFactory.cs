@@ -82,6 +82,16 @@ namespace Wanwan.Runtime
             return GetOrCreate("cloud-streak-layer", BuildCloudStreakTexture);
         }
 
+        public static Sprite GetCarrierDeckSprite()
+        {
+            return GetOrCreate("carrier-deck", BuildCarrierDeckTexture);
+        }
+
+        public static Sprite GetExplosionSprite()
+        {
+            return GetOrCreate("explosion-fireball", BuildExplosionTexture);
+        }
+
         private static Sprite GetOrCreate(string key, System.Func<Texture2D> textureFactory)
         {
             if (SpriteCache.TryGetValue(key, out Sprite sprite))
@@ -162,6 +172,101 @@ namespace Wanwan.Runtime
                     bool inRight = Vector2.Distance(point, rightCenter) <= radius;
                     float alpha = inMiddle || inLeft || inRight ? 1f : 0f;
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildCarrierDeckTexture()
+        {
+            const int width = 512;
+            const int height = 192;
+            Texture2D texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(width * 0.5f, height * 0.5f);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float u = x / (float)(width - 1);
+                    float v = y / (float)(height - 1);
+                    float deckWidth = Mathf.Lerp(0.2f, 0.88f, v);
+                    float dx = Mathf.Abs(u - 0.5f);
+                    bool deck = dx <= deckWidth * 0.5f;
+
+                    if (!deck)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float noise = Mathf.PerlinNoise(u * 24f, v * 8f);
+                    Color baseColor = Color.Lerp(new Color(0.09f, 0.1f, 0.14f), new Color(0.22f, 0.24f, 0.3f), v);
+                    Color pixel = Color.Lerp(baseColor, new Color(0.33f, 0.35f, 0.42f), noise * 0.18f);
+                    bool centerLine = Mathf.Abs(x - center.x) < 4f && y > 20;
+                    bool runwayMark = centerLine || (Mathf.Abs(x - center.x) < 18f && y % 42 < 20 && y > 34);
+                    bool sideLight = (Mathf.Abs(dx - (deckWidth * 0.5f)) < 0.018f) && y % 28 < 14;
+
+                    if (runwayMark)
+                    {
+                        pixel = Color.Lerp(pixel, new Color(0.92f, 0.96f, 1f), 0.82f);
+                    }
+                    else if (sideLight)
+                    {
+                        pixel = Color.Lerp(pixel, new Color(0.28f, 0.9f, 1f), 0.72f);
+                    }
+
+                    texture.SetPixel(x, y, pixel);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildExplosionTexture()
+        {
+            const int size = 192;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 point = new Vector2(x, y);
+                    Vector2 delta = point - center;
+                    float distance = delta.magnitude / (size * 0.5f);
+                    float angleNoise = Mathf.PerlinNoise((delta.normalized.x * 2.6f) + 4.5f, (delta.normalized.y * 2.6f) + 3.2f);
+                    float flameRadius = 0.58f + (angleNoise * 0.28f);
+                    if (distance > flameRadius)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Color pixel;
+                    if (distance < 0.18f)
+                    {
+                        pixel = new Color(1f, 0.98f, 0.72f, 1f);
+                    }
+                    else if (distance < 0.38f)
+                    {
+                        pixel = Color.Lerp(new Color(1f, 0.86f, 0.22f), new Color(1f, 0.36f, 0.08f), Mathf.InverseLerp(0.18f, 0.38f, distance));
+                    }
+                    else if (distance < 0.6f)
+                    {
+                        pixel = Color.Lerp(new Color(1f, 0.22f, 0.04f), new Color(0.22f, 0.16f, 0.14f), Mathf.InverseLerp(0.38f, 0.6f, distance));
+                    }
+                    else
+                    {
+                        pixel = new Color(0.08f, 0.08f, 0.08f, Mathf.InverseLerp(flameRadius, 0.6f, distance) * 0.82f);
+                    }
+
+                    pixel.a *= Mathf.Clamp01((flameRadius - distance) * 5f);
+                    texture.SetPixel(x, y, pixel);
                 }
             }
 

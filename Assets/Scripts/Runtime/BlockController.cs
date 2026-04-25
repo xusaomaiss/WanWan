@@ -92,6 +92,7 @@ namespace Wanwan.Runtime
             {
                 resolved = true;
                 gameManager.AddScore(scoreValue);
+                gameManager.NotifyEnemyDestroyed();
                 if (guaranteedDrop != AmmoPowerupType.None)
                 {
                     blockSpawner.SpawnAmmoPackAtPosition(guaranteedDrop, transform.position);
