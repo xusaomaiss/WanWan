@@ -6,7 +6,7 @@ namespace Wanwan.Runtime
 {
     public class MenuBootstrap : MonoBehaviour
     {
-        private static readonly Vector2 ShipPreviewSize = new Vector2(64f, 64f);
+        private static readonly Vector2 ShipPreviewSize = new Vector2(128f, 128f);
 
         private Canvas canvas;
         private MenuUiState state;

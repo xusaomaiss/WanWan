@@ -41,7 +41,7 @@ def main() -> None:
         "Assets/Resources/RaidenArt/Backgrounds/stage_06_floating_continent.png",
         "Assets/Resources/RaidenArt/Backgrounds/stage_07_space_station.png",
         "Assets/Resources/RaidenArt/Backgrounds/stage_08_alien_base.png",
-        "Assets/Resources/RaidenArt/Ships/fighter_jet_64.png",
+        "Assets/Resources/RaidenArt/Ships/fighter_jet_128.png",
         "Assets/Scripts/UI/UIController.cs",
         "Assets/Editor/BuildAutomation.cs",
         "scripts/install_unity_editor.sh",

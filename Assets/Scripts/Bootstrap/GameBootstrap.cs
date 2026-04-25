@@ -5,7 +5,7 @@ namespace Wanwan.Runtime
 {
     public class GameBootstrap : MonoBehaviour
     {
-        private const float PlayerShipWorldSize = 0.5f;
+        private const float PlayerShipWorldSize = 1f;
         private const float PlayerLaunchStartInset = 1.25f;
         private const float PlayerLaunchTargetInset = 4.15f;
 
