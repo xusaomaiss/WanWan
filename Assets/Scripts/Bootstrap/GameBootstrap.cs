@@ -5,6 +5,10 @@ namespace Wanwan.Runtime
 {
     public class GameBootstrap : MonoBehaviour
     {
+        private const float PlayerShipWorldSize = 0.5f;
+        private const float PlayerLaunchStartInset = 1.25f;
+        private const float PlayerLaunchTargetInset = 4.15f;
+
         private void Awake()
         {
             Screen.orientation = ScreenOrientation.Portrait;
@@ -27,14 +31,14 @@ namespace Wanwan.Runtime
             GameManager manager = new GameObject("GameManager").AddComponent<GameManager>();
             BlockSpawner spawner = new GameObject("BlockSpawner").AddComponent<BlockSpawner>();
             CreateCarrierDeck(orthographicSize, horizontalExtent, bottomBound + 0.45f);
-            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + 0.72f);
+            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + PlayerLaunchStartInset);
             CreateBaseBoundary(leftBound, rightBound, bottomBound + 0.85f);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
             player.Initialize(manager, effects, cameraComponent, leftBound, rightBound);
             spawner.Initialize(manager, effects, cameraComponent, leftBound, rightBound, topBound);
             manager.BeginLaunchSequence();
-            StartCoroutine(PlayCarrierLaunch(player.transform, bottomBound + 2.35f, manager));
+            StartCoroutine(PlayCarrierLaunch(player.transform, bottomBound + PlayerLaunchTargetInset, manager));
         }
 
         private static Camera EnsureCamera(Color background)
@@ -137,7 +141,8 @@ namespace Wanwan.Runtime
             renderer.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
             renderer.color = Color.Lerp(Color.white, ShipDefinition.Get(SessionState.SelectedShip).AccentColor, 0.45f);
             renderer.sortingOrder = 12;
-            playerObject.transform.localScale = new Vector3(0.78f, 0.72f, 1f);
+            Vector2 spriteSize = renderer.sprite.bounds.size;
+            playerObject.transform.localScale = new Vector3(PlayerShipWorldSize / spriteSize.x, PlayerShipWorldSize / spriteSize.y, 1f);
 
             BoxCollider2D collider = playerObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;

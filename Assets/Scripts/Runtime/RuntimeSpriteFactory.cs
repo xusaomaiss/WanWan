@@ -5,7 +5,7 @@ namespace Wanwan.Runtime
 {
     public static class RuntimeSpriteFactory
     {
-        public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet";
+        public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet_64";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {

@@ -84,7 +84,7 @@ namespace Wanwan.Tests.EditMode
 
             Assert.That(RuntimeSpriteFactory.GetRaidenStageBackgroundResourcePath(0), Is.EqualTo(expected[0]));
             Assert.That(RuntimeSpriteFactory.GetRaidenStageBackgroundResourcePath(99), Is.EqualTo(expected[7]));
-            Assert.That(RuntimeSpriteFactory.RaidenFighterJetResourcePath, Is.EqualTo("RaidenArt/Ships/fighter_jet"));
+            Assert.That(RuntimeSpriteFactory.RaidenFighterJetResourcePath, Is.EqualTo("RaidenArt/Ships/fighter_jet_64"));
         }
     }
 }
