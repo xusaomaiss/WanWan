@@ -163,7 +163,7 @@ namespace Wanwan.Runtime
             pauseCard.raycastTarget = false;
             pauseOverlayTitle = UiFactory.CreateArcadeLabel(pauseCard.transform, "暂停中", 80, TextAnchor.MiddleCenter, new Color(0.92f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.72f), new Vector2(0.88f, 0.9f), Vector2.zero);
             pauseOverlayHighScore = UiFactory.CreateArcadeLabel(pauseCard.transform, "最高分 0000000", 32, TextAnchor.MiddleCenter, new Color(0.48f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.56f), new Vector2(0.85f, 0.66f), Vector2.zero);
-            pauseOverlayMission = UiFactory.CreateArcadeLabel(pauseCard.transform, "第1关 城市上空\n目标 城市防卫旗舰", 30, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.38f), new Vector2(0.9f, 0.54f), Vector2.zero);
+            pauseOverlayMission = UiFactory.CreateArcadeLabel(pauseCard.transform, "第1关 乡村\n目标 乡村防卫旗舰", 30, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.38f), new Vector2(0.9f, 0.54f), Vector2.zero);
             UiFactory.CreateArcadeLabel(pauseCard.transform, "红色主武器  蓝色追踪/导弹  紫色特殊强化", 24, TextAnchor.MiddleCenter, new Color(1f, 0.58f, 0.76f), FontStyle.Bold, new Vector2(0.12f, 0.29f), new Vector2(0.88f, 0.36f), Vector2.zero);
             Button resumeButton = UiFactory.CreatePixelButton(pauseCard.transform, "继续游戏", ArcadeTheme.MilitaryGreen, new Vector2(300f, 82f), new Vector2(-170f, -60f));
             resumeButton.onClick.AddListener(() => gameManager.TogglePause());
@@ -189,7 +189,7 @@ namespace Wanwan.Runtime
             overlay = UiFactory.CreatePanel(canvas.transform, "Overlay", new Color(0.02f, 0.05f, 0.11f, 0.8f), Vector2.zero, Vector2.one);
             overlay.gameObject.SetActive(false);
             overlayTitle = UiFactory.CreateArcadeLabel(overlay.transform, "任务失败", 84, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.15f, 0.58f), new Vector2(0.85f, 0.72f), Vector2.zero);
-            overlayStage = UiFactory.CreateArcadeLabel(overlay.transform, "L1-1 城市上空", 34, TextAnchor.MiddleCenter, new Color(0.7f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.5f), new Vector2(0.88f, 0.57f), Vector2.zero);
+            overlayStage = UiFactory.CreateArcadeLabel(overlay.transform, "L1-1 乡村", 34, TextAnchor.MiddleCenter, new Color(0.7f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.5f), new Vector2(0.88f, 0.57f), Vector2.zero);
             overlayScore = UiFactory.CreateArcadeLabel(overlay.transform, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.4f), new Vector2(0.85f, 0.49f), Vector2.zero);
             overlayBestScore = UiFactory.CreateArcadeLabel(overlay.transform, "最高分 0000000", 38, TextAnchor.MiddleCenter, new Color(0.54f, 0.85f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.32f), new Vector2(0.85f, 0.4f), Vector2.zero);
             overlaySummary = UiFactory.CreateArcadeLabel(overlay.transform, "击落 0/0", 30, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.82f), FontStyle.Bold, new Vector2(0.12f, 0.24f), new Vector2(0.88f, 0.31f), Vector2.zero);

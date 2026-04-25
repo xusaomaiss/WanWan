@@ -5,6 +5,20 @@ namespace Wanwan.Runtime
 {
     public static class RuntimeSpriteFactory
     {
+        public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet";
+
+        private static readonly string[] RaidenStageBackgroundResourcePaths =
+        {
+            "RaidenArt/Backgrounds/stage_01_countryside",
+            "RaidenArt/Backgrounds/stage_02_city",
+            "RaidenArt/Backgrounds/stage_03_coastline",
+            "RaidenArt/Backgrounds/stage_04_ruins",
+            "RaidenArt/Backgrounds/stage_05_wasteland",
+            "RaidenArt/Backgrounds/stage_06_floating_continent",
+            "RaidenArt/Backgrounds/stage_07_space_station",
+            "RaidenArt/Backgrounds/stage_08_alien_base"
+        };
+
         private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
 
         public static Sprite GetRoundedSquareSprite()
@@ -42,6 +56,11 @@ namespace Wanwan.Runtime
             return GetOrCreate("fighter-jet", BuildHeroFighterTexture);
         }
 
+        public static Sprite GetRaidenFighterJetSprite()
+        {
+            return GetResourceSpriteOrFallback("raiden-fighter-jet", RaidenFighterJetResourcePath, GetFighterJetSprite);
+        }
+
         public static Sprite GetEnemyInterceptorSprite()
         {
             return GetOrCreate("enemy-interceptor", BuildEnemyInterceptorTexture);
@@ -65,6 +84,18 @@ namespace Wanwan.Runtime
         public static Sprite GetBattlefieldBackgroundSprite()
         {
             return GetOrCreate("battlefield-background", BuildBattlefieldBackgroundTexture);
+        }
+
+        public static string GetRaidenStageBackgroundResourcePath(int stageNumber)
+        {
+            int safeIndex = Mathf.Clamp(stageNumber - 1, 0, RaidenStageBackgroundResourcePaths.Length - 1);
+            return RaidenStageBackgroundResourcePaths[safeIndex];
+        }
+
+        public static Sprite GetRaidenStageBackgroundSprite(int stageNumber)
+        {
+            string resourcePath = GetRaidenStageBackgroundResourcePath(stageNumber);
+            return GetResourceSpriteOrFallback("raiden-stage-background-" + stageNumber, resourcePath, GetBattlefieldBackgroundSprite);
         }
 
         public static Sprite GetSkyBackgroundSprite()
@@ -101,6 +132,29 @@ namespace Wanwan.Runtime
 
             Texture2D texture = textureFactory();
             texture.filterMode = FilterMode.Bilinear;
+            sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 128f);
+            sprite.name = key;
+            SpriteCache[key] = sprite;
+            return sprite;
+        }
+
+        private static Sprite GetResourceSpriteOrFallback(string key, string resourcePath, System.Func<Sprite> fallbackFactory)
+        {
+            if (SpriteCache.TryGetValue(key, out Sprite sprite))
+            {
+                return sprite;
+            }
+
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            if (texture == null)
+            {
+                sprite = fallbackFactory();
+                SpriteCache[key] = sprite;
+                return sprite;
+            }
+
+            texture.filterMode = FilterMode.Point;
+            texture.wrapMode = TextureWrapMode.Clamp;
             sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 128f);
             sprite.name = key;
             SpriteCache[key] = sprite;

@@ -9,9 +9,10 @@ namespace Wanwan.Tests.EditMode
         public void GetStage_ReturnsEightRaidenStyleThemes()
         {
             Assert.That(StageCatalog.StageCount, Is.EqualTo(8));
-            Assert.That(StageCatalog.GetStage(0).Name, Is.EqualTo("城市上空"));
-            Assert.That(StageCatalog.GetStage(7).Name, Is.EqualTo("外星母舰"));
-            Assert.That(StageCatalog.GetStage(0).VictorySummary, Does.Contain("城市空域"));
+            Assert.That(StageCatalog.GetStage(0).Name, Is.EqualTo("乡村"));
+            Assert.That(StageCatalog.GetStage(1).Name, Is.EqualTo("城市"));
+            Assert.That(StageCatalog.GetStage(7).Name, Is.EqualTo("外星基地"));
+            Assert.That(StageCatalog.GetStage(0).VictorySummary, Does.Contain("乡村低空"));
             Assert.That(StageCatalog.GetStage(7).VictorySummary, Does.Contain("Cranassian核心"));
         }
 
@@ -56,9 +57,34 @@ namespace Wanwan.Tests.EditMode
             string preview = StageCatalog.BuildPreviewSummary(0);
 
             Assert.That(preview, Does.Contain("第1关"));
-            Assert.That(preview, Does.Contain("城市上空"));
-            Assert.That(preview, Does.Contain("城市防卫旗舰"));
+            Assert.That(preview, Does.Contain("乡村"));
+            Assert.That(preview, Does.Contain("乡村防卫旗舰"));
             Assert.That(preview, Does.Contain("均衡"));
+        }
+
+        [Test]
+        public void RaidenStageBackgroundPaths_CoverAllEightStages()
+        {
+            string[] expected =
+            {
+                "RaidenArt/Backgrounds/stage_01_countryside",
+                "RaidenArt/Backgrounds/stage_02_city",
+                "RaidenArt/Backgrounds/stage_03_coastline",
+                "RaidenArt/Backgrounds/stage_04_ruins",
+                "RaidenArt/Backgrounds/stage_05_wasteland",
+                "RaidenArt/Backgrounds/stage_06_floating_continent",
+                "RaidenArt/Backgrounds/stage_07_space_station",
+                "RaidenArt/Backgrounds/stage_08_alien_base"
+            };
+
+            for (int stageNumber = 1; stageNumber <= StageCatalog.StageCount; stageNumber++)
+            {
+                Assert.That(RuntimeSpriteFactory.GetRaidenStageBackgroundResourcePath(stageNumber), Is.EqualTo(expected[stageNumber - 1]));
+            }
+
+            Assert.That(RuntimeSpriteFactory.GetRaidenStageBackgroundResourcePath(0), Is.EqualTo(expected[0]));
+            Assert.That(RuntimeSpriteFactory.GetRaidenStageBackgroundResourcePath(99), Is.EqualTo(expected[7]));
+            Assert.That(RuntimeSpriteFactory.RaidenFighterJetResourcePath, Is.EqualTo("RaidenArt/Ships/fighter_jet"));
         }
     }
 }

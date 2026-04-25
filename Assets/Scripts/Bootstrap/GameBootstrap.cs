@@ -19,7 +19,7 @@ namespace Wanwan.Runtime
             float leftBound = -horizontalExtent + 0.9f;
             float rightBound = horizontalExtent - 0.9f;
 
-            CreateScrollingSkyBackdrop(orthographicSize, horizontalExtent, stage);
+            CreateScrollingBattlefieldBackdrop(orthographicSize, horizontalExtent, stage);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();
             effects.Initialize(cameraComponent);
 
@@ -56,16 +56,17 @@ namespace Wanwan.Runtime
             return cameraComponent;
         }
 
-        private static void CreateScrollingSkyBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
+        private static void CreateScrollingBattlefieldBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
         {
             float targetWidth = (horizontalExtent * 2f) + 3f;
             float targetHeight = (orthographicSize * 2f) + 3f;
             Color stageTint = stage.BackgroundColor;
-            Color baseTint = Color.Lerp(Color.white, stageTint * 5f, 0.18f);
             Color cloudTint = Color.Lerp(Color.white, stage.AccentColor, 0.16f);
             float speed = stage.BackgroundSpeedMultiplier;
-            CreateBackgroundLayer("SkyBaseA", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f * speed, targetWidth, targetHeight, 0f, baseTint);
-            CreateBackgroundLayer("SkyBaseB", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f * speed, targetWidth, targetHeight, targetHeight, baseTint);
+            Sprite stageBackground = RuntimeSpriteFactory.GetRaidenStageBackgroundSprite(stage.Number);
+            Color backgroundTint = Color.Lerp(Color.white, stageTint * 2.2f, 0.08f);
+            CreateBackgroundLayer("StageBackgroundA", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, 0f, backgroundTint);
+            CreateBackgroundLayer("StageBackgroundB", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, targetHeight, backgroundTint);
             CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, 0f, cloudTint);
             CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, targetHeight, cloudTint);
             CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, 0f, Color.Lerp(Color.white, stage.AccentColor, 0.24f));
@@ -133,7 +134,7 @@ namespace Wanwan.Runtime
             playerObject.transform.position = new Vector3(0f, y, 0f);
 
             SpriteRenderer renderer = playerObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            renderer.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
             renderer.color = Color.Lerp(Color.white, ShipDefinition.Get(SessionState.SelectedShip).AccentColor, 0.45f);
             renderer.sortingOrder = 12;
             playerObject.transform.localScale = new Vector3(0.78f, 0.72f, 1f);

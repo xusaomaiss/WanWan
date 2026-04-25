@@ -94,10 +94,10 @@ namespace Wanwan.Runtime
             Image attract = UiFactory.CreatePixelPanel(background.transform, "AttractPreview", new Color(0.03f, 0.04f, 0.1f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.93f), new Vector2(8f, 8f));
             UiFactory.CreateArcadeLabel(attract.transform, "P1  AUTO FIRE        P2  PATROL", ArcadeTheme.SmallSize, TextAnchor.UpperCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.04f, 0.78f), new Vector2(0.96f, 0.94f), Vector2.zero);
             Image p1 = UiFactory.CreatePanel(attract.transform, "P1Ship", ShipDefinition.Get(PlayerShipType.Green).AccentColor, new Vector2(0.16f, 0.18f), new Vector2(0.36f, 0.62f));
-            p1.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            p1.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
             p1.preserveAspect = true;
             Image p2 = UiFactory.CreatePanel(attract.transform, "P2Ship", ShipDefinition.Get(PlayerShipType.Blue).AccentColor, new Vector2(0.64f, 0.18f), new Vector2(0.84f, 0.62f));
-            p2.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            p2.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
             p2.preserveAspect = true;
             p2.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -12f);
             for (int i = 0; i < 5; i++)
@@ -143,7 +143,7 @@ namespace Wanwan.Runtime
             Color edge = selectedShip == shipType ? ArcadeTheme.EnergyYellow : ship.AccentColor;
             Image card = UiFactory.CreatePixelPanel(parent, ship.DisplayName + "Card", new Color(0.08f, 0.08f, 0.16f, 0.96f), edge, anchorMin, anchorMax, new Vector2(8f, 8f));
             Image shipImage = UiFactory.CreatePanel(card.transform, "ShipImage", ship.AccentColor, new Vector2(0.05f, 0.22f), new Vector2(0.28f, 0.76f));
-            shipImage.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            shipImage.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
             shipImage.preserveAspect = true;
             UiFactory.CreateArcadeLabel(card.transform, ship.DisplayName, ArcadeTheme.TitleSize, TextAnchor.MiddleLeft, ship.AccentColor, FontStyle.Bold, new Vector2(0.32f, 0.68f), new Vector2(0.74f, 0.86f), Vector2.zero);
             UiFactory.CreateArcadeLabel(card.transform, $"主武器 {ship.MainWeapon}\n副武器 {ship.SubWeapon}", ArcadeTheme.BodySize, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.32f, 0.36f), new Vector2(0.82f, 0.66f), Vector2.zero);
