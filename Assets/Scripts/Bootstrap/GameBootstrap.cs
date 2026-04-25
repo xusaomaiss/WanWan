@@ -8,7 +8,8 @@ namespace Wanwan.Runtime
         private void Awake()
         {
             Screen.orientation = ScreenOrientation.Portrait;
-            Camera cameraComponent = EnsureCamera(new Color(0.01f, 0.02f, 0.08f));
+            StageDefinition stage = SessionState.CurrentStage;
+            Camera cameraComponent = EnsureCamera(stage.BackgroundColor);
             float orthographicSize = 9f;
             cameraComponent.orthographicSize = orthographicSize;
 
@@ -18,7 +19,7 @@ namespace Wanwan.Runtime
             float leftBound = -horizontalExtent + 0.9f;
             float rightBound = horizontalExtent - 0.9f;
 
-            CreateScrollingSkyBackdrop(orthographicSize, horizontalExtent);
+            CreateScrollingSkyBackdrop(orthographicSize, horizontalExtent, stage.BackgroundColor);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();
             effects.Initialize(cameraComponent);
 
@@ -55,25 +56,33 @@ namespace Wanwan.Runtime
             return cameraComponent;
         }
 
-        private static void CreateScrollingSkyBackdrop(float orthographicSize, float horizontalExtent)
+        private static void CreateScrollingSkyBackdrop(float orthographicSize, float horizontalExtent, Color stageTint)
         {
             float targetWidth = (horizontalExtent * 2f) + 3f;
             float targetHeight = (orthographicSize * 2f) + 3f;
-            CreateBackgroundLayer("SkyBaseA", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, 0f);
-            CreateBackgroundLayer("SkyBaseB", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, targetHeight);
-            CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, 0f);
-            CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, targetHeight);
+            Color baseTint = Color.Lerp(Color.white, stageTint * 5f, 0.18f);
+            Color cloudTint = Color.Lerp(Color.white, stageTint * 7f, 0.12f);
+            CreateBackgroundLayer("SkyBaseA", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, 0f, baseTint);
+            CreateBackgroundLayer("SkyBaseB", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, targetHeight, baseTint);
+            CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, 0f, cloudTint);
+            CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, targetHeight, cloudTint);
             CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f, targetWidth, targetHeight, 0f);
             CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f, targetWidth, targetHeight, targetHeight);
         }
 
         private static void CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset)
         {
+            CreateBackgroundLayer(name, sprite, sortingOrder, speed, targetWidth, targetHeight, yOffset, Color.white);
+        }
+
+        private static void CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset, Color color)
+        {
             GameObject backgroundObject = new GameObject(name);
             backgroundObject.transform.position = new Vector3(0f, yOffset, 8f);
 
             SpriteRenderer renderer = backgroundObject.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
+            renderer.color = color;
             renderer.sortingOrder = sortingOrder;
 
             Vector2 spriteSize = renderer.sprite.bounds.size;

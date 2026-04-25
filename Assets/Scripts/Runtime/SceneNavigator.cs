@@ -19,6 +19,12 @@ namespace Wanwan.Runtime
             SceneManager.LoadScene(GameScene);
         }
 
+        public static void LoadNextStage()
+        {
+            SessionState.AdvanceStage();
+            LoadGame();
+        }
+
         public static void LoadGame(GameDifficulty difficulty)
         {
             SessionState.SelectDifficulty(difficulty);

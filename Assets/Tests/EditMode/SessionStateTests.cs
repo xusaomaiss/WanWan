@@ -49,5 +49,25 @@ namespace Wanwan.Tests.EditMode
 
             Assert.That(SessionState.SelectedDifficulty, Is.EqualTo(GameDifficulty.High));
         }
+
+        [Test]
+        public void AdvanceStage_MovesThroughEightStagesAndLoops()
+        {
+            Assert.That(SessionState.CurrentStageNumber, Is.EqualTo(1));
+            Assert.That(SessionState.CurrentLoopNumber, Is.EqualTo(1));
+
+            for (int i = 0; i < 7; i++)
+            {
+                SessionState.AdvanceStage();
+            }
+
+            Assert.That(SessionState.CurrentStageNumber, Is.EqualTo(8));
+            Assert.That(SessionState.CurrentLoopNumber, Is.EqualTo(1));
+
+            SessionState.AdvanceStage();
+
+            Assert.That(SessionState.CurrentStageNumber, Is.EqualTo(1));
+            Assert.That(SessionState.CurrentLoopNumber, Is.EqualTo(2));
+        }
     }
 }

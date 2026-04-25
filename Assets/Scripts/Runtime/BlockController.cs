@@ -190,7 +190,7 @@ namespace Wanwan.Runtime
                 interval *= 0.68f;
             }
 
-            return interval;
+            return interval / Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.28f);
         }
     }
 }

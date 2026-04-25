@@ -279,8 +279,10 @@ namespace Wanwan.Runtime
         {
             bool tough = elite || Random.value <= DifficultyProgression.GetToughChance(gameManager.ElapsedTime);
             int hitPoints = elite ? GetEliteHitPoints() : DifficultyProgression.GetHitPoints(tough, gameManager.ElapsedTime);
+            hitPoints += Mathf.FloorToInt((gameManager.StageDifficultyMultiplier - 1f) * (elite ? 3f : 1.25f));
             int scoreValue = elite ? 260 : DifficultyProgression.GetScoreValue(tough, hitPoints);
             float speed = elite ? DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, true) * 0.82f : DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, tough);
+            speed *= Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.32f);
 
             GameObject enemyObject = new GameObject(elite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
             enemyObject.transform.position = position;
@@ -370,11 +372,11 @@ namespace Wanwan.Runtime
             switch (gameManager.Difficulty)
             {
                 case GameDifficulty.High:
-                    return 78;
+                    return Mathf.RoundToInt(78 * gameManager.StageDifficultyMultiplier);
                 case GameDifficulty.Medium:
-                    return 62;
+                    return Mathf.RoundToInt(62 * gameManager.StageDifficultyMultiplier);
                 default:
-                    return 48;
+                    return Mathf.RoundToInt(48 * gameManager.StageDifficultyMultiplier);
             }
         }
 

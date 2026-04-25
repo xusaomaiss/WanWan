@@ -31,7 +31,7 @@ namespace Wanwan.Runtime
             hoverAmplitude = manager.Difficulty == GameDifficulty.High ? 2f : 1.45f;
             hoverSpeed = manager.Difficulty == GameDifficulty.High ? 1.35f : 1.05f;
             spriteRenderer = GetComponent<SpriteRenderer>();
-            gameManager.NotifyBossSpawn("敌方旗舰", hitPoints, maxHitPoints);
+            gameManager.NotifyBossSpawn(manager.BossDisplayName, hitPoints, maxHitPoints);
             effectsController.PlayBossArrival(transform.position, spriteRenderer.color);
         }
 

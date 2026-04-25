@@ -45,7 +45,7 @@ namespace Wanwan.Runtime
             livesText.text = $"战机 {gameManager.Lives}\n待命";
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
-            stageProgressText.text = $"第一关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
+            stageProgressText.text = $"第{gameManager.StageNumber}关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
             powerupText.text = BuildPowerupHudText();
             pauseHintText.text = gameManager.IsPaused ? "已暂停" : string.Empty;
             stageBannerText.text = gameManager.StageBannerText;
@@ -91,8 +91,8 @@ namespace Wanwan.Runtime
 
             scoreText = UiFactory.CreateArcadeLabel(leftCell.transform, "得分\n0000000", 34, TextAnchor.UpperLeft, new Color(0.95f, 0.99f, 1f), FontStyle.Bold, new Vector2(0.05f, 0.28f), new Vector2(0.95f, 0.95f), Vector2.zero);
             highScoreText = UiFactory.CreateArcadeLabel(leftCell.transform, "最高分\n0000000", 26, TextAnchor.LowerLeft, new Color(0.53f, 0.86f, 1f), FontStyle.Bold, new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.34f), Vector2.zero);
-            difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 24, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.56f), new Vector2(0.94f, 0.9f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第一关 0%", 28, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.26f), new Vector2(0.94f, 0.6f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 22, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.62f), new Vector2(0.96f, 0.92f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第1关 0%", 28, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.26f), new Vector2(0.94f, 0.6f), Vector2.zero);
             powerupText = UiFactory.CreateArcadeLabel(centerCell.transform, "火力 普通", 24, TextAnchor.LowerCenter, new Color(1f, 0.56f, 0.74f), FontStyle.Bold, new Vector2(0.06f, 0.04f), new Vector2(0.94f, 0.3f), Vector2.zero);
             livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "战机 5\n待命", 26, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(rightCell.transform, "暂停", new Color(0.98f, 0.42f, 0.34f, 0.96f), Color.white, new Vector2(150f, 72f), new Vector2(-82f, 0f), new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f));
@@ -187,11 +187,11 @@ namespace Wanwan.Runtime
             switch (gameManager.Difficulty)
             {
                 case GameDifficulty.Medium:
-                    return "中级";
+                    return $"中级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
                 case GameDifficulty.High:
-                    return "高级";
+                    return $"高级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
                 default:
-                    return "低级";
+                    return $"低级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
             }
         }
     }

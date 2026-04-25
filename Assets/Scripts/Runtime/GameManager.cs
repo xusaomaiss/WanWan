@@ -56,7 +56,12 @@ namespace Wanwan.Runtime
         public bool EnemyCollisionEndsRun => Difficulty != GameDifficulty.Low;
         public bool EnemyUsesScatterShot => Difficulty == GameDifficulty.High;
         public int EnemiesDestroyed => enemiesDestroyed;
-        public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty);
+        public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty, SessionState.CurrentStageIndex, SessionState.CurrentLoopIndex);
+        public int StageNumber => SessionState.CurrentStageNumber;
+        public int LoopNumber => SessionState.CurrentLoopNumber;
+        public string StageName => SessionState.CurrentStage.Name;
+        public string BossDisplayName => SessionState.CurrentStage.BossName;
+        public float StageDifficultyMultiplier => SessionState.CurrentStageDifficultyMultiplier;
 
         public void Initialize(UIController ui, EffectsController effects, BlockSpawner spawner, PlayerController player, float leftBound, float rightBound, float topBound, float bottomBound)
         {
@@ -325,7 +330,7 @@ namespace Wanwan.Runtime
             uiController.ShowGameOverOverlay("游戏胜利", Score);
             SessionState.CommitRunScore(Score, true, BuildRunRating(), BuildRunSummary());
             yield return new WaitForSeconds(3f);
-            SceneNavigator.LoadGame();
+            SceneNavigator.LoadNextStage();
         }
 
         private void SetPaused(bool value)
@@ -360,10 +365,10 @@ namespace Wanwan.Runtime
         {
             if (stageClear)
             {
-                return "敌方旗舰已被击退，下一空域作战即将开启。";
+                return $"第{StageNumber}关 {StageName} 已肃清，下一空域作战即将开启。";
             }
 
-            return "保持走位和火力节奏，再试一次更接近通关。";
+            return $"第{StageNumber}关 {StageName} 作战中断，保持走位和火力节奏再试一次。";
         }
 
         private static float GetBaselineProgress(StagePhase phase)

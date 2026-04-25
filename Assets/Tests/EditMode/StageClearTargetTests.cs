@@ -12,5 +12,13 @@ namespace Wanwan.Tests.EditMode
             Assert.That(StageClearTarget.GetRequiredKills(GameDifficulty.Medium), Is.EqualTo(30));
             Assert.That(StageClearTarget.GetRequiredKills(GameDifficulty.High), Is.EqualTo(40));
         }
+
+        [Test]
+        public void GetRequiredKills_IncreasesByStageAndLoop()
+        {
+            Assert.That(StageClearTarget.GetRequiredKills(GameDifficulty.Low, 1, 0), Is.EqualTo(22));
+            Assert.That(StageClearTarget.GetRequiredKills(GameDifficulty.Low, 7, 0), Is.EqualTo(34));
+            Assert.That(StageClearTarget.GetRequiredKills(GameDifficulty.Low, 0, 1), Is.EqualTo(28));
+        }
     }
 }

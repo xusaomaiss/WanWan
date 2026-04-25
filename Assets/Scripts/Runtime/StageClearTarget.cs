@@ -4,15 +4,28 @@ namespace Wanwan.Runtime
     {
         public static int GetRequiredKills(GameDifficulty difficulty)
         {
+            return GetRequiredKills(difficulty, 0, 0);
+        }
+
+        public static int GetRequiredKills(GameDifficulty difficulty, int stageIndex, int loopIndex)
+        {
+            int baseTarget;
             switch (difficulty)
             {
                 case GameDifficulty.High:
-                    return 40;
+                    baseTarget = 40;
+                    break;
                 case GameDifficulty.Medium:
-                    return 30;
+                    baseTarget = 30;
+                    break;
                 default:
-                    return 20;
+                    baseTarget = 20;
+                    break;
             }
+
+            int stageBonus = stageIndex * 2;
+            int loopBonus = loopIndex * 8;
+            return baseTarget + stageBonus + loopBonus;
         }
     }
 }
