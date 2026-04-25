@@ -1,0 +1,21 @@
+{
+  "name": "Wanwan.Tests.EditMode",
+  "rootNamespace": "Wanwan.Tests.EditMode",
+  "references": [
+    "Wanwan.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
