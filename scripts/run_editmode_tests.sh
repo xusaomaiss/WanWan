@@ -28,9 +28,8 @@ fi
 
 "$UNITY_BIN" \
   -batchmode \
-  -quit \
   -projectPath "$ROOT_DIR" \
-  -runTests \
-  -testPlatform editmode \
-  -testResults "$ROOT_DIR/Builds/editmode-results.xml" \
+  -executeMethod Wanwan.Editor.BuildAutomation.RunEditModeTests \
   -logFile -
+
+test -f "$ROOT_DIR/Builds/editmode-results.xml"

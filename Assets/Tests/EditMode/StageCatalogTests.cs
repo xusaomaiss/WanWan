@@ -31,6 +31,13 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void SecondStage_UsesReleaseTunedDifficultyRamp()
+        {
+            Assert.That(StageCatalog.GetStage(1).DifficultyMultiplier, Is.LessThanOrEqualTo(1.03f));
+            Assert.That(StageCatalog.GetStage(1).DifficultyMultiplier, Is.GreaterThan(StageCatalog.GetStage(0).DifficultyMultiplier));
+        }
+
+        [Test]
         public void Stages_HaveDistinctCombatAndBossStyles()
         {
             for (int i = 0; i < StageCatalog.StageCount; i++)

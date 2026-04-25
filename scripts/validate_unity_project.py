@@ -32,10 +32,12 @@ def main() -> None:
         "Assets/Scripts/Runtime/BlockSpawner.cs",
         "Assets/Scripts/Runtime/BlockController.cs",
         "Assets/Scripts/Runtime/BulletController.cs",
+        "Assets/Scripts/Runtime/PerformanceBudget.cs",
         "Assets/Scripts/UI/UIController.cs",
         "Assets/Editor/BuildAutomation.cs",
         "scripts/install_unity_editor.sh",
         "scripts/build_android.sh",
+        "scripts/build_android_release.sh",
         "scripts/run_editmode_tests.sh",
         "scripts/android_smoke_test.sh",
     ]
@@ -48,7 +50,7 @@ def main() -> None:
         check(scene in build_settings, f"build settings missing scene: {scene}")
 
     build_automation = (ROOT / "Assets/Editor/BuildAutomation.cs").read_text(encoding="utf-8")
-    for token in ("BuildAndroidDebug", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
+    for token in ("BuildAndroidDebug", "BuildAndroidRelease", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
 
     print("Unity project validation passed.")

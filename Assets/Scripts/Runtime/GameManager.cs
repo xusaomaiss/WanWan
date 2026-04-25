@@ -27,6 +27,7 @@ namespace Wanwan.Runtime
         private int bossCurrentHitPoints;
         private int bossMaxHitPoints;
         private int enemiesDestroyed;
+        private int bombsUsed;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
         public int Score { get; private set; }
@@ -44,6 +45,7 @@ namespace Wanwan.Runtime
         public float ActivePowerupRemainingSeconds => activePowerup.RemainingSeconds;
         public bool HasActivePowerup => activePowerup.HasActivePowerup;
         public int BombCount => bombState.Count;
+        public int BombsUsed => bombsUsed;
         public bool HasBomb => bombState.HasBomb;
         public StagePhase CurrentStagePhase => currentStagePhase;
         public string StageLabel => stageLabel;
@@ -77,6 +79,7 @@ namespace Wanwan.Runtime
             RightBound = rightBound;
             TopBound = topBound;
             BottomBound = bottomBound;
+            Lives = GetInitialLives(Difficulty);
 
             uiController.Bind(this);
         }
@@ -210,6 +213,7 @@ namespace Wanwan.Runtime
             currentStagePhase = StagePhase.Boss;
             stageLabel = "旗舰逼近";
             ShowStageBanner("危险警报");
+            uiController.ShowBossWarning(displayName);
             uiController.RefreshHud();
         }
 
@@ -273,6 +277,7 @@ namespace Wanwan.Runtime
             }
 
             effectsController.PlayBombDetonation(Vector3.zero);
+            bombsUsed++;
             ShowStageBanner("BOMB");
             uiController.RefreshHud();
             return true;
@@ -415,6 +420,19 @@ namespace Wanwan.Runtime
                     return 0.24f;
                 default:
                     return 0.08f;
+            }
+        }
+
+        private static int GetInitialLives(GameDifficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case GameDifficulty.High:
+                    return 2;
+                case GameDifficulty.Medium:
+                    return 3;
+                default:
+                    return 5;
             }
         }
     }

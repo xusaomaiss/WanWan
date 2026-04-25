@@ -23,7 +23,7 @@ namespace Wanwan.Runtime
                     break;
             }
 
-            int stageBonus = stageIndex * 2;
+            int stageBonus = stageIndex == 1 ? 1 : stageIndex * 2;
             int loopBonus = loopIndex * 8;
             return baseTarget + stageBonus + loopBonus;
         }

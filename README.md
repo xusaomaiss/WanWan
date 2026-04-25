@@ -50,6 +50,8 @@
   - `./scripts/install_unity_editor.sh`
 - 构建 Android Debug APK：
   - `./scripts/build_android.sh`
+- 构建 Android 签名 Release APK：
+  - `./scripts/build_android_release.sh`
 - 安装到已连接手机并做冒烟启动：
   - `./scripts/android_smoke_test.sh`
 

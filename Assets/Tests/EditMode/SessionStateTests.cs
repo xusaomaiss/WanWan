@@ -84,5 +84,46 @@ namespace Wanwan.Tests.EditMode
             Assert.That(PlayerPrefs.GetFloat("wanwan.music_volume", 0f), Is.EqualTo(1f));
             Assert.That(PlayerPrefs.GetFloat("wanwan.sfx_volume", 1f), Is.EqualTo(0f));
         }
+
+        [Test]
+        public void ShipAndExtendedSettings_PersistAndResetToDefaults()
+        {
+            SessionState.SelectShip(PlayerShipType.Blue);
+            SessionState.SetControlSensitivity(ControlSensitivity.High);
+            SessionState.SetVibrationEnabled(false);
+            SessionState.SetDamageNumbersEnabled(false);
+            SessionState.SetVirtualButtonOpacity(1.4f);
+
+            Assert.That(SessionState.SelectedShip, Is.EqualTo(PlayerShipType.Blue));
+            Assert.That(SessionState.ControlSensitivity, Is.EqualTo(ControlSensitivity.High));
+            Assert.That(SessionState.VibrationEnabled, Is.False);
+            Assert.That(SessionState.DamageNumbersEnabled, Is.False);
+            Assert.That(SessionState.VirtualButtonOpacity, Is.EqualTo(1f));
+
+            SessionState.ResetSettings();
+
+            Assert.That(SessionState.SelectedShip, Is.EqualTo(PlayerShipType.Green));
+            Assert.That(SessionState.ControlSensitivity, Is.EqualTo(ControlSensitivity.Medium));
+            Assert.That(SessionState.VibrationEnabled, Is.True);
+            Assert.That(SessionState.DamageNumbersEnabled, Is.True);
+            Assert.That(SessionState.VirtualButtonOpacity, Is.EqualTo(0.4f).Within(0.001f));
+        }
+
+        [Test]
+        public void Leaderboard_KeepsTopTenSortedByScore()
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                SessionState.RecordLeaderboardScore("P" + i, i * 100, GameDifficulty.Low, i % 8, i / 8);
+            }
+
+            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
+
+            Assert.That(entries.Length, Is.EqualTo(10));
+            Assert.That(entries[0].Name, Is.EqualTo("P11"));
+            Assert.That(entries[0].Score, Is.EqualTo(1100));
+            Assert.That(entries[9].Name, Is.EqualTo("P2"));
+            Assert.That(entries[9].Score, Is.EqualTo(200));
+        }
     }
 }

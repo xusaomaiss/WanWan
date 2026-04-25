@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,16 +6,22 @@ namespace Wanwan.Runtime
 {
     public class MenuBootstrap : MonoBehaviour
     {
-        private GameObject settingsPanel;
+        private Canvas canvas;
+        private MenuUiState state;
+        private PlayerShipType selectedShip;
         private Text audioStatusText;
         private Text musicValueText;
         private Text sfxValueText;
+        private Text opacityValueText;
 
         private void Awake()
         {
             Screen.orientation = ScreenOrientation.Portrait;
-            EnsureCamera(new Color(0.02f, 0.04f, 0.11f));
-            BuildMenu();
+            selectedShip = SessionState.SelectedShip;
+            EnsureCamera(ArcadeTheme.BackgroundBlack);
+            canvas = UiFactory.CreateCanvas("MenuCanvas");
+            ShowLogo();
+            StartCoroutine(LogoToTitle());
         }
 
         private static void EnsureCamera(Color background)
@@ -35,136 +42,265 @@ namespace Wanwan.Runtime
             cameraObject.transform.position = new Vector3(0f, 0f, -10f);
         }
 
-        private void BuildMenu()
+        private IEnumerator LogoToTitle()
         {
-            Canvas canvas = UiFactory.CreateCanvas("MenuCanvas");
-            Image background = UiFactory.CreatePanel(canvas.transform, "Background", new Color(0.02f, 0.04f, 0.11f), Vector2.zero, Vector2.one);
-            UiFactory.CreatePanel(background.transform, "TopGlow", new Color(0.18f, 0.28f, 0.7f, 0.18f), new Vector2(0f, 0.58f), new Vector2(1f, 1f));
-            UiFactory.CreatePanel(background.transform, "BottomGlow", new Color(0.56f, 0.08f, 0.28f, 0.16f), new Vector2(0f, 0f), new Vector2(1f, 0.4f));
-
-            Image titleFrame = UiFactory.CreateArcadePanel(background.transform, "TitleFrame", new Color(0.05f, 0.08f, 0.16f, 0.94f), new Color(0.22f, 0.62f, 1f, 0.96f), new Vector2(0.05f, 0.62f), new Vector2(0.95f, 0.93f), new Vector2(10f, 10f));
-            UiFactory.CreateArcadeLabel(titleFrame.transform, "旺旺雷电", 92, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.9f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(titleFrame.transform, "开始任务", 42, TextAnchor.MiddleCenter, new Color(0.48f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.42f), new Vector2(0.9f, 0.58f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(titleFrame.transform, "编队突袭  精英来袭  敌方旗舰", 28, TextAnchor.MiddleCenter, new Color(1f, 0.54f, 0.72f), FontStyle.Bold, new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.38f), Vector2.zero);
-
-            Image playerArt = UiFactory.CreatePanel(background.transform, "PlayerShipArt", Color.white, new Vector2(0.08f, 0.35f), new Vector2(0.42f, 0.58f));
-            playerArt.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
-            playerArt.preserveAspect = true;
-            playerArt.color = new Color(0.96f, 0.98f, 1f);
-
-            Image enemyArt = UiFactory.CreatePanel(background.transform, "EnemyShipArt", new Color(1f, 0.58f, 0.74f, 1f), new Vector2(0.58f, 0.34f), new Vector2(0.92f, 0.57f));
-            enemyArt.sprite = RuntimeSpriteFactory.GetBossFlagshipSprite();
-            enemyArt.preserveAspect = true;
-            enemyArt.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 180f);
-
-            Image previewFrame = UiFactory.CreateArcadePanel(background.transform, "StagePreviewFrame", new Color(0.04f, 0.09f, 0.15f, 0.94f), SessionState.CurrentStage.AccentColor, new Vector2(0.09f, 0.3f), new Vector2(0.91f, 0.42f), new Vector2(8f, 8f));
-            UiFactory.CreateArcadeLabel(previewFrame.transform, "关卡预览", 26, TextAnchor.UpperCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.94f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(previewFrame.transform, StageCatalog.BuildPreviewSummary(SessionState.CurrentStageIndex), 30, TextAnchor.MiddleCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.74f), Vector2.zero);
-
-            Image difficultyFrame = UiFactory.CreateArcadePanel(background.transform, "DifficultyFrame", new Color(0.04f, 0.08f, 0.16f, 0.94f), new Color(0.45f, 0.3f, 0.92f, 0.95f), new Vector2(0.07f, 0.12f), new Vector2(0.93f, 0.3f), new Vector2(10f, 10f));
-            UiFactory.CreateArcadeLabel(difficultyFrame.transform, "选择难度", 38, TextAnchor.MiddleCenter, new Color(0.88f, 0.95f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.64f), new Vector2(0.9f, 0.9f), Vector2.zero);
-
-            Button lowButton = UiFactory.CreateButton(difficultyFrame.transform, "低级", new Color(0.16f, 0.56f, 1f), Color.white, new Vector2(220f, 108f), new Vector2(-250f, -46f));
-            lowButton.onClick.AddListener(() => SceneNavigator.LoadGame(GameDifficulty.Low));
-            Button mediumButton = UiFactory.CreateButton(difficultyFrame.transform, "中级", new Color(0.48f, 0.34f, 0.96f), Color.white, new Vector2(220f, 108f), new Vector2(0f, -46f));
-            mediumButton.onClick.AddListener(() => SceneNavigator.LoadGame(GameDifficulty.Medium));
-            Button highButton = UiFactory.CreateButton(difficultyFrame.transform, "高级", new Color(1f, 0.36f, 0.34f), Color.white, new Vector2(220f, 108f), new Vector2(250f, -46f));
-            highButton.onClick.AddListener(() => SceneNavigator.LoadGame(GameDifficulty.High));
-
-            foreach (Button button in new[] { lowButton, mediumButton, highButton })
+            yield return new WaitForSeconds(2f);
+            if (state == MenuUiState.Logo)
             {
-                Text label = button.GetComponentInChildren<Text>();
-                label.fontStyle = FontStyle.Bold;
-                label.fontSize = 42;
+                ShowTitle();
+            }
+        }
+
+        private void ClearCanvas()
+        {
+            for (int i = canvas.transform.childCount - 1; i >= 0; i--)
+            {
+                Destroy(canvas.transform.GetChild(i).gameObject);
+            }
+        }
+
+        private Image CreateBackground(string name)
+        {
+            ClearCanvas();
+            Image background = UiFactory.CreatePanel(canvas.transform, name, ArcadeTheme.BackgroundBlack, Vector2.zero, Vector2.one);
+            CreateScanlines(background.transform);
+            return background;
+        }
+
+        private static void CreateScanlines(Transform parent)
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                float y = i / 24f;
+                UiFactory.CreateDivider(parent, "Scanline" + i, new Color(1f, 1f, 1f, 0.025f), new Vector2(0f, y), new Vector2(1f, y + 0.0035f));
+            }
+        }
+
+        private void ShowLogo()
+        {
+            state = MenuUiState.Logo;
+            Image background = CreateBackground("LogoBackground");
+            UiFactory.CreateArcadeLabel(background.transform, "RAIDEN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.62f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "雷电", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.45f), new Vector2(0.92f, 0.53f), Vector2.zero);
+            UiFactory.CreateDivider(background.transform, "LogoDivider", ArcadeTheme.WarningRed, new Vector2(0.18f, 0.44f), new Vector2(0.82f, 0.447f));
+            UiFactory.CreateArcadeLabel(background.transform, "WANWAN ARCADE SYSTEM", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.36f), new Vector2(0.92f, 0.42f), Vector2.zero);
+        }
+
+        private void ShowTitle()
+        {
+            state = MenuUiState.Title;
+            Image background = CreateBackground("TitleBackground");
+
+            Image attract = UiFactory.CreatePixelPanel(background.transform, "AttractPreview", new Color(0.03f, 0.04f, 0.1f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.93f), new Vector2(8f, 8f));
+            UiFactory.CreateArcadeLabel(attract.transform, "P1  AUTO FIRE        P2  PATROL", ArcadeTheme.SmallSize, TextAnchor.UpperCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.04f, 0.78f), new Vector2(0.96f, 0.94f), Vector2.zero);
+            Image p1 = UiFactory.CreatePanel(attract.transform, "P1Ship", ShipDefinition.Get(PlayerShipType.Green).AccentColor, new Vector2(0.16f, 0.18f), new Vector2(0.36f, 0.62f));
+            p1.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            p1.preserveAspect = true;
+            Image p2 = UiFactory.CreatePanel(attract.transform, "P2Ship", ShipDefinition.Get(PlayerShipType.Blue).AccentColor, new Vector2(0.64f, 0.18f), new Vector2(0.84f, 0.62f));
+            p2.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            p2.preserveAspect = true;
+            p2.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -12f);
+            for (int i = 0; i < 5; i++)
+            {
+                UiFactory.CreatePanel(attract.transform, "Shot" + i, ArcadeTheme.EnergyYellow, new Vector2(0.46f + i * 0.04f, 0.48f), new Vector2(0.475f + i * 0.04f, 0.56f));
             }
 
-            string hiScore = SessionState.HighScore > 0
-                ? $"最高分 {SessionState.HighScore:0000000}"
-                : "最高分 0000000";
-            UiFactory.CreateArcadeLabel(background.transform, hiScore, 34, TextAnchor.MiddleCenter, new Color(0.52f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.18f, 0.04f), new Vector2(0.68f, 0.1f), Vector2.zero);
-            Button settingsButton = UiFactory.CreateButton(background.transform, "设置", new Color(0.18f, 0.58f, 0.9f), Color.white, new Vector2(190f, 82f), new Vector2(330f, -846f));
-            settingsButton.onClick.AddListener(ToggleSettingsPanel);
-            settingsButton.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+            UiFactory.CreateArcadeLabel(background.transform, "RAIDEN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.54f), new Vector2(0.92f, 0.65f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "雷电", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.56f), Vector2.zero);
+            UiFactory.CreateDivider(background.transform, "RedDivider", ArcadeTheme.WarningRed, new Vector2(0.18f, 0.48f), new Vector2(0.82f, 0.487f));
+            UiFactory.CreateArcadeLabel(background.transform, "INSERT COIN / 插入硬币", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f), Vector2.zero);
 
-            BuildSettingsPanel(background.transform);
+            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.DimGray, new Vector2(0.16f, 0.12f), new Vector2(0.84f, 0.38f), new Vector2(8f, 8f));
+            UiFactory.CreateMenuItem(menu.transform, "开始游戏", 0, ShowShipSelect);
+            UiFactory.CreateMenuItem(menu.transform, "排行榜", 1, ShowLeaderboard);
+            UiFactory.CreateMenuItem(menu.transform, "设置", 2, ShowSettings);
+            UiFactory.CreateMenuItem(menu.transform, "退出", 3, Application.Quit);
+
+            string hiScore = $"HI-SCORE {SessionState.HighScore:0000000}";
+            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.16f, 0.045f), new Vector2(0.84f, 0.09f), Vector2.zero);
         }
 
-        private void BuildSettingsPanel(Transform parent)
+        private void ShowShipSelect()
         {
-            Image settingsFrame = UiFactory.CreateArcadePanel(parent, "SettingsFrame", new Color(0.04f, 0.07f, 0.13f, 0.98f), new Color(0.28f, 0.72f, 1f, 0.96f), new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.54f), new Vector2(10f, 10f));
-            settingsPanel = settingsFrame.gameObject;
-            settingsPanel.SetActive(false);
+            state = MenuUiState.ShipSelect;
+            Image background = CreateBackground("ShipSelectBackground");
+            UiFactory.CreateArcadeLabel(background.transform, "SELECT SHIP / 选择战机", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            CreateShipCard(background.transform, PlayerShipType.Green, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.78f));
+            CreateShipCard(background.transform, PlayerShipType.Blue, new Vector2(0.08f, 0.17f), new Vector2(0.92f, 0.47f));
+            Button back = UiFactory.CreatePixelButton(background.transform, "返回", ArcadeTheme.DimGray, new Vector2(260f, 76f), new Vector2(-230f, -812f));
+            back.onClick.AddListener(ShowTitle);
+            Button next = UiFactory.CreatePixelButton(background.transform, "确认", ArcadeTheme.EnergyYellow, new Vector2(260f, 76f), new Vector2(230f, -812f));
+            next.onClick.AddListener(() =>
+            {
+                SessionState.SelectShip(selectedShip);
+                ShowDifficulty();
+            });
+        }
 
-            UiFactory.CreateArcadeLabel(settingsFrame.transform, "设置", 52, TextAnchor.MiddleCenter, new Color(0.94f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.78f), new Vector2(0.9f, 0.94f), Vector2.zero);
-            audioStatusText = UiFactory.CreateArcadeLabel(settingsFrame.transform, BuildAudioStatusText(), 30, TextAnchor.MiddleCenter, new Color(0.84f, 0.94f, 1f), FontStyle.Bold, new Vector2(0.1f, 0.62f), new Vector2(0.9f, 0.72f), Vector2.zero);
+        private void CreateShipCard(Transform parent, PlayerShipType shipType, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            ShipDefinition ship = ShipDefinition.Get(shipType);
+            Color edge = selectedShip == shipType ? ArcadeTheme.EnergyYellow : ship.AccentColor;
+            Image card = UiFactory.CreatePixelPanel(parent, ship.DisplayName + "Card", new Color(0.08f, 0.08f, 0.16f, 0.96f), edge, anchorMin, anchorMax, new Vector2(8f, 8f));
+            Image shipImage = UiFactory.CreatePanel(card.transform, "ShipImage", ship.AccentColor, new Vector2(0.05f, 0.22f), new Vector2(0.28f, 0.76f));
+            shipImage.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
+            shipImage.preserveAspect = true;
+            UiFactory.CreateArcadeLabel(card.transform, ship.DisplayName, ArcadeTheme.TitleSize, TextAnchor.MiddleLeft, ship.AccentColor, FontStyle.Bold, new Vector2(0.32f, 0.68f), new Vector2(0.74f, 0.86f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(card.transform, $"主武器 {ship.MainWeapon}\n副武器 {ship.SubWeapon}", ArcadeTheme.BodySize, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.32f, 0.36f), new Vector2(0.82f, 0.66f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(card.transform, $"速度 {Stars(ship.SpeedStars)}   火力 {Stars(ship.PowerStars)}", ArcadeTheme.BodySize, TextAnchor.MiddleLeft, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.32f, 0.14f), new Vector2(0.84f, 0.32f), Vector2.zero);
+            Button select = UiFactory.CreatePixelButton(card.transform, selectedShip == shipType ? "已选择" : "选择", edge, new Vector2(170f, 70f), new Vector2(318f, -6f));
+            select.onClick.AddListener(() =>
+            {
+                selectedShip = shipType;
+                ShowShipSelect();
+            });
+        }
 
-            Button audioButton = UiFactory.CreateButton(settingsFrame.transform, "音效开关", new Color(0.24f, 0.62f, 1f), Color.white, new Vector2(360f, 86f), new Vector2(0f, 232f));
-            audioButton.onClick.AddListener(() =>
+        private void ShowDifficulty()
+        {
+            state = MenuUiState.Difficulty;
+            Image background = CreateBackground("DifficultyBackground");
+            UiFactory.CreateArcadeLabel(background.transform, "DIFFICULTY / 选择难度", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            CreateDifficultyCard(background.transform, GameDifficulty.Low, "简单", "初始生命 5 / 敌弹较慢 / 适合长流程验收", ArcadeTheme.MilitaryGreen, new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.78f));
+            CreateDifficultyCard(background.transform, GameDifficulty.Medium, "普通", "初始生命 3 / 标准弹幕 / 推荐体验", ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.58f));
+            CreateDifficultyCard(background.transform, GameDifficulty.High, "困难", "初始生命 2 / 强化火力 / 高压挑战", ArcadeTheme.WarningRed, new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.38f));
+            Button back = UiFactory.CreatePixelButton(background.transform, "返回选机", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
+            back.onClick.AddListener(ShowShipSelect);
+        }
+
+        private void CreateDifficultyCard(Transform parent, GameDifficulty difficulty, string title, string desc, Color edge, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Image card = UiFactory.CreatePixelPanel(parent, title + "Card", new Color(0.08f, 0.08f, 0.16f, 0.96f), edge, anchorMin, anchorMax, new Vector2(8f, 8f));
+            UiFactory.CreateArcadeLabel(card.transform, title, ArcadeTheme.TitleSize, TextAnchor.MiddleLeft, edge, FontStyle.Bold, new Vector2(0.08f, 0.5f), new Vector2(0.34f, 0.86f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(card.transform, desc, ArcadeTheme.BodySize, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.16f), new Vector2(0.68f, 0.5f), Vector2.zero);
+            Button start = UiFactory.CreatePixelButton(card.transform, "出击", edge, new Vector2(180f, 72f), new Vector2(306f, -2f));
+            start.onClick.AddListener(() => SceneNavigator.LoadGame(difficulty));
+        }
+
+        private void ShowLeaderboard()
+        {
+            state = MenuUiState.Leaderboard;
+            Image background = CreateBackground("LeaderboardBackground");
+            UiFactory.CreateArcadeLabel(background.transform, "TOP 10 / 排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            Image board = UiFactory.CreatePixelPanel(background.transform, "LeaderboardPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.EnergyYellow, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
+            UiFactory.CreateArcadeLabel(board.transform, "RK  NAME   SCORE    DIF  STAGE", ArcadeTheme.BodySize, TextAnchor.UpperLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.9f), new Vector2(0.92f, 0.98f), Vector2.zero);
+            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
+            if (entries.Length == 0)
+            {
+                UiFactory.CreateArcadeLabel(board.transform, "NO RECORD\nAAA 0000000", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.DimGray, FontStyle.Bold, new Vector2(0.1f, 0.35f), new Vector2(0.9f, 0.62f), Vector2.zero);
+            }
+            else
+            {
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    LeaderboardEntry entry = entries[i];
+                    Color color = i < 3 ? ArcadeTheme.EnergyYellow : ArcadeTheme.White;
+                    string row = $"{i + 1:00}  {entry.Name,-3}  {entry.Score:0000000}  {BuildDifficultyShort(entry.Difficulty),-2}   L{entry.LoopNumber}-{entry.StageNumber}";
+                    float top = 0.84f - i * 0.075f;
+                    UiFactory.CreateArcadeLabel(board.transform, row, ArcadeTheme.BodySize, TextAnchor.MiddleLeft, color, FontStyle.Bold, new Vector2(0.08f, top - 0.055f), new Vector2(0.92f, top), Vector2.zero);
+                }
+            }
+
+            Button back = UiFactory.CreatePixelButton(background.transform, "返回标题", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
+            back.onClick.AddListener(ShowTitle);
+        }
+
+        private void ShowSettings()
+        {
+            state = MenuUiState.Settings;
+            Image background = CreateBackground("SettingsBackground");
+            UiFactory.CreateArcadeLabel(background.transform, "SETTINGS / 设置", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            Image panel = UiFactory.CreatePixelPanel(background.transform, "SettingsPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
+            audioStatusText = UiFactory.CreateArcadeLabel(panel.transform, BuildAudioText(), ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.86f), new Vector2(0.88f, 0.96f), Vector2.zero);
+
+            Button audioButton = UiFactory.CreatePixelToggle(panel.transform, "总声音", SessionState.AudioEnabled, new Vector2(0f, 260f), () =>
             {
                 SessionState.SetAudioEnabled(!SessionState.AudioEnabled);
-                RefreshSettingsLabels();
+                ShowSettings();
             });
 
-            CreateVolumeSlider(settingsFrame.transform, "音乐", SessionState.MusicVolume, new Vector2(0.16f, 0.4f), new Vector2(0.84f, 0.52f), value =>
+            UiFactory.CreatePixelSlider(panel.transform, "音乐音量", SessionState.MusicVolume, new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.68f), value =>
             {
                 SessionState.SetMusicVolume(value);
-                RefreshSettingsLabels();
+                if (musicValueText != null) musicValueText.text = Mathf.RoundToInt(SessionState.MusicVolume * 100f) + "%";
             }, out musicValueText);
-            CreateVolumeSlider(settingsFrame.transform, "音效", SessionState.SfxVolume, new Vector2(0.16f, 0.22f), new Vector2(0.84f, 0.34f), value =>
+            UiFactory.CreatePixelSlider(panel.transform, "音效音量", SessionState.SfxVolume, new Vector2(0.08f, 0.45f), new Vector2(0.92f, 0.55f), value =>
             {
                 SessionState.SetSfxVolume(value);
-                RefreshSettingsLabels();
+                if (sfxValueText != null) sfxValueText.text = Mathf.RoundToInt(SessionState.SfxVolume * 100f) + "%";
             }, out sfxValueText);
+            UiFactory.CreatePixelSlider(panel.transform, "按键透明", SessionState.VirtualButtonOpacity, new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.42f), value =>
+            {
+                SessionState.SetVirtualButtonOpacity(value);
+                if (opacityValueText != null) opacityValueText.text = Mathf.RoundToInt(SessionState.VirtualButtonOpacity * 100f) + "%";
+            }, out opacityValueText);
 
-            Button closeButton = UiFactory.CreateButton(settingsFrame.transform, "关闭", new Color(0.82f, 0.3f, 0.78f), Color.white, new Vector2(300f, 82f), new Vector2(0f, -246f));
-            closeButton.onClick.AddListener(ToggleSettingsPanel);
+            Button sensitivityButton = UiFactory.CreatePixelButton(panel.transform, "灵敏度 " + BuildSensitivityText(), ArcadeTheme.EnergyYellow, new Vector2(420f, 72f), new Vector2(-220f, -176f));
+            sensitivityButton.onClick.AddListener(CycleSensitivity);
+            Button vibrationButton = UiFactory.CreatePixelToggle(panel.transform, "震动", SessionState.VibrationEnabled, new Vector2(220f, -176f), () =>
+            {
+                SessionState.SetVibrationEnabled(!SessionState.VibrationEnabled);
+                ShowSettings();
+            });
+            Button damageButton = UiFactory.CreatePixelToggle(panel.transform, "伤害数字", SessionState.DamageNumbersEnabled, new Vector2(-220f, -266f), () =>
+            {
+                SessionState.SetDamageNumbersEnabled(!SessionState.DamageNumbersEnabled);
+                ShowSettings();
+            });
+            Button resetButton = UiFactory.CreatePixelButton(panel.transform, "恢复默认", ArcadeTheme.WarningRed, new Vector2(420f, 72f), new Vector2(220f, -266f));
+            resetButton.onClick.AddListener(() =>
+            {
+                SessionState.ResetSettings();
+                ShowSettings();
+            });
+
+            Button back = UiFactory.CreatePixelButton(background.transform, "返回标题", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
+            back.onClick.AddListener(ShowTitle);
         }
 
-        private static void CreateVolumeSlider(Transform parent, string label, float value, Vector2 anchorMin, Vector2 anchorMax, UnityEngine.Events.UnityAction<float> onChanged, out Text valueText)
+        private static string Stars(int count)
         {
-            Image row = UiFactory.CreatePanel(parent, label + "Row", new Color(0.08f, 0.11f, 0.2f, 0.82f), anchorMin, anchorMax);
-            UiFactory.CreateArcadeLabel(row.transform, label, 28, TextAnchor.MiddleLeft, new Color(0.94f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.28f, 1f), Vector2.zero);
-            valueText = UiFactory.CreateArcadeLabel(row.transform, Mathf.RoundToInt(value * 100f) + "%", 26, TextAnchor.MiddleRight, new Color(0.54f, 0.86f, 1f), FontStyle.Bold, new Vector2(0.76f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
-
-            GameObject sliderObject = new GameObject(label + "Slider", typeof(RectTransform), typeof(Slider));
-            sliderObject.transform.SetParent(row.transform, false);
-            RectTransform sliderRect = sliderObject.GetComponent<RectTransform>();
-            sliderRect.anchorMin = new Vector2(0.31f, 0.22f);
-            sliderRect.anchorMax = new Vector2(0.73f, 0.78f);
-            sliderRect.offsetMin = Vector2.zero;
-            sliderRect.offsetMax = Vector2.zero;
-
-            Image background = UiFactory.CreatePanel(sliderObject.transform, "Background", new Color(0.02f, 0.04f, 0.09f, 0.95f), new Vector2(0f, 0.34f), new Vector2(1f, 0.66f));
-            Image fill = UiFactory.CreatePanel(background.transform, "Fill", new Color(0.28f, 0.78f, 1f, 0.96f), Vector2.zero, Vector2.one);
-            Image handle = UiFactory.CreatePanel(sliderObject.transform, "Handle", new Color(1f, 0.72f, 0.3f, 1f), new Vector2(0f, 0.12f), new Vector2(0.08f, 0.88f));
-
-            Slider slider = sliderObject.GetComponent<Slider>();
-            slider.minValue = 0f;
-            slider.maxValue = 1f;
-            slider.value = value;
-            slider.fillRect = fill.rectTransform;
-            slider.handleRect = handle.rectTransform;
-            slider.targetGraphic = handle;
-            slider.direction = Slider.Direction.LeftToRight;
-            slider.onValueChanged.AddListener(onChanged);
+            return new string('■', Mathf.Clamp(count, 1, 5)).PadRight(5, '□');
         }
 
-        private void ToggleSettingsPanel()
+        private static string BuildDifficultyShort(GameDifficulty difficulty)
         {
-            settingsPanel.SetActive(!settingsPanel.activeSelf);
-            RefreshSettingsLabels();
+            switch (difficulty)
+            {
+                case GameDifficulty.Medium:
+                    return "NM";
+                case GameDifficulty.High:
+                    return "HD";
+                default:
+                    return "EZ";
+            }
         }
 
-        private void RefreshSettingsLabels()
+        private string BuildAudioText()
         {
-            audioStatusText.text = BuildAudioStatusText();
-            musicValueText.text = Mathf.RoundToInt(SessionState.MusicVolume * 100f) + "%";
-            sfxValueText.text = Mathf.RoundToInt(SessionState.SfxVolume * 100f) + "%";
+            return SessionState.AudioEnabled ? "AUDIO ON" : "AUDIO OFF";
         }
 
-        private static string BuildAudioStatusText()
+        private string BuildSensitivityText()
         {
-            return SessionState.AudioEnabled ? "声音 开" : "声音 关";
+            switch (SessionState.ControlSensitivity)
+            {
+                case ControlSensitivity.Low:
+                    return "低";
+                case ControlSensitivity.High:
+                    return "高";
+                default:
+                    return "中";
+            }
+        }
+
+        private void CycleSensitivity()
+        {
+            ControlSensitivity next = SessionState.ControlSensitivity == ControlSensitivity.Low
+                ? ControlSensitivity.Medium
+                : SessionState.ControlSensitivity == ControlSensitivity.Medium ? ControlSensitivity.High : ControlSensitivity.Low;
+            SessionState.SetControlSensitivity(next);
+            ShowSettings();
         }
     }
 }

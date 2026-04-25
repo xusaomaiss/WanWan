@@ -134,7 +134,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = playerObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetFighterJetSprite();
-            renderer.color = new Color(0.98f, 0.99f, 1f);
+            renderer.color = Color.Lerp(Color.white, ShipDefinition.Get(SessionState.SelectedShip).AccentColor, 0.45f);
             renderer.sortingOrder = 12;
             playerObject.transform.localScale = new Vector3(0.78f, 0.72f, 1f);
 

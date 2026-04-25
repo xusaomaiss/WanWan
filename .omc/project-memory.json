@@ -1,0 +1,218 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1777121965038,
+  "projectRoot": "/Users/mark/work/wanwan",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "Assets": {
+      "path": "Assets",
+      "purpose": "Static assets",
+      "fileCount": 4,
+      "lastAccessed": 1777121965008,
+      "keyFiles": [
+        "Editor.meta",
+        "Scenes.meta",
+        "Scripts.meta",
+        "Tests.meta"
+      ]
+    },
+    "Builds": {
+      "path": "Builds",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777121965009,
+      "keyFiles": []
+    },
+    "Library": {
+      "path": "Library",
+      "purpose": null,
+      "fileCount": 20,
+      "lastAccessed": 1777121965015,
+      "keyFiles": [
+        "AnnotationManager",
+        "ArtifactDB",
+        "ArtifactDB-lock",
+        "BuildPlayer.prefs",
+        "BuildProfileContext.asset"
+      ]
+    },
+    "Logs": {
+      "path": "Logs",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1777121965017,
+      "keyFiles": [
+        "Packages-Update.log",
+        "shadercompiler-UnityShaderCompiler-0.log"
+      ]
+    },
+    "Packages": {
+      "path": "Packages",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1777121965019,
+      "keyFiles": [
+        "manifest.json",
+        "packages-lock.json"
+      ]
+    },
+    "ProjectSettings": {
+      "path": "ProjectSettings",
+      "purpose": null,
+      "fileCount": 20,
+      "lastAccessed": 1777121965023,
+      "keyFiles": [
+        "AudioManager.asset",
+        "ClusterInputManager.asset",
+        "DynamicsManager.asset",
+        "EditorBuildSettings.asset",
+        "EditorSettings.asset"
+      ]
+    },
+    "UserSettings": {
+      "path": "UserSettings",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1777121965024,
+      "keyFiles": [
+        "EditorUserSettings.asset",
+        "Search.settings"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1777121965024,
+      "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 5,
+      "lastAccessed": 1777121965025,
+      "keyFiles": [
+        "android_smoke_test.sh",
+        "build_android.sh",
+        "install_unity_editor.sh",
+        "run_editmode_tests.sh",
+        "validate_unity_project.py"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 1,
+      "lastAccessed": 1777121965026,
+      "keyFiles": [
+        "test_automation_files.py"
+      ]
+    },
+    "Assets/Scripts": {
+      "path": "Assets/Scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 5,
+      "lastAccessed": 1777121965028,
+      "keyFiles": [
+        "Bootstrap.meta",
+        "Runtime.meta",
+        "UI.meta"
+      ]
+    },
+    "Assets/Tests": {
+      "path": "Assets/Tests",
+      "purpose": "Test files",
+      "fileCount": 1,
+      "lastAccessed": 1777121965033,
+      "keyFiles": [
+        "EditMode.meta"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs",
+      "accessCount": 10,
+      "lastAccessed": 1777122513880,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/UI/UiFactory.cs",
+      "accessCount": 6,
+      "lastAccessed": 1777122126878,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/UI/UIController.cs",
+      "accessCount": 3,
+      "lastAccessed": 1777122015847,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/Bootstrap/GameBootstrap.cs",
+      "accessCount": 3,
+      "lastAccessed": 1777122451991,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1777121984315,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/Bootstrap/MenuBootstrap.cs",
+      "accessCount": 1,
+      "lastAccessed": 1777121996393,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/GameManager.cs",
+      "accessCount": 1,
+      "lastAccessed": 1777122003973,
+      "type": "file"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/ScrollingBackgroundLayer.cs",
+      "accessCount": 1,
+      "lastAccessed": 1777122004073,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 1,
+      "lastAccessed": 1777122121637,
+      "type": "directory"
+    }
+  ],
+  "userDirectives": []
+}
