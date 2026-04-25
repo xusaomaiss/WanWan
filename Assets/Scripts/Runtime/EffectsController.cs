@@ -6,28 +6,54 @@ namespace Wanwan.Runtime
     public class EffectsController : MonoBehaviour
     {
         private Camera targetCamera;
-        private AudioSource audioSource;
+        private AudioSource sfxSource;
+        private AudioSource musicSource;
+        private AudioClip playerShotClip;
+        private AudioClip laserShotClip;
         private AudioClip hitClip;
-        private AudioClip burstClip;
+        private AudioClip explosionSmallClip;
+        private AudioClip explosionLargeClip;
         private AudioClip baseClip;
         private AudioClip powerupClip;
+        private AudioClip bombClip;
+        private AudioClip bossAlarmClip;
 
         public void Initialize(Camera mainCamera)
         {
             targetCamera = mainCamera;
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-            audioSource.volume = 0.18f;
-            hitClip = BuildTone(740f, 0.045f);
-            burstClip = BuildTone(510f, 0.09f);
-            baseClip = BuildTone(220f, 0.14f);
-            powerupClip = BuildTone(920f, 0.12f);
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.volume = 0.24f;
+
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.playOnAwake = false;
+            musicSource.loop = true;
+            musicSource.volume = 0.075f;
+
+            playerShotClip = BuildPulseTone("shoot_player", 760f, 0.055f, 0.28f);
+            laserShotClip = BuildSweep("shoot_laser", 1180f, 620f, 0.09f, 0.24f);
+            hitClip = BuildPulseTone("hit_tick", 860f, 0.045f, 0.22f);
+            explosionSmallClip = BuildNoiseBurst("explosion_small", 0.22f, 0.32f, 135f);
+            explosionLargeClip = BuildNoiseBurst("explosion_large", 0.55f, 0.4f, 82f);
+            baseClip = BuildSweep("player_hit", 260f, 92f, 0.18f, 0.36f);
+            powerupClip = BuildArpeggio("powerup", new[] { 880f, 1174f, 1568f }, 0.18f, 0.22f);
+            bombClip = BuildBombClip();
+            bossAlarmClip = BuildBossAlarmClip();
+
+            musicSource.clip = BuildArcadeLoop();
+            musicSource.Play();
+        }
+
+        public void PlayPlayerShot(AmmoPowerupType type)
+        {
+            AudioClip clip = type == AmmoPowerupType.Laser || type == AmmoPowerupType.Pierce ? laserShotClip : playerShotClip;
+            sfxSource.PlayOneShot(clip, type == AmmoPowerupType.RapidFire ? 0.52f : 0.72f);
         }
 
         public void PlayHit(Vector3 position, Color color)
         {
             EmitParticles(position, color, 6, 0.16f, 0.35f);
-            audioSource.PlayOneShot(hitClip);
+            sfxSource.PlayOneShot(hitClip, 0.7f);
         }
 
         public void PlayBurst(Vector3 position, Color color)
@@ -35,8 +61,16 @@ namespace Wanwan.Runtime
             EmitExplosionImage(position);
             EmitParticles(position, color, 12, 0.24f, 0.55f);
             EmitDebris(position, color, 10);
-            audioSource.PlayOneShot(burstClip);
+            sfxSource.PlayOneShot(explosionSmallClip, 0.86f);
             StartCoroutine(Shake(0.07f, 0.08f));
+        }
+
+        public void PlayBossDefeat(Vector3 position, Color color)
+        {
+            sfxSource.PlayOneShot(explosionLargeClip, 1f);
+            EmitParticles(position, color, 36, 0.46f, 1.15f);
+            EmitDebris(position, color, 22);
+            StartCoroutine(Shake(0.28f, 0.24f));
         }
 
         public void PlayScorePopup(Vector3 position, int scoreValue)
@@ -46,7 +80,7 @@ namespace Wanwan.Runtime
 
         public void PlayBombDetonation(Vector3 center)
         {
-            audioSource.PlayOneShot(baseClip);
+            sfxSource.PlayOneShot(bombClip, 1f);
             StartCoroutine(Shake(0.18f, 0.2f));
             StartCoroutine(AnimateBombFlash(center));
             StartCoroutine(AnimateBombShockwave(center));
@@ -54,14 +88,14 @@ namespace Wanwan.Runtime
 
         public void PlayBaseHit()
         {
-            audioSource.PlayOneShot(baseClip);
+            sfxSource.PlayOneShot(baseClip, 0.86f);
             StartCoroutine(Shake(0.12f, 0.15f));
         }
 
         public void PlayPowerupPickup(Vector3 position, Color color, string label)
         {
             EmitParticles(position, color, 15, 0.28f, 0.62f);
-            audioSource.PlayOneShot(powerupClip);
+            sfxSource.PlayOneShot(powerupClip, 0.92f);
             StartCoroutine(Shake(0.08f, 0.12f));
             StartCoroutine(AnimatePowerupLabel(position, color, label));
         }
@@ -74,14 +108,14 @@ namespace Wanwan.Runtime
         public void PlayPlayerPierced(Vector3 position, Color color)
         {
             EmitParticles(position, color, 20, 0.34f, 0.72f);
-            audioSource.PlayOneShot(baseClip);
+            sfxSource.PlayOneShot(baseClip, 1f);
             StartCoroutine(Shake(0.18f, 0.22f));
         }
 
         public void PlayBossArrival(Vector3 position, Color color)
         {
             EmitParticles(position, color, 28, 0.42f, 1.15f);
-            audioSource.PlayOneShot(powerupClip);
+            sfxSource.PlayOneShot(bossAlarmClip, 1f);
             StartCoroutine(Shake(0.22f, 0.18f));
         }
 
@@ -328,7 +362,7 @@ namespace Wanwan.Runtime
             Destroy(shockwave);
         }
 
-        private static AudioClip BuildTone(float frequency, float duration)
+        private static AudioClip BuildPulseTone(string name, float frequency, float duration, float gain)
         {
             const int sampleRate = 44100;
             int samples = Mathf.CeilToInt(sampleRate * duration);
@@ -338,10 +372,158 @@ namespace Wanwan.Runtime
             {
                 float time = i / (float)sampleRate;
                 float envelope = Mathf.Clamp01(1f - (time / duration));
-                data[i] = Mathf.Sin(2f * Mathf.PI * frequency * time) * envelope * 0.35f;
+                float square = Mathf.Sign(Mathf.Sin(2f * Mathf.PI * frequency * time));
+                float sine = Mathf.Sin(2f * Mathf.PI * frequency * 1.5f * time);
+                data[i] = ((square * 0.72f) + (sine * 0.28f)) * envelope * gain;
             }
 
-            AudioClip clip = AudioClip.Create("Tone" + frequency, samples, 1, sampleRate, false);
+            AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildSweep(string name, float startFrequency, float endFrequency, float duration, float gain)
+        {
+            const int sampleRate = 44100;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+            float phase = 0f;
+
+            for (int i = 0; i < samples; i++)
+            {
+                float t = i / (float)samples;
+                float frequency = Mathf.Lerp(startFrequency, endFrequency, t);
+                phase += 2f * Mathf.PI * frequency / sampleRate;
+                float envelope = Mathf.Pow(1f - t, 1.8f);
+                data[i] = Mathf.Sin(phase) * envelope * gain;
+            }
+
+            AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildNoiseBurst(string name, float duration, float gain, float rumbleFrequency)
+        {
+            const int sampleRate = 44100;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+            uint seed = 2463534242u;
+
+            for (int i = 0; i < samples; i++)
+            {
+                float t = i / (float)samples;
+                seed ^= seed << 13;
+                seed ^= seed >> 17;
+                seed ^= seed << 5;
+                float noise = ((seed & 0xffff) / 32768f) - 1f;
+                float rumble = Mathf.Sin(2f * Mathf.PI * rumbleFrequency * (i / (float)sampleRate));
+                float envelope = Mathf.Pow(1f - t, 2.2f);
+                data[i] = ((noise * 0.68f) + (rumble * 0.32f)) * envelope * gain;
+            }
+
+            AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildArpeggio(string name, float[] frequencies, float duration, float gain)
+        {
+            const int sampleRate = 44100;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+
+            for (int i = 0; i < samples; i++)
+            {
+                float t = i / (float)samples;
+                int note = Mathf.Min(frequencies.Length - 1, Mathf.FloorToInt(t * frequencies.Length));
+                float local = (t * frequencies.Length) - note;
+                float envelope = Mathf.Sin(local * Mathf.PI);
+                float tone = Mathf.Sin(2f * Mathf.PI * frequencies[note] * (i / (float)sampleRate));
+                data[i] = tone * envelope * gain;
+            }
+
+            AudioClip clip = AudioClip.Create(name, samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildBombClip()
+        {
+            const int sampleRate = 44100;
+            float duration = 0.72f;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+            AudioClip charge = BuildSweep("bomb_charge_tmp", 180f, 980f, 0.28f, 0.36f);
+            AudioClip blast = BuildNoiseBurst("bomb_blast_tmp", 0.44f, 0.46f, 70f);
+            float[] chargeData = new float[Mathf.CeilToInt(sampleRate * 0.28f)];
+            float[] blastData = new float[Mathf.CeilToInt(sampleRate * 0.44f)];
+            charge.GetData(chargeData, 0);
+            blast.GetData(blastData, 0);
+
+            for (int i = 0; i < chargeData.Length && i < data.Length; i++)
+            {
+                data[i] += chargeData[i];
+            }
+
+            int offset = Mathf.CeilToInt(sampleRate * 0.22f);
+            for (int i = 0; i < blastData.Length && i + offset < data.Length; i++)
+            {
+                data[i + offset] += blastData[i];
+            }
+
+            AudioClip clip = AudioClip.Create("bomb_release", samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildBossAlarmClip()
+        {
+            const int sampleRate = 44100;
+            float duration = 1.25f;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+
+            for (int i = 0; i < samples; i++)
+            {
+                float time = i / (float)sampleRate;
+                float gate = Mathf.Repeat(time * 4.8f, 1f) < 0.55f ? 1f : 0f;
+                float tone = Mathf.Sin(2f * Mathf.PI * 620f * time) + (Mathf.Sin(2f * Mathf.PI * 465f * time) * 0.55f);
+                float envelope = Mathf.Clamp01(1f - (time / duration) * 0.25f);
+                data[i] = tone * gate * envelope * 0.2f;
+            }
+
+            AudioClip clip = AudioClip.Create("boss_alarm", samples, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip BuildArcadeLoop()
+        {
+            const int sampleRate = 22050;
+            const float duration = 8f;
+            int samples = Mathf.CeilToInt(sampleRate * duration);
+            float[] data = new float[samples];
+            int[] melody = { 0, 3, 5, 7, 10, 7, 5, 3, 0, 5, 7, 12, 10, 7, 5, 3 };
+            int[] bass = { 0, 0, 5, 5, 7, 7, 3, 3 };
+
+            for (int i = 0; i < samples; i++)
+            {
+                float time = i / (float)sampleRate;
+                float beat = time * 4f;
+                int melodyIndex = Mathf.FloorToInt(beat * 2f) % melody.Length;
+                int bassIndex = Mathf.FloorToInt(beat) % bass.Length;
+                float melodyFreq = 440f * Mathf.Pow(2f, melody[melodyIndex] / 12f);
+                float bassFreq = 110f * Mathf.Pow(2f, bass[bassIndex] / 12f);
+                float melodyGate = Mathf.Repeat(beat * 2f, 1f) < 0.72f ? 1f : 0.18f;
+                float bassGate = Mathf.Repeat(beat, 1f) < 0.58f ? 1f : 0.12f;
+                float lead = Mathf.Sign(Mathf.Sin(2f * Mathf.PI * melodyFreq * time)) * 0.045f * melodyGate;
+                float low = Mathf.Sign(Mathf.Sin(2f * Mathf.PI * bassFreq * time)) * 0.055f * bassGate;
+                float pulse = Mathf.Sin(2f * Mathf.PI * 9.5f * time) * 0.01f;
+                data[i] = lead + low + pulse;
+            }
+
+            AudioClip clip = AudioClip.Create("bgm_stage_loop", samples, 1, sampleRate, false);
             clip.SetData(data, 0);
             return clip;
         }

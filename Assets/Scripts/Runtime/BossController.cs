@@ -159,6 +159,7 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
+            effectsController.PlayBossDefeat(transform.position, spriteRenderer.color);
             for (int i = 0; i < 3; i++)
             {
                 Vector3 burstPosition = transform.position + (Vector3)(Random.insideUnitCircle * 0.7f);

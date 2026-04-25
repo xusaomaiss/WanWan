@@ -83,6 +83,7 @@ namespace Wanwan.Runtime
         {
             AmmoPowerupType type = gameManager.HasActivePowerup ? gameManager.ActivePowerupType : AmmoPowerupType.Normal;
             int level = Mathf.Max(1, gameManager.ActivePowerupLevel);
+            effectsController.PlayPlayerShot(type);
 
             switch (type)
             {
