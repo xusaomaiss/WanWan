@@ -84,7 +84,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = fireballObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(fromBoss ? AmmoPowerupType.Burst : AmmoPowerupType.Normal);
-            renderer.color = color;
+            renderer.color = fromBoss ? Color.Lerp(color, gameManager.StageAccentColor, 0.26f) : color;
             renderer.sortingOrder = 14;
             fireballObject.transform.localScale = fromBoss ? new Vector3(0.208f, 0.42f, 1f) : new Vector3(0.176f, 0.368f, 1f);
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
@@ -102,6 +102,7 @@ namespace Wanwan.Runtime
             if (fromBoss)
             {
                 speed *= gameManager.Difficulty == GameDifficulty.High ? 1.22f : 1.1f;
+                speed *= GetBossPatternSpeedMultiplier(gameManager.BossPatternStyle);
             }
 
             EnemyFireballController fireball = fireballObject.AddComponent<EnemyFireballController>();
@@ -157,6 +158,47 @@ namespace Wanwan.Runtime
 
         private StageWaveConfig[] BuildStageScript()
         {
+            StageCombatStyle style = gameManager.StageCombatStyle;
+            if (style == StageCombatStyle.Flanking)
+            {
+                return BuildFlankingStageScript();
+            }
+
+            if (style == StageCombatStyle.Swarm)
+            {
+                return BuildSwarmStageScript();
+            }
+
+            if (style == StageCombatStyle.Sniper)
+            {
+                return BuildSniperStageScript();
+            }
+
+            if (style == StageCombatStyle.Heavy)
+            {
+                return BuildHeavyStageScript();
+            }
+
+            if (style == StageCombatStyle.Agile)
+            {
+                return BuildAgileStageScript();
+            }
+
+            if (style == StageCombatStyle.Spiral)
+            {
+                return BuildSpiralStageScript();
+            }
+
+            if (style == StageCombatStyle.Finale)
+            {
+                return BuildFinaleStageScript();
+            }
+
+            return BuildBalancedStageScript();
+        }
+
+        private StageWaveConfig[] BuildBalancedStageScript()
+        {
             return new[]
             {
                 new StageWaveConfig(StagePhase.Preparation, "敌机来袭", 1.15f, false, new EnemySpawnInstruction[0]),
@@ -202,8 +244,247 @@ namespace Wanwan.Runtime
                         new EnemySpawnInstruction(4.2f, EnemyFormationType.SnakeSweep, 2, true, AmmoPowerupType.Plasma),
                         new EnemySpawnInstruction(5.6f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing)
                     }),
-                new StageWaveConfig(StagePhase.Boss, "危险警报", 999f, true, new EnemySpawnInstruction[0])
+                BuildBossWave()
             };
+        }
+
+        private StageWaveConfig[] BuildFlankingStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "海峡低空接敌", 1.05f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "双翼包夹", 10.2f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.SideCutInLeft, 4),
+                    new EnemySpawnInstruction(1.4f, EnemyFormationType.SideCutInRight, 4),
+                    new EnemySpawnInstruction(2.8f, EnemyFormationType.DiveLine, 3),
+                    new EnemySpawnInstruction(4.4f, EnemyFormationType.SideCutInLeft, 5, false, AmmoPowerupType.Wave),
+                    new EnemySpawnInstruction(6.4f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(8.1f, EnemyFormationType.VShape, 4, false, AmmoPowerupType.RapidFire)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "交叉火线", 11.2f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(1.2f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(3.0f, EnemyFormationType.SnakeSweep, 5),
+                    new EnemySpawnInstruction(5.1f, EnemyFormationType.SideCutInLeft, 4, true, AmmoPowerupType.Pierce),
+                    new EnemySpawnInstruction(7.0f, EnemyFormationType.SideCutInRight, 4, true, AmmoPowerupType.Laser),
+                    new EnemySpawnInstruction(9.1f, EnemyFormationType.DiveLine, 5)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "拦截中队", 7.2f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.4f, EnemyFormationType.SideCutInLeft, 2, true),
+                    new EnemySpawnInstruction(1.8f, EnemyFormationType.SideCutInRight, 2, true),
+                    new EnemySpawnInstruction(3.4f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing),
+                    new EnemySpawnInstruction(5.2f, EnemyFormationType.SnakeSweep, 3, true, AmmoPowerupType.Scatter)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildSwarmStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "林区伏击", 0.95f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "密集蜂群", 10.6f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.DiveLine, 5),
+                    new EnemySpawnInstruction(1.6f, EnemyFormationType.VShape, 6, false, AmmoPowerupType.Scatter),
+                    new EnemySpawnInstruction(3.1f, EnemyFormationType.SnakeSweep, 7),
+                    new EnemySpawnInstruction(5.0f, EnemyFormationType.DiveLine, 6),
+                    new EnemySpawnInstruction(6.6f, EnemyFormationType.VShape, 7, false, AmmoPowerupType.RapidFire),
+                    new EnemySpawnInstruction(8.5f, EnemyFormationType.SnakeSweep, 6)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "连续突入", 11.4f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.DiveLine, 6),
+                    new EnemySpawnInstruction(1.4f, EnemyFormationType.DiveLine, 6),
+                    new EnemySpawnInstruction(2.8f, EnemyFormationType.SnakeSweep, 7),
+                    new EnemySpawnInstruction(4.7f, EnemyFormationType.VShape, 6),
+                    new EnemySpawnInstruction(6.5f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(7.5f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(9.3f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Plasma)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "林冠精英", 7.4f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.3f, EnemyFormationType.VShape, 3, true),
+                    new EnemySpawnInstruction(2.2f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Wave),
+                    new EnemySpawnInstruction(4.2f, EnemyFormationType.DiveLine, 3, true, AmmoPowerupType.Homing)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildSniperStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "沙暴锁定", 1.25f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "远距点射", 10.8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.4f, EnemyFormationType.DiveLine, 3),
+                    new EnemySpawnInstruction(2.0f, EnemyFormationType.VShape, 4, false, AmmoPowerupType.Pierce),
+                    new EnemySpawnInstruction(3.8f, EnemyFormationType.SideCutInLeft, 3),
+                    new EnemySpawnInstruction(5.4f, EnemyFormationType.SideCutInRight, 3),
+                    new EnemySpawnInstruction(7.0f, EnemyFormationType.DiveLine, 4),
+                    new EnemySpawnInstruction(8.8f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Laser)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "炮线封锁", 11.6f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.3f, EnemyFormationType.VShape, 4),
+                    new EnemySpawnInstruction(2.1f, EnemyFormationType.DiveLine, 4),
+                    new EnemySpawnInstruction(4.1f, EnemyFormationType.SideCutInLeft, 4),
+                    new EnemySpawnInstruction(5.9f, EnemyFormationType.SideCutInRight, 4),
+                    new EnemySpawnInstruction(7.5f, EnemyFormationType.DiveLine, 2, true, AmmoPowerupType.Plasma),
+                    new EnemySpawnInstruction(9.4f, EnemyFormationType.VShape, 5)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "沙暴炮手", 7.8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.5f, EnemyFormationType.DiveLine, 1, true),
+                    new EnemySpawnInstruction(2.2f, EnemyFormationType.SideCutInLeft, 2, true, AmmoPowerupType.Burst),
+                    new EnemySpawnInstruction(4.3f, EnemyFormationType.SideCutInRight, 2, true, AmmoPowerupType.Homing)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildHeavyStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "重装推进", 1.2f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "装甲梯队", 10.8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.4f, EnemyFormationType.VShape, 4),
+                    new EnemySpawnInstruction(2.2f, EnemyFormationType.DiveLine, 3, true, AmmoPowerupType.Plasma),
+                    new EnemySpawnInstruction(4.2f, EnemyFormationType.SnakeSweep, 4),
+                    new EnemySpawnInstruction(6.0f, EnemyFormationType.VShape, 5, true, AmmoPowerupType.Burst),
+                    new EnemySpawnInstruction(8.4f, EnemyFormationType.SideCutInLeft, 4)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "钢铁压制", 12f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.3f, EnemyFormationType.DiveLine, 4, true),
+                    new EnemySpawnInstruction(2.4f, EnemyFormationType.SideCutInRight, 4),
+                    new EnemySpawnInstruction(4.2f, EnemyFormationType.VShape, 5, true, AmmoPowerupType.Guard),
+                    new EnemySpawnInstruction(6.6f, EnemyFormationType.SnakeSweep, 5),
+                    new EnemySpawnInstruction(8.8f, EnemyFormationType.DiveLine, 3, true, AmmoPowerupType.Laser),
+                    new EnemySpawnInstruction(10.1f, EnemyFormationType.VShape, 4)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "重型护卫", 8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.5f, EnemyFormationType.VShape, 2, true),
+                    new EnemySpawnInstruction(2.6f, EnemyFormationType.DiveLine, 2, true, AmmoPowerupType.Pierce),
+                    new EnemySpawnInstruction(4.8f, EnemyFormationType.SnakeSweep, 3, true, AmmoPowerupType.Homing)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildAgileStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "云层穿梭", 0.9f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "高速俯冲", 9.8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.DiveLine, 4),
+                    new EnemySpawnInstruction(1.3f, EnemyFormationType.SnakeSweep, 5, false, AmmoPowerupType.RapidFire),
+                    new EnemySpawnInstruction(2.8f, EnemyFormationType.SideCutInLeft, 4),
+                    new EnemySpawnInstruction(4.0f, EnemyFormationType.SideCutInRight, 4),
+                    new EnemySpawnInstruction(5.4f, EnemyFormationType.SnakeSweep, 6),
+                    new EnemySpawnInstruction(7.2f, EnemyFormationType.VShape, 5, false, AmmoPowerupType.Wave)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "云间穿插", 10.6f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.SnakeSweep, 6),
+                    new EnemySpawnInstruction(1.8f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(3.0f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(4.7f, EnemyFormationType.DiveLine, 5),
+                    new EnemySpawnInstruction(6.5f, EnemyFormationType.SnakeSweep, 5, true, AmmoPowerupType.Homing),
+                    new EnemySpawnInstruction(8.5f, EnemyFormationType.VShape, 4)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "高空王牌", 7.2f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.3f, EnemyFormationType.SnakeSweep, 3, true),
+                    new EnemySpawnInstruction(2.4f, EnemyFormationType.SideCutInLeft, 2, true, AmmoPowerupType.Laser),
+                    new EnemySpawnInstruction(4.3f, EnemyFormationType.SideCutInRight, 2, true, AmmoPowerupType.Scatter)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildSpiralStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "轨道封锁", 1.05f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "轨道螺旋", 10.4f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.SnakeSweep, 5),
+                    new EnemySpawnInstruction(1.7f, EnemyFormationType.VShape, 5, false, AmmoPowerupType.Wave),
+                    new EnemySpawnInstruction(3.3f, EnemyFormationType.SnakeSweep, 6),
+                    new EnemySpawnInstruction(5.2f, EnemyFormationType.SideCutInLeft, 4),
+                    new EnemySpawnInstruction(6.4f, EnemyFormationType.SideCutInRight, 4),
+                    new EnemySpawnInstruction(8.1f, EnemyFormationType.SnakeSweep, 5, true, AmmoPowerupType.Plasma)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "环形锁网", 11.4f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.3f, EnemyFormationType.VShape, 6),
+                    new EnemySpawnInstruction(2.0f, EnemyFormationType.SnakeSweep, 7),
+                    new EnemySpawnInstruction(4.2f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(5.3f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(7.4f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Guard),
+                    new EnemySpawnInstruction(9.2f, EnemyFormationType.VShape, 5, true, AmmoPowerupType.Homing)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "轨道守卫", 7.8f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.5f, EnemyFormationType.SnakeSweep, 3, true),
+                    new EnemySpawnInstruction(2.8f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Burst),
+                    new EnemySpawnInstruction(5.1f, EnemyFormationType.DiveLine, 2, true, AmmoPowerupType.Laser)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private StageWaveConfig[] BuildFinaleStageScript()
+        {
+            return new[]
+            {
+                new StageWaveConfig(StagePhase.Preparation, "核心接触", 1f, false, new EnemySpawnInstruction[0]),
+                new StageWaveConfig(StagePhase.Assault, "母舰外环", 10.6f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.VShape, 6),
+                    new EnemySpawnInstruction(1.5f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(2.5f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(4.0f, EnemyFormationType.SnakeSweep, 7, false, AmmoPowerupType.Plasma),
+                    new EnemySpawnInstruction(6.2f, EnemyFormationType.DiveLine, 6),
+                    new EnemySpawnInstruction(8.0f, EnemyFormationType.VShape, 5, true, AmmoPowerupType.Burst)
+                }),
+                new StageWaveConfig(StagePhase.Pressure, "核心防卫圈", 12f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.2f, EnemyFormationType.SnakeSweep, 7),
+                    new EnemySpawnInstruction(1.8f, EnemyFormationType.VShape, 6, true, AmmoPowerupType.Laser),
+                    new EnemySpawnInstruction(3.8f, EnemyFormationType.SideCutInLeft, 5),
+                    new EnemySpawnInstruction(4.8f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(6.8f, EnemyFormationType.DiveLine, 5, true, AmmoPowerupType.Homing),
+                    new EnemySpawnInstruction(8.8f, EnemyFormationType.SnakeSweep, 6),
+                    new EnemySpawnInstruction(10.2f, EnemyFormationType.VShape, 4, true, AmmoPowerupType.Guard)
+                }),
+                new StageWaveConfig(StagePhase.Elite, "核心护卫队", 8.2f, true, new[]
+                {
+                    new EnemySpawnInstruction(0.4f, EnemyFormationType.VShape, 3, true),
+                    new EnemySpawnInstruction(2.2f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Wave),
+                    new EnemySpawnInstruction(4.4f, EnemyFormationType.SideCutInLeft, 3, true, AmmoPowerupType.Pierce),
+                    new EnemySpawnInstruction(5.8f, EnemyFormationType.SideCutInRight, 3, true, AmmoPowerupType.Scatter)
+                }),
+                BuildBossWave()
+            };
+        }
+
+        private static StageWaveConfig BuildBossWave()
+        {
+            return new StageWaveConfig(StagePhase.Boss, "危险警报", 999f, true, new EnemySpawnInstruction[0]);
         }
 
         private void SpawnFormation(EnemySpawnInstruction instruction)
@@ -289,7 +570,11 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
             renderer.sprite = elite ? RuntimeSpriteFactory.GetEliteInterceptorSprite() : RuntimeSpriteFactory.GetEnemyInterceptorSprite();
-            renderer.color = elite ? new Color(1f, 0.88f, 0.24f) : (tough ? new Color(1f, 0.38f, 0.52f) : new Color(0.88f, 0.26f, 0.46f));
+            Color accent = gameManager.StageAccentColor;
+            Color normalColor = Color.Lerp(new Color(0.88f, 0.26f, 0.46f), accent, 0.24f);
+            Color toughColor = Color.Lerp(new Color(1f, 0.38f, 0.52f), accent, 0.18f);
+            Color eliteColor = Color.Lerp(new Color(1f, 0.88f, 0.24f), accent, 0.22f);
+            renderer.color = elite ? eliteColor : (tough ? toughColor : normalColor);
             renderer.sortingOrder = elite ? 12 : 10;
 
             float width = elite ? 0.92f : (tough ? 0.82f : 0.72f);
@@ -317,7 +602,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = bossObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBossFlagshipSprite();
-            renderer.color = new Color(1f, 0.22f, 0.58f);
+            renderer.color = Color.Lerp(new Color(1f, 0.22f, 0.58f), gameManager.StageAccentColor, 0.32f);
             renderer.sortingOrder = 13;
             bossObject.transform.localScale = new Vector3(1.72f, 1.42f, 1f);
             bossObject.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
@@ -331,39 +616,142 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BossController boss = bossObject.AddComponent<BossController>();
-            boss.Initialize(gameManager, this, effectsController, GetBossHitPoints(), BuildBossPhases(gameManager.Difficulty), gameManager.TopBound - 3.2f);
+            boss.Initialize(gameManager, this, effectsController, GetBossHitPoints(), BuildBossPhases(gameManager.Difficulty, gameManager.BossPatternStyle), gameManager.TopBound - 3.2f);
             bossActive = true;
             activeEnemyCount++;
         }
 
         public static BossPhaseConfig[] BuildBossPhases(GameDifficulty difficulty)
         {
+            return BuildBossPhases(difficulty, BossPatternStyle.Standard);
+        }
+
+        public static BossPhaseConfig[] BuildBossPhases(GameDifficulty difficulty, BossPatternStyle style)
+        {
+            float intervalMultiplier = GetBossPatternIntervalMultiplier(style);
+            int salvoBonus = GetBossPatternSalvoBonus(style);
+            float spreadBonus = GetBossPatternSpreadBonus(style);
+            bool forceAimed = style == BossPatternStyle.Needle || style == BossPatternStyle.Core;
+            bool forceRing = style == BossPatternStyle.Orbit || style == BossPatternStyle.Core || style == BossPatternStyle.Barrage;
+
             switch (difficulty)
             {
                 case GameDifficulty.High:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.38f, 5, 46f, true),
-                        new BossPhaseConfig(0.4f, 1.12f, 6, 62f, true),
-                        new BossPhaseConfig(0.1f, 0.9f, 7, 82f, true, true),
-                        new BossPhaseConfig(0f, 0.74f, 9, 102f, true, true)
+                        BuildBossPhase(0.7f, 1.38f, 5, 46f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.4f, 1.12f, 6, 62f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.1f, 0.9f, 7, 82f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0f, 0.74f, 9, 102f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
                     };
                 case GameDifficulty.Medium:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.58f, 4, 38f, false),
-                        new BossPhaseConfig(0.4f, 1.32f, 5, 52f, true),
-                        new BossPhaseConfig(0.1f, 1.08f, 6, 70f, true, true),
-                        new BossPhaseConfig(0f, 0.9f, 7, 86f, true, true)
+                        BuildBossPhase(0.7f, 1.58f, 4, 38f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.4f, 1.32f, 5, 52f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.1f, 1.08f, 6, 70f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0f, 0.9f, 7, 86f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
                     };
                 default:
                     return new[]
                     {
-                        new BossPhaseConfig(0.7f, 1.82f, 3, 28f, false),
-                        new BossPhaseConfig(0.4f, 1.5f, 4, 40f, true),
-                        new BossPhaseConfig(0.1f, 1.2f, 5, 54f, true, true),
-                        new BossPhaseConfig(0f, 1f, 6, 66f, true, true)
+                        BuildBossPhase(0.7f, 1.82f, 3, 28f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.4f, 1.5f, 4, 40f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0.1f, 1.2f, 5, 54f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
+                        BuildBossPhase(0f, 1f, 6, 66f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
                     };
+            }
+        }
+
+        private static BossPhaseConfig BuildBossPhase(float triggerHealthNormalized, float fireInterval, int salvoCount, float spreadAngle, bool aimedCoreShot, bool extraRingShot, float intervalMultiplier, int salvoBonus, float spreadBonus, bool forceAimed, bool forceRing)
+        {
+            return new BossPhaseConfig(
+                triggerHealthNormalized,
+                fireInterval * intervalMultiplier,
+                Mathf.Max(1, salvoCount + salvoBonus),
+                Mathf.Max(18f, spreadAngle + spreadBonus),
+                aimedCoreShot || forceAimed,
+                extraRingShot || forceRing);
+        }
+
+        private static float GetBossPatternIntervalMultiplier(BossPatternStyle style)
+        {
+            switch (style)
+            {
+                case BossPatternStyle.Crossfire:
+                    return 1.04f;
+                case BossPatternStyle.Barrage:
+                    return 0.96f;
+                case BossPatternStyle.Needle:
+                    return 1.12f;
+                case BossPatternStyle.Crusher:
+                    return 1.18f;
+                case BossPatternStyle.Drift:
+                    return 0.92f;
+                case BossPatternStyle.Orbit:
+                    return 1.08f;
+                case BossPatternStyle.Core:
+                    return 0.98f;
+                default:
+                    return 1f;
+            }
+        }
+
+        private static int GetBossPatternSalvoBonus(BossPatternStyle style)
+        {
+            switch (style)
+            {
+                case BossPatternStyle.Barrage:
+                case BossPatternStyle.Orbit:
+                    return 2;
+                case BossPatternStyle.Crossfire:
+                case BossPatternStyle.Drift:
+                case BossPatternStyle.Core:
+                    return 1;
+                case BossPatternStyle.Crusher:
+                    return -1;
+                default:
+                    return 0;
+            }
+        }
+
+        private static float GetBossPatternSpreadBonus(BossPatternStyle style)
+        {
+            switch (style)
+            {
+                case BossPatternStyle.Crossfire:
+                    return 18f;
+                case BossPatternStyle.Barrage:
+                    return 12f;
+                case BossPatternStyle.Needle:
+                    return -14f;
+                case BossPatternStyle.Crusher:
+                    return -20f;
+                case BossPatternStyle.Drift:
+                    return 24f;
+                case BossPatternStyle.Orbit:
+                    return 34f;
+                case BossPatternStyle.Core:
+                    return 28f;
+                default:
+                    return 0f;
+            }
+        }
+
+        private static float GetBossPatternSpeedMultiplier(BossPatternStyle style)
+        {
+            switch (style)
+            {
+                case BossPatternStyle.Needle:
+                    return 1.16f;
+                case BossPatternStyle.Drift:
+                    return 1.08f;
+                case BossPatternStyle.Crusher:
+                    return 0.92f;
+                case BossPatternStyle.Core:
+                    return 1.12f;
+                default:
+                    return 1f;
             }
         }
 

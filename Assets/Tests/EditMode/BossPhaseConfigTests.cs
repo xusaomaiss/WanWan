@@ -21,5 +21,19 @@ namespace Wanwan.Tests.EditMode
             Assert.That(phases[2].ExtraRingShot, Is.True);
             Assert.That(phases[3].ExtraRingShot, Is.True);
         }
+
+        [Test]
+        public void BuildBossPhases_AppliesStagePatternModifiers()
+        {
+            BossPhaseConfig[] standard = BlockSpawner.BuildBossPhases(GameDifficulty.Medium, BossPatternStyle.Standard);
+            BossPhaseConfig[] orbit = BlockSpawner.BuildBossPhases(GameDifficulty.Medium, BossPatternStyle.Orbit);
+            BossPhaseConfig[] needle = BlockSpawner.BuildBossPhases(GameDifficulty.Medium, BossPatternStyle.Needle);
+
+            Assert.That(orbit[0].SalvoCount, Is.GreaterThan(standard[0].SalvoCount));
+            Assert.That(orbit[0].SpreadAngle, Is.GreaterThan(standard[0].SpreadAngle));
+            Assert.That(orbit[0].ExtraRingShot, Is.True);
+            Assert.That(needle[0].SpreadAngle, Is.LessThan(standard[0].SpreadAngle));
+            Assert.That(needle[0].AimedCoreShot, Is.True);
+        }
     }
 }

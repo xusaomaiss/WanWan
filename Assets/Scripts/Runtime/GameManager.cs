@@ -61,6 +61,9 @@ namespace Wanwan.Runtime
         public int LoopNumber => SessionState.CurrentLoopNumber;
         public string StageName => SessionState.CurrentStage.Name;
         public string BossDisplayName => SessionState.CurrentStage.BossName;
+        public Color StageAccentColor => SessionState.CurrentStage.AccentColor;
+        public StageCombatStyle StageCombatStyle => SessionState.CurrentStage.CombatStyle;
+        public BossPatternStyle BossPatternStyle => SessionState.CurrentStage.BossPattern;
         public float StageDifficultyMultiplier => SessionState.CurrentStageDifficultyMultiplier;
 
         public void Initialize(UIController ui, EffectsController effects, BlockSpawner spawner, PlayerController player, float leftBound, float rightBound, float topBound, float bottomBound)
@@ -365,10 +368,10 @@ namespace Wanwan.Runtime
         {
             if (stageClear)
             {
-                return $"第{StageNumber}关 {StageName} 已肃清，下一空域作战即将开启。";
+                return $"第{StageNumber}关 {StageName} 已肃清。{SessionState.CurrentStage.VictorySummary}";
             }
 
-            return $"第{StageNumber}关 {StageName} 作战中断，保持走位和火力节奏再试一次。";
+            return $"第{StageNumber}关 {StageName} 作战中断，{BossDisplayName}仍在压制空域。保持走位和火力节奏再试一次。";
         }
 
         private static float GetBaselineProgress(StagePhase phase)

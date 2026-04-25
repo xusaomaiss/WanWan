@@ -19,7 +19,7 @@ namespace Wanwan.Runtime
             float leftBound = -horizontalExtent + 0.9f;
             float rightBound = horizontalExtent - 0.9f;
 
-            CreateScrollingSkyBackdrop(orthographicSize, horizontalExtent, stage.BackgroundColor);
+            CreateScrollingSkyBackdrop(orthographicSize, horizontalExtent, stage);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();
             effects.Initialize(cameraComponent);
 
@@ -56,18 +56,20 @@ namespace Wanwan.Runtime
             return cameraComponent;
         }
 
-        private static void CreateScrollingSkyBackdrop(float orthographicSize, float horizontalExtent, Color stageTint)
+        private static void CreateScrollingSkyBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
         {
             float targetWidth = (horizontalExtent * 2f) + 3f;
             float targetHeight = (orthographicSize * 2f) + 3f;
+            Color stageTint = stage.BackgroundColor;
             Color baseTint = Color.Lerp(Color.white, stageTint * 5f, 0.18f);
-            Color cloudTint = Color.Lerp(Color.white, stageTint * 7f, 0.12f);
-            CreateBackgroundLayer("SkyBaseA", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, 0f, baseTint);
-            CreateBackgroundLayer("SkyBaseB", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f, targetWidth, targetHeight, targetHeight, baseTint);
-            CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, 0f, cloudTint);
-            CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f, targetWidth, targetHeight, targetHeight, cloudTint);
-            CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f, targetWidth, targetHeight, 0f);
-            CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f, targetWidth, targetHeight, targetHeight);
+            Color cloudTint = Color.Lerp(Color.white, stage.AccentColor, 0.16f);
+            float speed = stage.BackgroundSpeedMultiplier;
+            CreateBackgroundLayer("SkyBaseA", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f * speed, targetWidth, targetHeight, 0f, baseTint);
+            CreateBackgroundLayer("SkyBaseB", RuntimeSpriteFactory.GetSkyBackgroundSprite(), -60, 0.35f * speed, targetWidth, targetHeight, targetHeight, baseTint);
+            CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, 0f, cloudTint);
+            CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, targetHeight, cloudTint);
+            CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, 0f, Color.Lerp(Color.white, stage.AccentColor, 0.24f));
+            CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, targetHeight, Color.Lerp(Color.white, stage.AccentColor, 0.24f));
         }
 
         private static void CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset)
