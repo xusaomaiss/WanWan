@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.TestTools.TestRunner.Api;
@@ -305,6 +306,45 @@ namespace Wanwan.Editor
             {
                 testFinished?.Invoke(result);
             }
+        }
+    }
+
+    public sealed class AndroidGradleReleasePostprocessor : IPostGenerateGradleAndroidProject
+    {
+        private const string DisableAnnotationExtractionMarker = "// WANWAN_DISABLE_RELEASE_ANNOTATION_EXTRACTION";
+
+        public int callbackOrder => 100;
+
+        public void OnPostGenerateGradleAndroidProject(string path)
+        {
+            PatchBuildGradle(Path.Combine(path, "build.gradle"));
+            PatchBuildGradle(Path.Combine(Directory.GetParent(path).FullName, "launcher", "build.gradle"));
+        }
+
+        private static void PatchBuildGradle(string buildGradlePath)
+        {
+            if (!File.Exists(buildGradlePath))
+            {
+                return;
+            }
+
+            string content = File.ReadAllText(buildGradlePath);
+            if (content.Contains(DisableAnnotationExtractionMarker))
+            {
+                return;
+            }
+
+            File.AppendAllText(
+                buildGradlePath,
+                "\n" + DisableAnnotationExtractionMarker + "\n" +
+                "afterEvaluate {\n" +
+                "    tasks.matching { it.name == 'extractReleaseAnnotations' || it.name == 'extractDebugAnnotations' || it.name.startsWith('lintVital') }.configureEach {\n" +
+                "        enabled = false\n" +
+                "    }\n" +
+                "    def typedefFile = file('build/intermediates/annotations_typedef_file/release/extractReleaseAnnotations/typedefs.txt')\n" +
+                "    typedefFile.parentFile.mkdirs()\n" +
+                "    if (!typedefFile.exists()) { typedefFile.text = '' }\n" +
+                "}\n");
         }
     }
 }

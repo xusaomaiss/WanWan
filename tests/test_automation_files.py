@@ -70,6 +70,10 @@ class AutomationFilesTests(unittest.TestCase):
         self.assertIn("WANWAN_ANDROID_KEYSTORE", script)
         self.assertIn("SetIconsForTargetGroup", script)
         self.assertIn("ConfigureLaunchPresentation", script)
+        self.assertIn("AndroidGradleReleasePostprocessor", script)
+        self.assertIn("extractReleaseAnnotations", script)
+        self.assertIn("lintVital", script)
+        self.assertIn("typedefs.txt", script)
 
     def test_release_script_builds_signed_apk_with_local_keystore(self):
         script = (ROOT / "scripts/build_android_release.sh").read_text(encoding="utf-8")
