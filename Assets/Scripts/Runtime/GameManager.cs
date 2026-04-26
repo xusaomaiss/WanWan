@@ -15,6 +15,7 @@ namespace Wanwan.Runtime
         private readonly GameplayRewardConfig rewardConfig = GameplayRewardConfig.Default;
         private readonly GameplayRewardState rewardState = new GameplayRewardState(GameplayRewardConfig.Default);
         private readonly FireLevelState fireLevelState = new FireLevelState();
+        private readonly PlayerHealthState playerHealth = new PlayerHealthState();
         private bool gameEnded;
         private bool paused;
         private bool stageClear;
@@ -33,7 +34,9 @@ namespace Wanwan.Runtime
 
         public GameFlowState CurrentState { get; private set; } = GameFlowState.Intro;
         public int Score { get; private set; }
-        public int Lives { get; private set; } = 5;
+        public int Lives => PlayerHealth;
+        public int PlayerHealth => playerHealth.CurrentHealth;
+        public int MaxPlayerHealth => playerHealth.MaxHealth;
         public float LeftBound { get; private set; }
         public float RightBound { get; private set; }
         public float TopBound { get; private set; }
@@ -61,7 +64,6 @@ namespace Wanwan.Runtime
         public float BossHealthNormalized => bossMaxHitPoints <= 0 ? 0f : Mathf.Clamp01(bossCurrentHitPoints / (float)bossMaxHitPoints);
         public string StageBannerText => stageBannerTimer > 0f ? stageBannerText : string.Empty;
         public bool LastRunWasVictory => stageClear;
-        public bool EnemyCollisionEndsRun => Difficulty != GameDifficulty.Low;
         public bool EnemyUsesScatterShot => Difficulty == GameDifficulty.High;
         public int EnemiesDestroyed => enemiesDestroyed;
         public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty, SessionState.CurrentStageIndex, SessionState.CurrentLoopIndex);
@@ -85,7 +87,6 @@ namespace Wanwan.Runtime
             RightBound = rightBound;
             TopBound = topBound;
             BottomBound = bottomBound;
-            Lives = GetInitialLives(Difficulty);
 
             uiController.Bind(this);
         }
@@ -185,44 +186,53 @@ namespace Wanwan.Runtime
             }
         }
 
-        public void DamageBase(int amount)
+        public void NotifyEnemyEscaped(Vector3 position)
         {
             if (gameEnded)
             {
                 return;
             }
 
-            Lives = Mathf.Max(0, Lives - amount);
-            uiController.RefreshHud();
-            effectsController.PlayBaseHit();
-            gameOverTitle = "基地失守";
-
-            if (Lives <= 0)
+            int deducted = rewardState.DeductCoins(rewardConfig.CoinsLostPerEscapedEnemy);
+            if (deducted > 0)
             {
+                effectsController.PlayScorePopup(position, -deducted);
+                ShowStageBanner("金币 -" + deducted);
+            }
+
+            uiController.RefreshHud();
+        }
+
+        public void DamagePlayerByPierce()
+        {
+            DamagePlayer(1, "战机损毁");
+        }
+
+        public void DamagePlayerByCollision()
+        {
+            DamagePlayer(1, "战机损毁");
+        }
+
+        private void DamagePlayer(int amount, string depletedTitle)
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            int damageApplied = playerHealth.ApplyDamage(amount);
+            if (damageApplied <= 0)
+            {
+                return;
+            }
+
+            effectsController.PlayBaseHit();
+            uiController.RefreshHud();
+            if (playerHealth.IsDepleted)
+            {
+                gameOverTitle = depletedTitle;
                 StartCoroutine(EndRun());
             }
-        }
-
-        public void DestroyPlayerByPierce()
-        {
-            if (gameEnded)
-            {
-                return;
-            }
-
-            gameOverTitle = "战机被击穿";
-            StartCoroutine(EndRun());
-        }
-
-        public void DestroyPlayerByCollision()
-        {
-            if (gameEnded)
-            {
-                return;
-            }
-
-            gameOverTitle = "战机被撞毁";
-            StartCoroutine(EndRun());
         }
 
         public void SetStageState(StagePhase phase, string label)
@@ -465,19 +475,6 @@ namespace Wanwan.Runtime
                     return 0.24f;
                 default:
                     return 0.08f;
-            }
-        }
-
-        private static int GetInitialLives(GameDifficulty difficulty)
-        {
-            switch (difficulty)
-            {
-                case GameDifficulty.High:
-                    return 2;
-                case GameDifficulty.Medium:
-                    return 3;
-                default:
-                    return 5;
             }
         }
     }

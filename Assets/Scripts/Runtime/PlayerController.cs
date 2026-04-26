@@ -89,10 +89,15 @@ namespace Wanwan.Runtime
 
         private Vector2 ClampToBounds(Vector2 position)
         {
-            const float shipInset = 0.55f;
+            const float shipInset = 0.5f;
             return new Vector2(
                 Mathf.Clamp(position.x, leftBound + shipInset, rightBound - shipInset),
                 Mathf.Clamp(position.y, bottomBound + shipInset, topBound - shipInset));
+        }
+
+        public Vector2 ClampToPlayableBoundsForTests(Vector2 position)
+        {
+            return ClampToBounds(position);
         }
 
         private void Fire()

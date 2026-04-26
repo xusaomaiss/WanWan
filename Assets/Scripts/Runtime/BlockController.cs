@@ -58,12 +58,18 @@ namespace Wanwan.Runtime
             Vector2 perpendicular = new Vector2(-moveDirection.y, moveDirection.x);
             float sway = swayAmplitude > 0f ? Mathf.Sin(flightTime * swayFrequency) * swayAmplitude : 0f;
             transform.position = spawnPosition + new Vector3(drift.x, drift.y, 0f) + ((Vector3)(perpendicular * sway));
+            if (transform.position.y < gameManager.BottomBound - 1.2f)
+            {
+                Escape();
+                return;
+            }
+
             UpdateFireTimer();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (resolved || !gameManager.EnemyCollisionEndsRun)
+            if (resolved)
             {
                 return;
             }
@@ -72,7 +78,7 @@ namespace Wanwan.Runtime
             {
                 resolved = true;
                 effectsController.PlayPlayerPierced(transform.position, effectColor);
-                gameManager.DestroyPlayerByCollision();
+                gameManager.DamagePlayerByCollision();
                 blockSpawner.NotifyEnemyResolved();
                 Destroy(gameObject);
             }
@@ -124,13 +130,18 @@ namespace Wanwan.Runtime
 
         public void ReachBase()
         {
+            Escape();
+        }
+
+        private void Escape()
+        {
             if (resolved)
             {
                 return;
             }
 
             resolved = true;
-            gameManager.DamageBase(1);
+            gameManager.NotifyEnemyEscaped(transform.position);
             blockSpawner.NotifyEnemyResolved();
             Destroy(gameObject);
         }

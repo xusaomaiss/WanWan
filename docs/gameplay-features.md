@@ -23,6 +23,7 @@
   - 移动端：单指触摸位置。
   - 编辑器/桌面：鼠标按住拖动位置。
 - 战机位置会被限制在 `LeftBound / RightBound / BottomBound / TopBound` 内，并预留机体边距，避免越出屏幕。
+- 横向边界使用屏幕可见范围作为基础，只保留机体半宽内缩，真机上可飞到最左和最右边缘附近。
 
 相关代码：
 
@@ -44,6 +45,7 @@
 | --- | ---: | --- |
 | `CoinsPerEnemy` | `4` | 每架敌机掉落金币数 |
 | `ScorePerCoin` | `5` | 每个金币分值 |
+| `CoinsLostPerEscapedEnemy` | `4` | 每架逃脱敌机扣除金币数 |
 | `CoinsPerBomb` | `100` | 生成一个炸弹道具所需金币 |
 | `MaxBombsPerStage` | `3` | 单关最多通过金币获得的炸弹数 |
 | `CoinMagnetRadiusWorld` | `2.5` | 金币开始吸附的世界距离，约等于 150px 体验 |
@@ -55,6 +57,21 @@
 - `Assets/Scripts/Runtime/GameplayRewardState.cs`
 - `Assets/Scripts/Runtime/CoinController.cs`
 - `Assets/Scripts/Runtime/BlockController.cs`
+
+敌机从屏幕底部逃脱时不再触发基地失守，而是扣除 `4` 个金币；金币不足时扣到 `0`。该扣减只影响当前金币数量，不回滚已获得分数或已生成炸弹。
+
+## 玩家 HP 系统
+
+- 玩家每局初始 `10` 格 HP。
+- 敌方子弹命中玩家扣 `1` 格 HP。
+- 敌机或 Boss 碰撞玩家扣 `1` 格 HP。
+- HP 归零后本局失败，失败文案为战机损毁类提示。
+
+相关代码：
+
+- `Assets/Scripts/Runtime/PlayerHealthState.cs`
+- `Assets/Scripts/Runtime/GameManager.cs`
+- `Assets/Scripts/Runtime/EnemyFireballController.cs`
 
 ## 炸弹系统
 
@@ -125,7 +142,7 @@ Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血�
 
 - 当前分数。
 - 当前金币数量。
-- 战机生命。
+- 玩家 HP 血条。
 - 炸弹图标数量。
 - 难度、关卡进度、击落目标。
 - 火力等级和当前武器状态。
@@ -157,6 +174,8 @@ python3 scripts/validate_unity_project.py
 关键测试：
 
 - `GameplayRewardStateTests`：金币、分数和炸弹兑换规则。
+- `PlayerHealthStateTests`：玩家 HP 扣减和归零规则。
+- `PlayerControllerBoundsTests`：玩家横向可达边界。
 - `FireLevelStateTests`：火力等级和弹幕数量。
 - `EnemySpawnBudgetTests`：敌机数量满足奖励经济。
 - `StageClearTargetTests`：关卡击落目标。
@@ -171,4 +190,6 @@ PlayMode 手测建议：
 4. 累计 100 金币，确认地图出现炸弹图标。
 5. 飞向炸弹，确认触碰后立即清屏并播放全屏特效。
 6. 吃火力包，确认火力等级提升，子弹形态变化。
-7. 推进到 Boss，确认 Boss 血条、警报、弹幕和通关结算正常。
+7. 漏掉敌机，确认只扣金币且不会出现基地失守。
+8. 被敌弹或敌机碰撞，确认 HP 扣减，HP 归零才失败。
+9. 推进到 Boss，确认 Boss 血条、警报、弹幕和通关结算正常。

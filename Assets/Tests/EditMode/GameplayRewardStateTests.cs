@@ -40,5 +40,32 @@ namespace Wanwan.Tests.EditMode
             Assert.That(state.BombPickupsEarned, Is.EqualTo(3));
             Assert.That(bombPickups, Is.EqualTo(3));
         }
+
+        [Test]
+        public void DeductCoins_RemovesEscapedEnemyPenaltyWithoutChangingScoreOrBombs()
+        {
+            GameplayRewardState state = new GameplayRewardState(GameplayRewardConfig.Default);
+            state.CollectCoins(104);
+
+            int deducted = state.DeductCoins(GameplayRewardConfig.Default.CoinsLostPerEscapedEnemy);
+
+            Assert.That(deducted, Is.EqualTo(4));
+            Assert.That(state.CoinsCollected, Is.EqualTo(100));
+            Assert.That(state.ScoreFromCoins, Is.EqualTo(520));
+            Assert.That(state.BombPickupsEarned, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void DeductCoins_ClampsAtZero()
+        {
+            GameplayRewardState state = new GameplayRewardState(GameplayRewardConfig.Default);
+            state.CollectCoins(2);
+
+            int deducted = state.DeductCoins(GameplayRewardConfig.Default.CoinsLostPerEscapedEnemy);
+
+            Assert.That(deducted, Is.EqualTo(2));
+            Assert.That(state.CoinsCollected, Is.EqualTo(0));
+            Assert.That(state.ScoreFromCoins, Is.EqualTo(10));
+        }
     }
 }

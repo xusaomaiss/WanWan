@@ -18,8 +18,8 @@ namespace Wanwan.Runtime
             float topBound = orthographicSize + 1f;
             float bottomBound = -orthographicSize - 1f;
             float horizontalExtent = orthographicSize * cameraComponent.aspect;
-            float leftBound = -horizontalExtent + 0.9f;
-            float rightBound = horizontalExtent - 0.9f;
+            float leftBound = -horizontalExtent;
+            float rightBound = horizontalExtent;
             CarrierLaunchIntroConfig introConfig = CarrierLaunchIntroConfig.Default;
             Vector3 gameplayPlayerPosition = new Vector3(0f, bottomBound + introConfig.GameplayStartYInset, 0f);
 
@@ -32,7 +32,6 @@ namespace Wanwan.Runtime
             BlockSpawner spawner = new GameObject("BlockSpawner").AddComponent<BlockSpawner>();
             CreateCarrierDeck(orthographicSize, horizontalExtent, bottomBound + 0.45f);
             PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + introConfig.StartYInset);
-            CreateBaseBoundary(leftBound, rightBound, bottomBound + 0.85f);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
             player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, bottomBound, topBound);
@@ -140,14 +139,5 @@ namespace Wanwan.Runtime
             return playerController;
         }
 
-        private static void CreateBaseBoundary(float leftBound, float rightBound, float y)
-        {
-            GameObject boundary = new GameObject("BaseBoundary");
-            boundary.transform.position = new Vector3(0f, y, 0f);
-            BoxCollider2D collider = boundary.AddComponent<BoxCollider2D>();
-            collider.isTrigger = true;
-            collider.size = new Vector2((rightBound - leftBound) + 1f, 0.8f);
-            boundary.AddComponent<BaseBoundary>();
-        }
     }
 }

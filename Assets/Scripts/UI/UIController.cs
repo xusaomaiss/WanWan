@@ -53,7 +53,7 @@ namespace Wanwan.Runtime
             }
 
             scoreText.text = $"得分 {gameManager.Score:0000000}\n金币 {gameManager.CoinCount:000}";
-            livesText.text = $"战机 {gameManager.Lives}\n{BuildBombIcons()}";
+            livesText.text = $"HP {BuildHealthBar()}\n{BuildBombIcons()}";
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
             stageProgressText.text = $"第{gameManager.StageNumber}关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
@@ -148,7 +148,7 @@ namespace Wanwan.Runtime
             difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 22, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.62f), new Vector2(0.96f, 0.92f), Vector2.zero);
             stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第1关 0%", 28, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.26f), new Vector2(0.94f, 0.6f), Vector2.zero);
             powerupText = UiFactory.CreateArcadeLabel(centerCell.transform, "火力 普通", 24, TextAnchor.LowerCenter, new Color(1f, 0.56f, 0.74f), FontStyle.Bold, new Vector2(0.06f, 0.04f), new Vector2(0.94f, 0.3f), Vector2.zero);
-            livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "战机 5\n待命", 26, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
+            livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "HP ■■■■■■■■■■\n待命", 24, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(rightCell.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(64f, 64f), new Vector2(-94f, 0f), new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
@@ -267,6 +267,19 @@ namespace Wanwan.Runtime
             }
 
             return $"炸弹 {new string(icons)}";
+        }
+
+        private string BuildHealthBar()
+        {
+            int max = Mathf.Max(1, gameManager.MaxPlayerHealth);
+            int current = Mathf.Clamp(gameManager.PlayerHealth, 0, max);
+            char[] segments = new char[max];
+            for (int i = 0; i < segments.Length; i++)
+            {
+                segments[i] = i < current ? '■' : '□';
+            }
+
+            return new string(segments);
         }
 
         private string BuildDifficultyText()

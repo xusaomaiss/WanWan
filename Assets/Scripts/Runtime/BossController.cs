@@ -98,18 +98,15 @@ namespace Wanwan.Runtime
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (resolved || !gameManager.EnemyCollisionEndsRun)
+            if (resolved)
             {
                 return;
             }
 
             if (other.GetComponent<PlayerController>() != null)
             {
-                resolved = true;
                 effectsController.PlayPlayerPierced(transform.position, spriteRenderer.color);
-                gameManager.DestroyPlayerByCollision();
-                blockSpawner.NotifyBossResolved();
-                Destroy(gameObject);
+                gameManager.DamagePlayerByCollision();
             }
         }
 

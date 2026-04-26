@@ -32,5 +32,13 @@ namespace Wanwan.Runtime
             BombPickupsEarned = Mathf.Max(BombPickupsEarned, targetBombPickups);
             return newBombPickups;
         }
+
+        public int DeductCoins(int count)
+        {
+            int safeCount = Mathf.Max(0, count);
+            int deducted = Mathf.Min(CoinsCollected, safeCount);
+            CoinsCollected -= deducted;
+            return deducted;
+        }
     }
 }

@@ -63,7 +63,7 @@ namespace Wanwan.Runtime
             {
                 resolved = true;
                 effectsController.PlayPlayerPierced(transform.position, color);
-                gameManager.DestroyPlayerByPierce();
+                gameManager.DamagePlayerByPierce();
                 Destroy(gameObject);
             }
         }
