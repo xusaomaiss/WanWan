@@ -15,6 +15,10 @@ namespace Wanwan.Runtime
         private Text musicValueText;
         private Text sfxValueText;
         private Text opacityValueText;
+        private Image cinematicBackground;
+        private Image cinematicShip;
+        private Image cinematicExhaust;
+        private float cinematicTimer;
 
         private void Awake()
         {
@@ -24,6 +28,11 @@ namespace Wanwan.Runtime
             canvas = UiFactory.CreateCanvas("MenuCanvas");
             ShowLogo();
             StartCoroutine(LogoToTitle());
+        }
+
+        private void Update()
+        {
+            AnimateCinematicBackground();
         }
 
         private static void EnsureCamera(Color background)
@@ -65,16 +74,56 @@ namespace Wanwan.Runtime
         {
             ClearCanvas();
             Image background = UiFactory.CreatePanel(canvas.transform, name, Color.white, Vector2.zero, Vector2.one);
-            background.sprite = RuntimeSpriteFactory.GetMenuStormTitleSprite();
+            background.sprite = RuntimeSpriteFactory.GetLaunchWeatherIntroSprite();
             background.preserveAspect = false;
             background.raycastTarget = false;
+            cinematicBackground = background;
 
-            Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.42f), Vector2.zero, Vector2.one);
+            Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
-            UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.28f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
-            UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.48f), Vector2.zero, new Vector2(1f, 0.34f)).raycastTarget = false;
+            UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
+            UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f)).raycastTarget = false;
+            CreateLaunchHero(background.transform);
             CreateScanlines(background.transform);
             return background;
+        }
+
+        private void CreateLaunchHero(Transform parent)
+        {
+            cinematicShip = UiFactory.CreatePanel(parent, "MenuLaunchJet", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            cinematicShip.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
+            cinematicShip.color = Color.Lerp(Color.white, ShipDefinition.Get(selectedShip).AccentColor, 0.35f);
+            cinematicShip.preserveAspect = true;
+            cinematicShip.raycastTarget = false;
+            cinematicShip.rectTransform.sizeDelta = new Vector2(230f, 230f);
+
+            cinematicExhaust = UiFactory.CreatePanel(cinematicShip.transform, "MenuLaunchExhaust", new Color(0.38f, 0.9f, 1f, 0.74f), new Vector2(0.41f, -0.42f), new Vector2(0.59f, 0.1f));
+            cinematicExhaust.raycastTarget = false;
+            UiFactory.CreateDivider(parent, "LaunchWakeLeft", new Color(0.7f, 0.95f, 1f, 0.22f), new Vector2(0.18f, 0f), new Vector2(0.188f, 0.68f));
+            UiFactory.CreateDivider(parent, "LaunchWakeRight", new Color(0.7f, 0.95f, 1f, 0.22f), new Vector2(0.812f, 0f), new Vector2(0.82f, 0.68f));
+        }
+
+        private void AnimateCinematicBackground()
+        {
+            if (cinematicBackground == null || cinematicShip == null)
+            {
+                return;
+            }
+
+            cinematicTimer += Time.unscaledDeltaTime;
+            float loop = Mathf.Repeat(cinematicTimer, 5.2f) / 5.2f;
+            float eased = loop * loop * (3f - (2f * loop));
+            cinematicShip.rectTransform.anchoredPosition = new Vector2(Mathf.Sin(cinematicTimer * 1.9f) * 26f, Mathf.Lerp(-640f, 290f, eased));
+            cinematicShip.rectTransform.localScale = Vector3.one * Mathf.Lerp(0.9f, 1.3f, eased);
+            cinematicBackground.rectTransform.anchoredPosition = new Vector2(0f, Mathf.Lerp(70f, -60f, eased));
+
+            if (cinematicExhaust != null)
+            {
+                Color exhaustColor = cinematicExhaust.color;
+                exhaustColor.a = Mathf.Lerp(0.45f, 0.88f, Mathf.PingPong(cinematicTimer * 2.4f, 1f));
+                cinematicExhaust.color = exhaustColor;
+                cinematicExhaust.rectTransform.localScale = new Vector3(1f, Mathf.Lerp(0.8f, 1.55f, Mathf.PingPong(cinematicTimer * 3f, 1f)), 1f);
+            }
         }
 
         private static void CreateScanlines(Transform parent)
@@ -107,7 +156,7 @@ namespace Wanwan.Runtime
             UiFactory.CreateDivider(background.transform, "TitleHotLine", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.724f), new Vector2(0.8f, 0.73f));
             UiFactory.CreateArcadeLabel(background.transform, "STORM LAUNCH READY", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
 
-            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.86f), ArcadeTheme.ElectricBlue, new Vector2(0.1f, 0.105f), new Vector2(0.9f, 0.34f), new Vector2(8f, 8f));
+            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.72f), ArcadeTheme.ElectricBlue, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.31f), new Vector2(8f, 8f));
             Button start = UiFactory.CreatePixelButton(menu.transform, "开始出击", ArcadeTheme.EnergyYellow, new Vector2(660f, 104f), new Vector2(0f, 104f));
             start.onClick.AddListener(SceneNavigator.LoadGame);
             Button leaderboard = UiFactory.CreatePixelButton(menu.transform, "排行榜", ArcadeTheme.ElectricBlue, new Vector2(310f, 78f), new Vector2(-175f, -24f));
@@ -118,7 +167,7 @@ namespace Wanwan.Runtime
             exit.onClick.AddListener(Application.Quit);
 
             string hiScore = $"HI-SCORE {SessionState.HighScore:0000000}";
-            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.045f), new Vector2(0.88f, 0.09f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
         }
 
         private void ShowShipSelect()

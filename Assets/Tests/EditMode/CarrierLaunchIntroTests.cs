@@ -27,11 +27,11 @@ namespace Wanwan.Tests.EditMode
         {
             CarrierLaunchIntroConfig config = CarrierLaunchIntroConfig.Default;
 
-            Assert.That(config.HoldSeconds, Is.EqualTo(0.35f).Within(0.001f));
-            Assert.That(config.TotalDurationSeconds, Is.InRange(3f, 5f));
-            Assert.That(config.TotalDurationSeconds, Is.EqualTo(4.2f).Within(0.001f));
-            Assert.That(config.ExhaustIntensity, Is.GreaterThan(0f));
-            Assert.That(config.MaxSpeed, Is.GreaterThan(config.InitialSpeed));
+            Assert.That(config.HoldSeconds, Is.InRange(0.55f, 0.9f));
+            Assert.That(config.TotalDurationSeconds, Is.InRange(4.8f, 6.2f));
+            Assert.That(config.ExhaustIntensity, Is.GreaterThanOrEqualTo(1.2f));
+            Assert.That(config.MaxSpeed, Is.GreaterThanOrEqualTo(config.InitialSpeed * 5f));
+            Assert.That(config.BackgroundBoost, Is.GreaterThanOrEqualTo(4f));
             Assert.That(config.SkipInputGraceSeconds, Is.GreaterThanOrEqualTo(0.2f));
         }
 

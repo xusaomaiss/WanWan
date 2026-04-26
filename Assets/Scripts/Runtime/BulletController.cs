@@ -18,6 +18,7 @@ namespace Wanwan.Runtime
         private float steeringStrength;
         private float waveAmplitude;
         private float waveFrequency;
+        private float explosionRadius;
         private float age;
         private Vector3 origin;
 
@@ -27,6 +28,11 @@ namespace Wanwan.Runtime
         }
 
         public void Initialize(float travelSpeed, int bulletDamage, Vector2 travelDirection, float maxY, float minX, float maxX, bool canPierce, int pierceHits, BulletMotionType bulletMotionType, float homingStrength, float sideAmplitude, float sideFrequency)
+        {
+            Initialize(travelSpeed, bulletDamage, travelDirection, maxY, minX, maxX, canPierce, pierceHits, bulletMotionType, homingStrength, sideAmplitude, sideFrequency, 0f);
+        }
+
+        public void Initialize(float travelSpeed, int bulletDamage, Vector2 travelDirection, float maxY, float minX, float maxX, bool canPierce, int pierceHits, BulletMotionType bulletMotionType, float homingStrength, float sideAmplitude, float sideFrequency, float blastRadius)
         {
             speed = travelSpeed;
             damage = Mathf.Max(1, bulletDamage);
@@ -40,6 +46,7 @@ namespace Wanwan.Runtime
             steeringStrength = Mathf.Max(0f, homingStrength);
             waveAmplitude = Mathf.Max(0f, sideAmplitude);
             waveFrequency = Mathf.Max(0f, sideFrequency);
+            explosionRadius = Mathf.Max(0f, blastRadius);
             origin = transform.position;
         }
 
@@ -119,6 +126,7 @@ namespace Wanwan.Runtime
                 }
 
                 block.ApplyHit(damage);
+                ResolveExplosion();
                 ResolveHit();
                 return;
             }
@@ -131,6 +139,7 @@ namespace Wanwan.Runtime
                 }
 
                 boss.ApplyHit(damage);
+                ResolveExplosion();
                 ResolveHit();
                 return;
             }
@@ -160,6 +169,52 @@ namespace Wanwan.Runtime
             {
                 Destroy(gameObject);
             }
+        }
+
+        private void ResolveExplosion()
+        {
+            if (explosionRadius <= 0f)
+            {
+                return;
+            }
+
+            Vector3 center = transform.position;
+            float radiusSqr = explosionRadius * explosionRadius;
+
+            foreach (BlockController block in FindObjectsByType<BlockController>(FindObjectsSortMode.None))
+            {
+                if (!hitTargets.Add(block.GetInstanceID()))
+                {
+                    continue;
+                }
+
+                if (Vector2.SqrMagnitude(block.transform.position - center) <= radiusSqr)
+                {
+                    block.ApplyHit(damage);
+                }
+            }
+
+            foreach (BossController boss in FindObjectsByType<BossController>(FindObjectsSortMode.None))
+            {
+                if (!hitTargets.Add(boss.GetInstanceID()))
+                {
+                    continue;
+                }
+
+                if (Vector2.SqrMagnitude(boss.transform.position - center) <= radiusSqr)
+                {
+                    boss.ApplyHit(damage);
+                }
+            }
+
+            GameObject blast = new GameObject("BurstExplosion");
+            blast.transform.position = center;
+            blast.transform.localScale = Vector3.one * Mathf.Max(0.45f, explosionRadius);
+            SpriteRenderer renderer = blast.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetExplosionSprite();
+            renderer.color = new Color(1f, 0.5f, 0.18f, 0.82f);
+            renderer.sortingOrder = 16;
+            Destroy(blast, 0.18f);
         }
     }
 }

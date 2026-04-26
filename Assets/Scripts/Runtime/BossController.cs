@@ -22,6 +22,7 @@ namespace Wanwan.Runtime
         private float telegraphTimer;
         private Color baseColor;
         private BossPhaseConfig pendingPhase;
+        private bool[] phaseComboAwarded;
         private bool entering = true;
         private bool telegraphing;
         private bool resolved;
@@ -32,6 +33,7 @@ namespace Wanwan.Runtime
             blockSpawner = spawner;
             effectsController = effects;
             phases = phaseConfigs;
+            phaseComboAwarded = new bool[phaseConfigs.Length];
             hitPoints = startingHitPoints;
             maxHitPoints = startingHitPoints;
             anchorY = hoverY;
@@ -86,13 +88,33 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            float previousNormalized = hitPoints / (float)maxHitPoints;
             hitPoints -= damage;
             effectsController.PlayHit(transform.position, spriteRenderer.color);
             gameManager.UpdateBossHealth(hitPoints, maxHitPoints);
+            RegisterCrossedPhases(previousNormalized, Mathf.Max(0, hitPoints) / (float)maxHitPoints);
 
             if (hitPoints <= 0)
             {
                 ResolveDefeat();
+            }
+        }
+
+        private void RegisterCrossedPhases(float previousNormalized, float currentNormalized)
+        {
+            for (int i = 0; i < phases.Length; i++)
+            {
+                float threshold = phases[i].TriggerHealthNormalized;
+                if (threshold <= 0f || phaseComboAwarded[i])
+                {
+                    continue;
+                }
+
+                if (previousNormalized > threshold && currentNormalized <= threshold)
+                {
+                    phaseComboAwarded[i] = true;
+                    gameManager.RegisterBossPhaseCombo();
+                }
             }
         }
 
@@ -269,8 +291,7 @@ namespace Wanwan.Runtime
                 effectsController.PlayBurst(burstPosition, spriteRenderer.color);
             }
 
-            gameManager.AddScore(900);
-            effectsController.PlayScorePopup(transform.position, 900);
+            gameManager.RegisterBossDefeatedScore(900, transform.position);
             gameManager.MarkStageClear();
             blockSpawner.NotifyBossResolved();
             Destroy(gameObject);

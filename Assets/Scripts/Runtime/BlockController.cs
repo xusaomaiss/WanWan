@@ -19,6 +19,7 @@ namespace Wanwan.Runtime
         private float flightTime;
         private bool isTough;
         private bool isElite;
+        private int scoreValue;
         private float fireTimer;
         private bool resolved;
         private AmmoPowerupType guaranteedDrop;
@@ -30,6 +31,7 @@ namespace Wanwan.Runtime
             blockSpawner = spawner;
             effectsController = effects;
             hitPoints = startingHitPoints;
+            scoreValue = awardedScore;
             fallSpeed = speed;
             isTough = startingHitPoints > 1;
             isElite = elite;
@@ -97,6 +99,7 @@ namespace Wanwan.Runtime
             if (hitPoints <= 0)
             {
                 resolved = true;
+                gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
                 gameManager.NotifyEnemyDestroyed();
                 blockSpawner.SpawnCoinsAtPosition(transform.position);
                 if (guaranteedDrop != AmmoPowerupType.None)
@@ -121,6 +124,7 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
+            gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
             gameManager.NotifyEnemyDestroyed();
             blockSpawner.SpawnCoinsAtPosition(transform.position);
             effectsController.PlayBurst(transform.position, effectColor);

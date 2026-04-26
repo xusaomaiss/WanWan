@@ -48,9 +48,19 @@ namespace Wanwan.Runtime
             return GetOrCreate("bullet-" + type, () => BuildBulletTexture(type));
         }
 
+        public static Sprite GetBulletSprite(WeaponType type)
+        {
+            return GetBulletSprite(PowerupCycle.ToAmmoPowerupType(type));
+        }
+
         public static Sprite GetAmmoPackSprite(AmmoPowerupType type)
         {
             return GetOrCreate("ammo-pack-" + type, () => BuildAmmoPackTexture(type));
+        }
+
+        public static Sprite GetAmmoPackSprite(WeaponType type)
+        {
+            return GetAmmoPackSprite(PowerupCycle.ToAmmoPowerupType(type));
         }
 
         public static Sprite GetCapsuleSprite()
@@ -715,6 +725,11 @@ namespace Wanwan.Runtime
                 default:
                     return new Color(1f, 0.86f, 0.32f);
             }
+        }
+
+        public static Color GetWeaponColor(WeaponType type)
+        {
+            return GetWeaponColor(PowerupCycle.ToAmmoPowerupType(type));
         }
 
         private static Texture2D BuildHeroFighterTexture()

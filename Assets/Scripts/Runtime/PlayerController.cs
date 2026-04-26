@@ -7,7 +7,6 @@ namespace Wanwan.Runtime
         private const float MoveSmoothTime = 0.045f;
         private const float MaxHorizontalSpeed = 27f;
         private const float DefaultFireCooldown = 0.16f;
-        private const float RapidFireCooldown = 0.07f;
         private const float BulletSpeed = 21.25f;
 
         private GameManager gameManager;
@@ -102,41 +101,20 @@ namespace Wanwan.Runtime
 
         private void Fire()
         {
-            AmmoPowerupType type = gameManager.HasActivePowerup ? gameManager.ActivePowerupType : AmmoPowerupType.Normal;
+            WeaponType type = gameManager.CurrentWeaponType;
             effectsController.PlayPlayerShot(type);
 
-            PlayerShotSpec[] shots = PlayerFirePattern.GetShots(gameManager.FireLevel);
-            bool canPierce = type == AmmoPowerupType.Pierce || type == AmmoPowerupType.Laser;
-            int damage = Mathf.Max(1, gameManager.FireLevel >= 4 ? 2 : 1);
-            int pierceHits = canPierce ? 2 + gameManager.ActivePowerupLevel : 1;
-            BulletMotionType motionType = type == AmmoPowerupType.Homing ? BulletMotionType.Homing : (type == AmmoPowerupType.Wave ? BulletMotionType.Wave : BulletMotionType.Straight);
-            float homingStrength = motionType == BulletMotionType.Homing ? 2.8f + gameManager.FireLevel : 0f;
-            float waveAmplitude = motionType == BulletMotionType.Wave ? 0.18f + (gameManager.FireLevel * 0.04f) : 0f;
-            float waveFrequency = motionType == BulletMotionType.Wave ? 10f : 0f;
-
+            PlayerShotSpec[] shots = WeaponShotPattern.GetShots(type, gameManager.FireLevel);
             for (int i = 0; i < shots.Length; i++)
             {
-                FireOffsetShot(type, shots[i].Offset, shots[i].Direction, shots[i].Width, canPierce, pierceHits, damage, motionType, homingStrength, waveAmplitude, waveFrequency);
+                FireOffsetShot(shots[i]);
             }
         }
 
         private float GetCurrentFireCooldown()
         {
-            AmmoPowerupType type = gameManager.HasActivePowerup ? gameManager.ActivePowerupType : AmmoPowerupType.Normal;
-            int level = Mathf.Max(1, gameManager.ActivePowerupLevel);
-
-            switch (type)
-            {
-                case AmmoPowerupType.RapidFire:
-                    return Mathf.Max(0.045f, RapidFireCooldown - (level * 0.008f));
-                case AmmoPowerupType.Laser:
-                    return 0.1f;
-                case AmmoPowerupType.Plasma:
-                case AmmoPowerupType.Burst:
-                    return 0.22f;
-                default:
-                    return Mathf.Max(0.08f, DefaultFireCooldown - ((gameManager.FireLevel - 1) * 0.015f));
-            }
+            float configuredInterval = WeaponConfig.Get(gameManager.CurrentWeaponType).FireInterval;
+            return Mathf.Max(0.08f, configuredInterval - ((gameManager.FireLevel - 1) * 0.012f));
         }
 
         private void FireScatterShot(int level)
@@ -215,27 +193,33 @@ namespace Wanwan.Runtime
 
         private void FireOffsetShot(AmmoPowerupType type, Vector3 offset, Vector2 direction, float width, bool canPierce, int pierceHits, int damage, BulletMotionType motionType, float homingStrength, float waveAmplitude, float waveFrequency)
         {
-            GameObject bulletObject = new GameObject(canPierce ? type + "PierceShot" : type + "Shot");
-            bulletObject.transform.position = transform.position + offset;
+            FireOffsetShot(new PlayerShotSpec(offset, direction, width, PowerupCycle.ToWeaponType(type), canPierce, pierceHits, damage, motionType, homingStrength, 0f));
+        }
+
+        private void FireOffsetShot(PlayerShotSpec shot)
+        {
+            GameObject bulletObject = new GameObject(shot.CanPierce ? shot.WeaponType + "PierceShot" : shot.WeaponType + "Shot");
+            bulletObject.transform.position = transform.position + shot.Offset;
 
             SpriteRenderer renderer = bulletObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(type);
+            renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(shot.WeaponType);
             renderer.color = Color.white;
             renderer.sortingOrder = 15;
-            bulletObject.transform.localScale = WeaponShotPresentation.GetPlayerScale(type, canPierce, width);
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+            bulletObject.transform.localScale = WeaponShotPresentation.GetPlayerScale(shot.WeaponType, shot.CanPierce, shot.Width);
+            float angle = Mathf.Atan2(shot.Direction.y, shot.Direction.x) * Mathf.Rad2Deg - 90f;
             bulletObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
             BoxCollider2D collider = bulletObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = WeaponShotPresentation.GetPlayerColliderSize(type, canPierce);
+            collider.size = WeaponShotPresentation.GetPlayerColliderSize(shot.WeaponType, shot.CanPierce);
 
             Rigidbody2D rigidbody2D = bulletObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BulletController bullet = bulletObject.AddComponent<BulletController>();
-            bullet.Initialize(BulletSpeed, damage, direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, canPierce, pierceHits, motionType, homingStrength, waveAmplitude, waveFrequency);
+            float speed = WeaponConfig.Get(shot.WeaponType).BulletSpeed;
+            bullet.Initialize(speed > 0f ? speed : BulletSpeed, shot.Damage, shot.Direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, shot.CanPierce, shot.PierceHits, shot.MotionType, shot.HomingStrength, 0f, 0f, shot.ExplosionRadius);
         }
     }
 }

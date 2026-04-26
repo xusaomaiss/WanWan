@@ -30,6 +30,8 @@ namespace Wanwan.Runtime
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "B";
         public static string LastRunSummary { get; private set; } = string.Empty;
+        public static int LastRunMaxCombo { get; private set; }
+        public static int LastRunMaxMultiplier { get; private set; } = 1;
         public static GameDifficulty LastRunDifficulty { get; private set; } = GameDifficulty.Low;
         public static int CurrentStageIndex { get; private set; }
         public static int CurrentLoopIndex { get; private set; }
@@ -44,6 +46,8 @@ namespace Wanwan.Runtime
             LastRunWasVictory = false;
             LastRunRating = "B";
             LastRunSummary = string.Empty;
+            LastRunMaxCombo = 0;
+            LastRunMaxMultiplier = 1;
         }
 
         public static void SelectDifficulty(GameDifficulty difficulty)
@@ -76,6 +80,8 @@ namespace Wanwan.Runtime
             LastRunRating = "B";
             LastRunSummary = string.Empty;
             LastRunDifficulty = GameDifficulty.Low;
+            LastRunMaxCombo = 0;
+            LastRunMaxMultiplier = 1;
             ResetCampaign();
             PlayerPrefs.DeleteKey(HighScoreKey);
             PlayerPrefs.DeleteKey(AudioEnabledKey);
@@ -153,12 +159,14 @@ namespace Wanwan.Runtime
             PlayerPrefs.Save();
         }
 
-        public static void CommitRunScore(int score, bool victory = false, string rating = "B", string summary = "")
+        public static void CommitRunScore(int score, bool victory = false, string rating = "B", string summary = "", int maxCombo = 0, int maxMultiplier = 1)
         {
             LastScore = score;
             LastRunWasVictory = victory;
             LastRunRating = rating;
             LastRunSummary = summary;
+            LastRunMaxCombo = Mathf.Max(0, maxCombo);
+            LastRunMaxMultiplier = Mathf.Max(1, maxMultiplier);
             LastRunDifficulty = SelectedDifficulty;
             RecordLeaderboardScore("AAA", score, SelectedDifficulty, CurrentStageIndex, CurrentLoopIndex);
             if (score > HighScore)

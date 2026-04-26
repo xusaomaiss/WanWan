@@ -5,15 +5,34 @@ namespace Wanwan.Runtime
     public readonly struct PlayerShotSpec
     {
         public PlayerShotSpec(Vector3 offset, Vector2 direction, float width)
+            : this(offset, direction, width, WeaponType.Spread, false, 1, 1, BulletMotionType.Straight, 0f, 0f)
+        {
+        }
+
+        public PlayerShotSpec(Vector3 offset, Vector2 direction, float width, WeaponType weaponType, bool canPierce, int pierceHits, int damage, BulletMotionType motionType, float homingStrength, float explosionRadius)
         {
             Offset = offset;
             Direction = direction.normalized;
             Width = width;
+            WeaponType = weaponType;
+            CanPierce = canPierce;
+            PierceHits = Mathf.Max(1, pierceHits);
+            Damage = Mathf.Max(1, damage);
+            MotionType = motionType;
+            HomingStrength = Mathf.Max(0f, homingStrength);
+            ExplosionRadius = Mathf.Max(0f, explosionRadius);
         }
 
         public Vector3 Offset { get; }
         public Vector2 Direction { get; }
         public float Width { get; }
+        public WeaponType WeaponType { get; }
+        public bool CanPierce { get; }
+        public int PierceHits { get; }
+        public int Damage { get; }
+        public BulletMotionType MotionType { get; }
+        public float HomingStrength { get; }
+        public float ExplosionRadius { get; }
     }
 
     public static class PlayerFirePattern

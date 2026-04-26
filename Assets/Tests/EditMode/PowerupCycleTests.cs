@@ -8,40 +8,18 @@ namespace Wanwan.Tests.EditMode
         [Test]
         public void GetTypeAt_CyclesRedWeaponPool()
         {
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Scatter, 0), Is.EqualTo(AmmoPowerupType.Scatter));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Scatter, 1), Is.EqualTo(AmmoPowerupType.RapidFire));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Scatter, 2), Is.EqualTo(AmmoPowerupType.Burst));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Scatter, 3), Is.EqualTo(AmmoPowerupType.Scatter));
+            Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 0), Is.EqualTo(WeaponType.Spread));
+            Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 1), Is.EqualTo(WeaponType.Laser));
+            Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 2), Is.EqualTo(WeaponType.Homing));
+            Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 3), Is.EqualTo(WeaponType.Burst));
+            Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 4), Is.EqualTo(WeaponType.Spread));
         }
 
-        [Test]
-        public void GetTypeAt_CyclesBlueWeaponPool()
-        {
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Laser, 0), Is.EqualTo(AmmoPowerupType.Laser));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Laser, 1), Is.EqualTo(AmmoPowerupType.Homing));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Laser, 2), Is.EqualTo(AmmoPowerupType.Pierce));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Laser, 3), Is.EqualTo(AmmoPowerupType.Laser));
-        }
-
-        [Test]
-        public void GetTypeAt_CyclesPurpleWeaponPool()
-        {
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Plasma, 0), Is.EqualTo(AmmoPowerupType.Plasma));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Plasma, 1), Is.EqualTo(AmmoPowerupType.Wave));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Plasma, 2), Is.EqualTo(AmmoPowerupType.Guard));
-            Assert.That(PowerupCycle.GetTypeAt(AmmoPowerupType.Plasma, 3), Is.EqualTo(AmmoPowerupType.Plasma));
-        }
-
-        [TestCase(AmmoPowerupType.Scatter, "S")]
-        [TestCase(AmmoPowerupType.RapidFire, "R")]
-        [TestCase(AmmoPowerupType.Burst, "B")]
-        [TestCase(AmmoPowerupType.Laser, "L")]
-        [TestCase(AmmoPowerupType.Homing, "H")]
-        [TestCase(AmmoPowerupType.Pierce, "P")]
-        [TestCase(AmmoPowerupType.Plasma, "O")]
-        [TestCase(AmmoPowerupType.Wave, "W")]
-        [TestCase(AmmoPowerupType.Guard, "G")]
-        public void GetLabel_ReturnsArcadeLetter(AmmoPowerupType type, string expectedLabel)
+        [TestCase(WeaponType.Spread, "S")]
+        [TestCase(WeaponType.Laser, "L")]
+        [TestCase(WeaponType.Homing, "H")]
+        [TestCase(WeaponType.Burst, "B")]
+        public void GetLabel_ReturnsArcadeLetter(WeaponType type, string expectedLabel)
         {
             Assert.That(PowerupCycle.GetLabel(type), Is.EqualTo(expectedLabel));
         }

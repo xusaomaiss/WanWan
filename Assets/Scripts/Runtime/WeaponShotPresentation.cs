@@ -9,6 +9,11 @@ namespace Wanwan.Runtime
             return GetPlayerScale(type, canPierce, GetDefaultPlayerWidth(type));
         }
 
+        public static Vector3 GetPlayerScale(WeaponType type, bool canPierce, float width)
+        {
+            return GetPlayerScale(PowerupCycle.ToAmmoPowerupType(type), canPierce, width);
+        }
+
         public static Vector3 GetPlayerScale(AmmoPowerupType type, bool canPierce, float width)
         {
             float widthMultiplier = GetPlayerWidthMultiplier(type);
@@ -29,6 +34,11 @@ namespace Wanwan.Runtime
             }
 
             return new Vector2(0.24f, canPierce ? 0.78f : 0.7f);
+        }
+
+        public static Vector2 GetPlayerColliderSize(WeaponType type, bool canPierce)
+        {
+            return GetPlayerColliderSize(PowerupCycle.ToAmmoPowerupType(type), canPierce);
         }
 
         public static Vector3 GetEnemyScale(bool fromBoss)

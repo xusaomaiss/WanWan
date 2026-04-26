@@ -10,8 +10,8 @@ namespace Wanwan.Runtime
         private EffectsController effectsController;
         private SpriteRenderer spriteRenderer;
         private TextMesh labelText;
-        private AmmoPowerupType startingType;
-        private AmmoPowerupType powerupType;
+        private WeaponType startingType;
+        private WeaponType weaponType;
         private float fallSpeed;
         private float bottomDespawnY;
         private float animationTime;
@@ -23,10 +23,15 @@ namespace Wanwan.Runtime
 
         public void Initialize(GameManager manager, EffectsController effects, AmmoPowerupType type, float speed, float despawnY, Color color, string label)
         {
+            Initialize(manager, effects, PowerupCycle.ToWeaponType(type), speed, despawnY, color, label);
+        }
+
+        public void Initialize(GameManager manager, EffectsController effects, WeaponType type, float speed, float despawnY, Color color, string label)
+        {
             gameManager = manager;
             effectsController = effects;
             startingType = type;
-            powerupType = type;
+            weaponType = type;
             fallSpeed = speed;
             bottomDespawnY = despawnY;
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -75,8 +80,8 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            gameManager.ActivatePowerup(powerupType, DefaultDurationSeconds);
-            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, GetDisplayName(powerupType));
+            gameManager.ApplyWeaponPickup(weaponType);
+            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, GetDisplayName(weaponType));
             Destroy(gameObject);
         }
 
@@ -104,39 +109,27 @@ namespace Wanwan.Runtime
 
         private void RefreshDisplayedPowerup()
         {
-            powerupType = PowerupCycle.GetTypeAt(startingType, cycleIndex);
-            spriteRenderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(powerupType);
-            spriteRenderer.color = PowerupCycle.GetCategoryColor(powerupType);
+            weaponType = PowerupCycle.GetWeaponTypeAt(startingType, cycleIndex);
+            spriteRenderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(weaponType);
+            spriteRenderer.color = PowerupCycle.GetCategoryColor(weaponType);
             if (labelText != null)
             {
-                labelText.text = PowerupCycle.GetLabel(powerupType);
+                labelText.text = PowerupCycle.GetLabel(weaponType);
             }
         }
 
-        private static string GetDisplayName(AmmoPowerupType type)
+        private static string GetDisplayName(WeaponType type)
         {
             switch (type)
             {
-                case AmmoPowerupType.Scatter:
-                    return "散射";
-                case AmmoPowerupType.RapidFire:
-                    return "连发";
-                case AmmoPowerupType.Pierce:
-                    return "穿透";
-                case AmmoPowerupType.Laser:
+                case WeaponType.Laser:
                     return "激光";
-                case AmmoPowerupType.Plasma:
-                    return "等离子";
-                case AmmoPowerupType.Burst:
-                    return "爆裂";
-                case AmmoPowerupType.Homing:
+                case WeaponType.Homing:
                     return "追踪";
-                case AmmoPowerupType.Wave:
-                    return "波刃";
-                case AmmoPowerupType.Guard:
-                    return "护航";
+                case WeaponType.Burst:
+                    return "爆裂";
                 default:
-                    return "强化";
+                    return "扇形";
             }
         }
     }

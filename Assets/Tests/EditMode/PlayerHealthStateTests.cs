@@ -37,5 +37,22 @@ namespace Wanwan.Tests.EditMode
             Assert.That(state.CurrentHealth, Is.EqualTo(0));
             Assert.That(state.IsDepleted, Is.True);
         }
+
+        [Test]
+        public void DamageFeedback_VibratesOnlyWhenEnabledAndDamageWasApplied()
+        {
+            Assert.That(PlayerDamageFeedback.ShouldVibrate(true, 1), Is.True);
+            Assert.That(PlayerDamageFeedback.ShouldVibrate(true, 0), Is.False);
+            Assert.That(PlayerDamageFeedback.ShouldVibrate(false, 1), Is.False);
+        }
+
+        [Test]
+        public void PlayerHealthHudPresentation_ConvertsHealthIntoClampedFill()
+        {
+            Assert.That(PlayerHealthHudPresentation.GetFillAmount(3, 10), Is.EqualTo(0.3f).Within(0.001f));
+            Assert.That(PlayerHealthHudPresentation.GetFillAmount(12, 10), Is.EqualTo(1f).Within(0.001f));
+            Assert.That(PlayerHealthHudPresentation.GetFillAmount(-2, 10), Is.EqualTo(0f).Within(0.001f));
+            Assert.That(PlayerHealthHudPresentation.GetFillAmount(4, 0), Is.EqualTo(0f).Within(0.001f));
+        }
     }
 }

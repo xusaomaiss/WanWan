@@ -12,9 +12,14 @@ namespace Wanwan.Runtime
         private Text highScoreText;
         private Text difficultyText;
         private Text stageProgressText;
+        private Text comboText;
         private Text powerupText;
         private Text pauseHintText;
         private Text stageBannerText;
+        private Image playerHealthRoot;
+        private Image playerHealthFill;
+        private Image playerHealthGlow;
+        private Text playerHealthLabel;
         private Button pauseButton;
         private Text pauseButtonText;
         private Image pauseOverlay;
@@ -37,6 +42,7 @@ namespace Wanwan.Runtime
         private Text overlayScore;
         private Text overlayBestScore;
         private Text overlaySummary;
+        private float playerDamageFlashTimer;
 
         public void Bind(GameManager manager)
         {
@@ -54,8 +60,10 @@ namespace Wanwan.Runtime
 
             scoreText.text = $"得分 {gameManager.Score:0000000}\n金币 {gameManager.CoinCount:000}";
             livesText.text = $"HP {BuildHealthBar()}\n{BuildBombIcons()}";
+            RefreshPlayerHealthBar();
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
+            comboText.text = gameManager.GetComboDisplayText();
             stageProgressText.text = $"第{gameManager.StageNumber}关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
             if (stageProgressFill != null)
             {
@@ -87,6 +95,11 @@ namespace Wanwan.Runtime
             }
         }
 
+        public void NotifyPlayerDamaged()
+        {
+            playerDamageFlashTimer = 0.42f;
+        }
+
         public void ShowGameOverOverlay(string title, int score)
         {
             overlay.gameObject.SetActive(true);
@@ -94,11 +107,11 @@ namespace Wanwan.Runtime
             overlayStage.text = $"L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}  {BuildDifficultyText()}";
             overlayScore.text = $"本局得分 {score:0000000}";
             overlayBestScore.text = $"最高分 {SessionState.HighScore:0000000}";
-            overlaySummary.text = $"击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  BOMB {gameManager.BombsUsed}  目标 {gameManager.BossDisplayName}";
+            overlaySummary.text = $"击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  BOMB {gameManager.BombsUsed}  目标 {gameManager.BossDisplayName}\nMax Combo: {gameManager.MaxCombo}  Max Multiplier: x{gameManager.MaxComboMultiplier}";
             if (title == "游戏胜利")
             {
                 overlayBestScore.text = $"本关得分 {score:0000000}  击落 {gameManager.EnemiesDestroyed}";
-                overlaySummary.text = $"使用BOMB {gameManager.BombsUsed}  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}";
+                overlaySummary.text = $"使用BOMB {gameManager.BombsUsed}  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}\nMax Combo: {gameManager.MaxCombo}  Max Multiplier: x{gameManager.MaxComboMultiplier}";
             }
         }
 
@@ -145,9 +158,9 @@ namespace Wanwan.Runtime
 
             scoreText = UiFactory.CreateArcadeLabel(leftCell.transform, "得分\n0000000", ArcadeTheme.ScoreSize, TextAnchor.UpperLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.05f, 0.28f), new Vector2(0.95f, 0.95f), Vector2.zero);
             highScoreText = UiFactory.CreateArcadeLabel(leftCell.transform, "最高分\n0000000", ArcadeTheme.SmallSize, TextAnchor.LowerLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.34f), Vector2.zero);
-            difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 22, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.62f), new Vector2(0.96f, 0.92f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第1关 0%", 28, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.26f), new Vector2(0.94f, 0.6f), Vector2.zero);
-            powerupText = UiFactory.CreateArcadeLabel(centerCell.transform, "火力 普通", 24, TextAnchor.LowerCenter, new Color(1f, 0.56f, 0.74f), FontStyle.Bold, new Vector2(0.06f, 0.04f), new Vector2(0.94f, 0.3f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 20, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.66f), new Vector2(0.96f, 0.92f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第1关 0%", 25, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.3f), new Vector2(0.94f, 0.62f), Vector2.zero);
+            comboText = UiFactory.CreateArcadeLabel(centerCell.transform, "Combo: 0  x1", 22, TextAnchor.LowerCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.06f, 0.05f), new Vector2(0.94f, 0.3f), Vector2.zero);
             livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "HP ■■■■■■■■■■\n待命", 24, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(rightCell.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(64f, 64f), new Vector2(-94f, 0f), new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
@@ -157,7 +170,7 @@ namespace Wanwan.Runtime
 
             Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.08f, 0.08f, 0.16f, SessionState.VirtualButtonOpacity + 0.25f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, 0.065f), new Vector2(6f, 6f));
             Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.04f, 0.18f), new Vector2(0.36f, 0.82f), new Vector2(4f, 4f));
-            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "火力 普通", ArcadeTheme.SmallSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.05f, 0f), new Vector2(0.95f, 1f), Vector2.zero);
+            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "Weapon: 扇形弹 Lv.1", 22, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
             Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.39f, 0.36f), new Vector2(0.67f, 0.64f));
             stageProgressFill = UiFactory.CreatePanel(progressTrack.transform, "ProgressFill", ArcadeTheme.EnergyYellow, Vector2.zero, Vector2.one);
             UiFactory.CreateArcadeLabel(bottomBar.transform, "吃炸弹图标清屏", 24, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.7f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
@@ -166,6 +179,13 @@ namespace Wanwan.Runtime
             bossBarRoot.gameObject.SetActive(false);
             bossBarFill = UiFactory.CreatePanel(bossBarRoot.transform, "BossBarFill", new Color(1f, 0.44f, 0.3f, 0.98f), new Vector2(0.012f, 0.14f), new Vector2(0.988f, 0.86f));
             bossBarLabel = UiFactory.CreateArcadeLabel(bossBarRoot.transform, "警报  敌方旗舰", 24, TextAnchor.MiddleCenter, new Color(1f, 0.96f, 0.94f), FontStyle.Bold, new Vector2(0.05f, 0f), new Vector2(0.95f, 1f), Vector2.zero);
+
+            playerHealthRoot = UiFactory.CreatePixelPanel(canvas.transform, "PlayerHealthFocusBar", new Color(0.03f, 0.04f, 0.08f, 0.88f), new Color(0.2f, 0.9f, 1f, 0.95f), new Vector2(0.14f, 0.815f), new Vector2(0.86f, 0.855f), new Vector2(5f, 5f));
+            Image healthTrack = UiFactory.CreatePanel(playerHealthRoot.transform, "PlayerHealthTrack", new Color(0.02f, 0.015f, 0.018f, 0.96f), new Vector2(0.02f, 0.22f), new Vector2(0.98f, 0.78f));
+            playerHealthFill = UiFactory.CreatePanel(healthTrack.transform, "PlayerHealthFill", new Color(0.22f, 1f, 0.62f, 0.98f), Vector2.zero, Vector2.one);
+            playerHealthGlow = UiFactory.CreatePanel(playerHealthRoot.transform, "PlayerHealthDamageFlash", new Color(1f, 0.06f, 0.02f, 0f), Vector2.zero, Vector2.one);
+            playerHealthGlow.raycastTarget = false;
+            playerHealthLabel = UiFactory.CreateArcadeLabel(playerHealthRoot.transform, "装甲 10/10", 22, TextAnchor.MiddleCenter, new Color(0.98f, 1f, 1f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
 
             pauseHintText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 40, TextAnchor.MiddleCenter, new Color(0.6f, 0.84f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.3f, 0.79f), new Vector2(0.7f, 0.84f), Vector2.zero);
             stageBannerText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 86, TextAnchor.MiddleCenter, new Color(1f, 0.34f, 0.2f, 0.98f), FontStyle.Bold, new Vector2(0.08f, 0.63f), new Vector2(0.92f, 0.77f), Vector2.zero);
@@ -214,47 +234,7 @@ namespace Wanwan.Runtime
 
         private string BuildPowerupHudText()
         {
-            if (!gameManager.HasActivePowerup)
-            {
-                return $"火力 Lv{gameManager.FireLevel} 普通\n{BuildBombIcons()}";
-            }
-
-            string name;
-            switch (gameManager.ActivePowerupType)
-            {
-                case AmmoPowerupType.Scatter:
-                    name = "红色散射";
-                    break;
-                case AmmoPowerupType.RapidFire:
-                    name = "红色连发";
-                    break;
-                case AmmoPowerupType.Pierce:
-                    name = "蓝色穿透";
-                    break;
-                case AmmoPowerupType.Laser:
-                    name = "蓝色激光";
-                    break;
-                case AmmoPowerupType.Plasma:
-                    name = "紫色等离子";
-                    break;
-                case AmmoPowerupType.Burst:
-                    name = "红色爆裂";
-                    break;
-                case AmmoPowerupType.Homing:
-                    name = "蓝色追踪";
-                    break;
-                case AmmoPowerupType.Wave:
-                    name = "紫色波刃";
-                    break;
-                case AmmoPowerupType.Guard:
-                    name = "紫色护航";
-                    break;
-                default:
-                    name = "普通";
-                    break;
-            }
-
-            return $"火力 Lv{gameManager.FireLevel} {name} {gameManager.ActivePowerupRemainingSeconds:0.0}s\n{BuildBombIcons()}";
+            return $"{gameManager.GetCurrentWeaponDisplayText()}\n{BuildBombIcons()}";
         }
 
         private string BuildBombIcons()
@@ -267,6 +247,38 @@ namespace Wanwan.Runtime
             }
 
             return $"炸弹 {new string(icons)}";
+        }
+
+        private void RefreshPlayerHealthBar()
+        {
+            if (playerHealthFill == null || gameManager == null)
+            {
+                return;
+            }
+
+            float fillAmount = PlayerHealthHudPresentation.GetFillAmount(gameManager.PlayerHealth, gameManager.MaxPlayerHealth);
+            RectTransform fillRect = playerHealthFill.rectTransform;
+            fillRect.anchorMax = new Vector2(fillAmount, 1f);
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            playerHealthFill.color = PlayerHealthHudPresentation.GetFillColor(fillAmount);
+
+            if (playerHealthLabel != null)
+            {
+                playerHealthLabel.text = $"装甲 {gameManager.PlayerHealth}/{gameManager.MaxPlayerHealth}";
+            }
+
+            if (playerDamageFlashTimer > 0f)
+            {
+                playerDamageFlashTimer = Mathf.Max(0f, playerDamageFlashTimer - Time.deltaTime);
+            }
+
+            if (playerHealthGlow != null)
+            {
+                Color flash = playerHealthGlow.color;
+                flash.a = Mathf.Clamp01(playerDamageFlashTimer / 0.42f) * 0.58f;
+                playerHealthGlow.color = flash;
+            }
         }
 
         private string BuildHealthBar()

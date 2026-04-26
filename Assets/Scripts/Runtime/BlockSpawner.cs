@@ -116,6 +116,11 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            SpawnAmmoPackAtPosition(PowerupCycle.ToWeaponType(type), position);
+        }
+
+        public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position)
+        {
             GameObject packObject = new GameObject(type + "Pack");
             packObject.transform.position = position;
             packObject.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
@@ -856,12 +861,12 @@ namespace Wanwan.Runtime
             }
         }
 
-        private Color GetAmmoPackColor(AmmoPowerupType type)
+        private Color GetAmmoPackColor(WeaponType type)
         {
             return PowerupCycle.GetCategoryColor(type);
         }
 
-        private static string GetAmmoPackLabel(AmmoPowerupType type)
+        private static string GetAmmoPackLabel(WeaponType type)
         {
             return PowerupCycle.GetLabel(type);
         }

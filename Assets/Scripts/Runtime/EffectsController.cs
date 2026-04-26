@@ -68,6 +68,11 @@ namespace Wanwan.Runtime
             sfxSource.PlayOneShot(clip, type == AmmoPowerupType.RapidFire ? 0.52f : 0.72f);
         }
 
+        public void PlayPlayerShot(WeaponType type)
+        {
+            PlayPlayerShot(PowerupCycle.ToAmmoPowerupType(type));
+        }
+
         public void PlayHit(Vector3 position, Color color)
         {
             EmitParticles(position, color, 6, 0.16f, 0.35f);

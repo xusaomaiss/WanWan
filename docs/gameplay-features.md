@@ -188,6 +188,59 @@ Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血�
 - `Assets/Scripts/Runtime/EffectsController.cs`
 - `Assets/Scripts/Runtime/RuntimeSpriteFactory.cs`
 
+## 武器选择系统
+
+火力包现在代表四种常驻武器，并按 `Spread → Laser → Homing → Burst → Spread` 循环显示。玩家吃到不同武器包时会切换到该武器并保留当前 `fireLevel`；吃到相同武器包时提升 `fireLevel`，最高仍为 `4`。
+
+四种武器：
+
+- Spread / 扇形弹：默认雷电风格弹幕，等级越高散射角度和弹数越强，适合清小怪。
+- Laser / 激光弹：高速贯穿弹，单发伤害较高，等级越高激光数量或伤害越强。
+- Homing / 追踪弹：自动寻找最近敌机或 Boss，等级越高追踪弹数量越多。
+- Burst / 爆裂弹：命中后造成小范围爆炸，等级越高弹数或爆炸半径越强。
+
+HUD 底部显示当前武器和等级，例如 `Weapon: 激光弹 Lv.2`。火力包使用运行时生成的图标、颜色和字母标签区分类型。
+
+相关代码：
+
+- `Assets/Scripts/Runtime/Weapons/WeaponType.cs`
+- `Assets/Scripts/Runtime/Weapons/PlayerWeaponState.cs`
+- `Assets/Scripts/Runtime/Weapons/WeaponShotPattern.cs`
+- `Assets/Scripts/Runtime/AmmoPackController.cs`
+- `Assets/Scripts/Runtime/PlayerController.cs`
+
+## Combo 连击倍率系统
+
+玩家连续击杀普通敌机会累计 Combo。Combo 越高，普通击杀和 Boss 击破得分倍率越高；金币转化分数暂时不吃倍率，避免金币和炸弹经济膨胀。
+
+倍率规则：
+
+| Combo | 倍率 |
+| ---: | ---: |
+| `0~9` | `x1` |
+| `10~24` | `x2` |
+| `25~49` | `x3` |
+| `50~99` | `x4` |
+| `100+` | `x5` |
+
+Combo 变化：
+
+- 普通敌机死亡：`combo +1`。
+- Boss 阶段阈值被打穿：`combo +5`。
+- Boss 最终死亡：`combo +10`。
+- 玩家受敌弹伤害、与敌机碰撞受伤、敌机漏出底部或玩家死亡：Combo 清零。
+- 拾取金币、武器包、炸弹不会中断 Combo。
+
+HUD 顶部显示 `Combo: 23  x2`。GameOver / Victory 结算页显示 `Max Combo` 和 `Max Multiplier`。
+
+相关代码：
+
+- `Assets/Scripts/Runtime/Combo/ComboState.cs`
+- `Assets/Scripts/Runtime/GameManager.cs`
+- `Assets/Scripts/Runtime/BlockController.cs`
+- `Assets/Scripts/Runtime/BossController.cs`
+- `Assets/Scripts/UI/UIController.cs`
+
 ## 自动化验证
 
 常用验证命令：
@@ -203,6 +256,10 @@ python3 scripts/validate_unity_project.py
 - `PlayerHealthStateTests`：玩家 HP 扣减和归零规则。
 - `PlayerControllerBoundsTests`：玩家横向可达边界。
 - `FireLevelStateTests`：火力等级和弹幕数量。
+- `WeaponPickupStateTests`：武器切换、同武器升级和等级上限。
+- `WeaponDisplayTests`：当前武器和等级显示文本。
+- `ProjectileConfigTests`：四种武器各等级弹数。
+- `ComboStateTests`：连击、倍率边界、中断和 Boss 奖励。
 - `EnemySpawnBudgetTests`：敌机数量满足奖励经济。
 - `StageClearTargetTests`：关卡击落目标。
 - `PowerupCycleTests`：火力包循环池。
@@ -215,7 +272,8 @@ PlayMode 手测建议：
 3. 飞近金币，确认金币吸附并自动收集。
 4. 累计 100 金币，确认地图出现炸弹图标。
 5. 飞向炸弹，确认触碰后立即清屏并播放全屏特效。
-6. 吃火力包，确认火力等级提升，子弹形态变化。
-7. 漏掉敌机，确认只扣金币且不会出现基地失守。
-8. 被敌弹或敌机碰撞，确认 HP 扣减，HP 归零才失败。
-9. 推进到 Boss，确认 Boss 血条、警报、弹幕和通关结算正常。
+6. 吃火力包，确认武器在扇形弹、激光弹、追踪弹、爆裂弹之间切换；连续吃同武器确认等级提升。
+7. 连续击杀敌机，确认 Combo 和倍率提升，普通击杀分数随倍率增加。
+8. 漏掉敌机，确认扣金币并中断 Combo，且不会出现基地失守。
+9. 被敌弹或敌机碰撞，确认 HP 扣减、Combo 清零，HP 归零才失败。
+10. 推进到 Boss，确认 Boss 血条、阶段 Combo 奖励、最终击破 Combo 奖励和通关结算正常。

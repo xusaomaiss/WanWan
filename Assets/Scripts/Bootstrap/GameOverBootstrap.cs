@@ -46,6 +46,7 @@ namespace Wanwan.Runtime
             string title = victory ? "任务完成" : "任务失败";
             string stageLine = $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}  {BuildDifficultyText()}";
             string recordLine = $"评级 {SessionState.LastRunRating}  最高分 {SessionState.HighScore:0000000}";
+            string comboLine = $"Max Combo: {SessionState.LastRunMaxCombo}\nMax Multiplier: x{SessionState.LastRunMaxMultiplier}";
             string summary = victory
                 ? $"{SessionState.LastRunSummary}\n下一空域：{StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}"
                 : string.IsNullOrEmpty(SessionState.LastRunSummary) ? "再试一次，打穿敌方编队。\n优先保命，BOMB留给精英或旗舰压制。" : SessionState.LastRunSummary;
@@ -55,7 +56,8 @@ namespace Wanwan.Runtime
             UiFactory.CreateArcadeLabel(resultCard.transform, stageLine, 32, TextAnchor.MiddleCenter, victory ? new Color(0.86f, 0.94f, 1f) : new Color(1f, 0.76f, 0.84f), FontStyle.Bold, new Vector2(0.12f, 0.64f), new Vector2(0.88f, 0.72f), Vector2.zero);
             UiFactory.CreateArcadeLabel(resultCard.transform, $"本局得分 {SessionState.LastScore:0000000}", 50, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.16f, 0.52f), new Vector2(0.84f, 0.62f), Vector2.zero);
             UiFactory.CreateArcadeLabel(resultCard.transform, recordLine, 34, TextAnchor.MiddleCenter, new Color(0.52f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.16f, 0.45f), new Vector2(0.84f, 0.53f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(resultCard.transform, summary, 24, TextAnchor.MiddleCenter, victory ? new Color(0.84f, 0.94f, 1f) : new Color(1f, 0.8f, 0.86f), FontStyle.Bold, new Vector2(0.14f, 0.34f), new Vector2(0.86f, 0.43f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(resultCard.transform, comboLine, 28, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.16f, 0.36f), new Vector2(0.84f, 0.45f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(resultCard.transform, summary, 22, TextAnchor.MiddleCenter, victory ? new Color(0.84f, 0.94f, 1f) : new Color(1f, 0.8f, 0.86f), FontStyle.Bold, new Vector2(0.14f, 0.27f), new Vector2(0.86f, 0.35f), Vector2.zero);
 
             Button retryButton = UiFactory.CreateButton(background.transform, actionCopy, victory ? new Color(0.18f, 0.58f, 1f) : new Color(1f, 0.36f, 0.34f), Color.white, new Vector2(420f, 136f), new Vector2(0f, -150f));
             retryButton.onClick.AddListener(() =>

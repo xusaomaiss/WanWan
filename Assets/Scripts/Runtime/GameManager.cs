@@ -14,7 +14,8 @@ namespace Wanwan.Runtime
         private readonly ActivePowerupState activePowerup = new ActivePowerupState();
         private readonly GameplayRewardConfig rewardConfig = GameplayRewardConfig.Default;
         private readonly GameplayRewardState rewardState = new GameplayRewardState(GameplayRewardConfig.Default);
-        private readonly FireLevelState fireLevelState = new FireLevelState();
+        private readonly PlayerWeaponState weaponState = new PlayerWeaponState();
+        private readonly ComboState comboState = new ComboState();
         private readonly PlayerHealthState playerHealth = new PlayerHealthState();
         private bool gameEnded;
         private bool paused;
@@ -51,7 +52,12 @@ namespace Wanwan.Runtime
         public bool HasActivePowerup => activePowerup.HasActivePowerup;
         public GameplayRewardConfig RewardConfig => rewardConfig;
         public int CoinCount => rewardState.CoinsCollected;
-        public int FireLevel => fireLevelState.Level;
+        public int FireLevel => weaponState.FireLevel;
+        public WeaponType CurrentWeaponType => weaponState.CurrentWeaponType;
+        public int CurrentCombo => comboState.CurrentCombo;
+        public int CurrentComboMultiplier => comboState.CurrentMultiplier;
+        public int MaxCombo => comboState.MaxCombo;
+        public int MaxComboMultiplier => comboState.MaxMultiplier;
         public Vector3 PlayerPosition => playerController != null ? playerController.transform.position : Vector3.zero;
         public int BombCount => Mathf.Max(0, rewardState.BombPickupsEarned - bombsUsed);
         public int BombsUsed => bombsUsed;
@@ -151,6 +157,24 @@ namespace Wanwan.Runtime
             uiController.RefreshHud();
         }
 
+        public int AddComboScaledScore(int baseAmount, Vector3 position)
+        {
+            if (gameEnded)
+            {
+                return 0;
+            }
+
+            int earned = Mathf.Max(0, baseAmount) * comboState.CurrentMultiplier;
+            Score += earned;
+            if (earned > 0)
+            {
+                effectsController.PlayScorePopup(position, earned);
+            }
+
+            uiController.RefreshHud();
+            return earned;
+        }
+
         public void CollectCoin(Vector3 position)
         {
             if (gameEnded)
@@ -186,6 +210,40 @@ namespace Wanwan.Runtime
             }
         }
 
+        public void RegisterEnemyKillScore(int baseScore, Vector3 position)
+        {
+            if (gameEnded || stageClear)
+            {
+                return;
+            }
+
+            comboState.RegisterKill();
+            AddComboScaledScore(baseScore, position);
+        }
+
+        public void RegisterBossPhaseCombo()
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            comboState.RegisterBossPhaseClear();
+            ShowStageBanner("COMBO x" + comboState.CurrentMultiplier);
+            uiController.RefreshHud();
+        }
+
+        public void RegisterBossDefeatedScore(int baseScore, Vector3 position)
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            comboState.RegisterBossDefeated();
+            AddComboScaledScore(baseScore, position);
+        }
+
         public void NotifyEnemyEscaped(Vector3 position)
         {
             if (gameEnded)
@@ -193,6 +251,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            comboState.BreakCombo();
             int deducted = rewardState.DeductCoins(rewardConfig.CoinsLostPerEscapedEnemy);
             if (deducted > 0)
             {
@@ -226,7 +285,10 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            comboState.BreakCombo();
+            PlayerDamageFeedback.TriggerVibration(damageApplied);
             effectsController.PlayBaseHit();
+            uiController.NotifyPlayerDamaged();
             uiController.RefreshHud();
             if (playerHealth.IsDepleted)
             {
@@ -295,10 +357,29 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            activePowerup.Activate(type, durationSeconds);
-            fireLevelState.Increase();
-            ShowStageBanner("火力 Lv" + fireLevelState.Level);
+            ApplyWeaponPickup(PowerupCycle.ToWeaponType(type));
+        }
+
+        public void ApplyWeaponPickup(WeaponType type)
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            weaponState.ApplyWeaponPickup(type);
+            ShowStageBanner(WeaponConfig.Get(type).DisplayName + " Lv" + weaponState.FireLevel);
             uiController.RefreshHud();
+        }
+
+        public string GetCurrentWeaponDisplayText()
+        {
+            return weaponState.GetCurrentWeaponDisplayText();
+        }
+
+        public string GetComboDisplayText()
+        {
+            return comboState.GetDisplayText();
         }
 
         public bool TryActivateBomb()
@@ -380,7 +461,7 @@ namespace Wanwan.Runtime
             blockSpawner.StopSpawning();
             playerController.StopCombat();
             uiController.ShowGameOverOverlay(gameOverTitle, Score);
-            SessionState.CommitRunScore(Score, stageClear, BuildRunRating(), BuildRunSummary());
+            SessionState.CommitRunScore(Score, stageClear, BuildRunRating(), BuildRunSummary(), comboState.MaxCombo, comboState.MaxMultiplier);
             yield return new WaitForSeconds(1.15f);
             SceneNavigator.LoadGameOver();
         }
@@ -399,7 +480,7 @@ namespace Wanwan.Runtime
             blockSpawner.StopSpawning();
             playerController.StopCombat();
             uiController.ShowGameOverOverlay("游戏胜利", Score);
-            SessionState.CommitRunScore(Score, true, BuildRunRating(), BuildRunSummary());
+            SessionState.CommitRunScore(Score, true, BuildRunRating(), BuildRunSummary(), comboState.MaxCombo, comboState.MaxMultiplier);
             yield return new WaitForSeconds(3f);
             SceneNavigator.LoadNextStage();
         }

@@ -29,10 +29,10 @@ namespace Wanwan.Tests.EditMode
         [TestCase(1, 1)]
         [TestCase(2, 2)]
         [TestCase(3, 3)]
-        [TestCase(4, 7)]
+        [TestCase(4, 4)]
         public void GetShotCount_ReturnsExpectedPatternSize(int level, int expectedShotCount)
         {
-            Assert.That(PlayerFirePattern.GetShotCount(level), Is.EqualTo(expectedShotCount));
+            Assert.That(WeaponShotPattern.GetShots(WeaponType.Spread, level).Length, Is.EqualTo(expectedShotCount));
         }
     }
 }
