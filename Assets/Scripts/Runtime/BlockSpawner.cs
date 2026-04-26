@@ -565,49 +565,58 @@ namespace Wanwan.Runtime
 
         private void SpawnDiveLine(EnemySpawnInstruction instruction)
         {
+            int spawnCount = GetSpawnCount(instruction);
             float spacing = 1.45f;
-            float startX = -((instruction.Count - 1) * spacing * 0.5f);
-            for (int i = 0; i < instruction.Count; i++)
+            float startX = -((spawnCount - 1) * spacing * 0.5f);
+            for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 position = new Vector3(startX + (i * spacing), spawnY + (i * 0.12f), 0f);
-                SpawnEnemy(position, instruction.Elite, Vector2.down, 0f, 0f, i == instruction.Count / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
             }
         }
 
         private void SpawnSideCutIn(EnemySpawnInstruction instruction, bool fromLeft)
         {
+            int spawnCount = GetSpawnCount(instruction);
             float x = fromLeft ? leftBound - 0.95f : rightBound + 0.95f;
             Vector2 direction = (fromLeft ? new Vector2(0.62f, -1f) : new Vector2(-0.62f, -1f)).normalized;
 
-            for (int i = 0; i < instruction.Count; i++)
+            for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 position = new Vector3(x, spawnY - (i * 0.5f), 0f);
-                SpawnEnemy(position, instruction.Elite, direction, 0f, 0f, i == instruction.Count / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, direction, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
             }
         }
 
         private void SpawnVShape(EnemySpawnInstruction instruction)
         {
-            for (int i = 0; i < instruction.Count; i++)
+            int spawnCount = GetSpawnCount(instruction);
+            for (int i = 0; i < spawnCount; i++)
             {
-                float offsetIndex = i - ((instruction.Count - 1) * 0.5f);
+                float offsetIndex = i - ((spawnCount - 1) * 0.5f);
                 float x = offsetIndex * 1.15f;
                 float y = spawnY + (Mathf.Abs(offsetIndex) * 0.28f);
-                SpawnEnemy(new Vector3(x, y, 0f), instruction.Elite, Vector2.down, 0f, 0f, i == instruction.Count / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(new Vector3(x, y, 0f), instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
             }
         }
 
         private void SpawnSnakeSweep(EnemySpawnInstruction instruction)
         {
+            int spawnCount = GetSpawnCount(instruction);
             float spacing = 1.25f;
-            float startX = -((instruction.Count - 1) * spacing * 0.5f);
-            for (int i = 0; i < instruction.Count; i++)
+            float startX = -((spawnCount - 1) * spacing * 0.5f);
+            for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 position = new Vector3(startX + (i * spacing), spawnY + (i * 0.08f), 0f);
                 float swayAmplitude = 0.8f + (i * 0.05f);
                 float swayFrequency = 2.4f + (i * 0.12f);
-                SpawnEnemy(position, instruction.Elite, Vector2.down, swayAmplitude, swayFrequency, i == instruction.Count / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, Vector2.down, swayAmplitude, swayFrequency, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
             }
+        }
+
+        private static int GetSpawnCount(EnemySpawnInstruction instruction)
+        {
+            return EnemySpawnBudget.GetAdjustedCount(instruction.Count);
         }
 
         private void SpawnEnemy(Vector3 position, bool elite, Vector2 moveDirection, float swayAmplitude, float swayFrequency, AmmoPowerupType guaranteedDrop)

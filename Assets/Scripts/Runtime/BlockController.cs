@@ -11,7 +11,6 @@ namespace Wanwan.Runtime
         private TextMesh hitPointText;
         private Color effectColor;
         private int hitPoints;
-        private int scoreValue;
         private float fallSpeed;
         private Vector2 moveDirection = Vector2.down;
         private Vector3 spawnPosition;
@@ -31,7 +30,6 @@ namespace Wanwan.Runtime
             blockSpawner = spawner;
             effectsController = effects;
             hitPoints = startingHitPoints;
-            scoreValue = awardedScore;
             fallSpeed = speed;
             isTough = startingHitPoints > 1;
             isElite = elite;
@@ -117,6 +115,8 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
+            gameManager.NotifyEnemyDestroyed();
+            blockSpawner.SpawnCoinsAtPosition(transform.position);
             effectsController.PlayBurst(transform.position, effectColor);
             blockSpawner.NotifyEnemyResolved();
             Destroy(gameObject);

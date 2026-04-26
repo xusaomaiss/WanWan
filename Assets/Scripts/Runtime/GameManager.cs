@@ -287,7 +287,7 @@ namespace Wanwan.Runtime
 
             activePowerup.Activate(type, durationSeconds);
             fireLevelState.Increase();
-            effectsController.PlayPowerupPickup(PlayerPosition, PowerupCycle.GetCategoryColor(type), "火力 Lv" + fireLevelState.Level);
+            ShowStageBanner("火力 Lv" + fireLevelState.Level);
             uiController.RefreshHud();
         }
 
