@@ -632,7 +632,18 @@ namespace Wanwan.Runtime
             enemyObject.transform.position = position;
 
             SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = elite ? RuntimeSpriteFactory.GetEliteInterceptorSprite() : RuntimeSpriteFactory.GetEnemyInterceptorSprite();
+            if (elite)
+            {
+                renderer.sprite = RuntimeSpriteFactory.GetEliteInterceptorSprite();
+            }
+            else if (tough)
+            {
+                renderer.sprite = RuntimeSpriteFactory.GetToughInterceptorSprite();
+            }
+            else
+            {
+                renderer.sprite = RuntimeSpriteFactory.GetEnemyInterceptorSprite();
+            }
             Color accent = gameManager.StageAccentColor;
             Color normalColor = Color.Lerp(new Color(0.88f, 0.26f, 0.46f), accent, 0.24f);
             Color toughColor = Color.Lerp(new Color(1f, 0.38f, 0.52f), accent, 0.18f);

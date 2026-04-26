@@ -128,6 +128,13 @@
 
 Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血量、敌弹速度、敌机生命和射击频率。
 
+敌机美术分层：
+
+- 普通敌机：沿用基础敌机资源，作为低威胁杂兵轮廓。
+- 强化敌机：使用 AI 生成的重装拦截机资源 `tough_enemy_ai`。
+- 精英敌机：使用 AI 生成的高速精英机资源 `elite_enemy_ai`。
+- Boss：使用 AI 生成的宽体旗舰资源 `boss_flagship_ai`。
+
 相关代码：
 
 - `Assets/Scripts/Runtime/BlockSpawner.cs`
@@ -135,6 +142,7 @@ Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血�
 - `Assets/Scripts/Runtime/BossController.cs`
 - `Assets/Scripts/Runtime/StageClearTarget.cs`
 - `Assets/Scripts/Runtime/DifficultyProgression.cs`
+- `Assets/Scripts/Runtime/RuntimeSpriteFactory.cs`
 
 ## HUD 与反馈
 
@@ -150,6 +158,7 @@ Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血�
 主要反馈包括：
 
 - 金币吸附动画。
+- AI 生成的金色信用币图标，替换旧的纯黄色圆形金币。
 - 火力升级 banner。
 - 敌机爆炸和碎片。
 - 分数弹出文字。

@@ -7,6 +7,10 @@ namespace Wanwan.Runtime
     {
         public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet_128";
         public const string RaidenEnemyJetResourcePath = "RaidenArt/Ships/enemy_jet_128";
+        public const string ToughEnemyResourcePath = "RaidenArt/Ships/tough_enemy_ai";
+        public const string EliteEnemyResourcePath = "RaidenArt/Ships/elite_enemy_ai";
+        public const string BossFlagshipResourcePath = "RaidenArt/Ships/boss_flagship_ai";
+        public const string CoinResourcePath = "RaidenArt/Pickups/coin_ai";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -67,14 +71,19 @@ namespace Wanwan.Runtime
             return GetResourceSpriteOrFallback("raiden-enemy-jet", RaidenEnemyJetResourcePath, GetGeneratedEnemyInterceptorSprite);
         }
 
+        public static Sprite GetToughInterceptorSprite()
+        {
+            return GetResourceSpriteOrFallback("tough-enemy-ai", ToughEnemyResourcePath, GetGeneratedEnemyInterceptorSprite);
+        }
+
         public static Sprite GetEliteInterceptorSprite()
         {
-            return GetOrCreate("elite-interceptor", BuildEliteInterceptorTexture);
+            return GetResourceSpriteOrFallback("elite-enemy-ai", EliteEnemyResourcePath, GetGeneratedEliteInterceptorSprite);
         }
 
         public static Sprite GetBossFlagshipSprite()
         {
-            return GetOrCreate("boss-flagship", BuildBossFlagshipTexture);
+            return GetResourceSpriteOrFallback("boss-flagship-ai", BossFlagshipResourcePath, GetGeneratedBossFlagshipSprite);
         }
 
         public static Sprite GetPlaneSprite()
@@ -85,6 +94,16 @@ namespace Wanwan.Runtime
         private static Sprite GetGeneratedEnemyInterceptorSprite()
         {
             return GetOrCreate("enemy-interceptor", BuildEnemyInterceptorTexture);
+        }
+
+        private static Sprite GetGeneratedEliteInterceptorSprite()
+        {
+            return GetOrCreate("elite-interceptor", BuildEliteInterceptorTexture);
+        }
+
+        private static Sprite GetGeneratedBossFlagshipSprite()
+        {
+            return GetOrCreate("boss-flagship", BuildBossFlagshipTexture);
         }
 
         public static Sprite GetBattlefieldBackgroundSprite()
@@ -131,12 +150,17 @@ namespace Wanwan.Runtime
 
         public static Sprite GetCoinSprite()
         {
-            return GetOrCreate("coin", BuildCoinTexture);
+            return GetResourceSpriteOrFallback("coin-ai", CoinResourcePath, GetGeneratedCoinSprite);
         }
 
         public static Sprite GetBombPickupSprite()
         {
             return GetOrCreate("bomb-pickup", BuildBombPickupTexture);
+        }
+
+        private static Sprite GetGeneratedCoinSprite()
+        {
+            return GetOrCreate("coin", BuildCoinTexture);
         }
 
         private static Sprite GetOrCreate(string key, System.Func<Texture2D> textureFactory)
