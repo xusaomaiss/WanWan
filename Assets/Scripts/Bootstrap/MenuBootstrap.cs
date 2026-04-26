@@ -17,8 +17,6 @@ namespace Wanwan.Runtime
         private Text opacityValueText;
         private Text saveStatusText;
         private Image cinematicBackground;
-        private Image cinematicShip;
-        private Image cinematicExhaust;
         private float cinematicTimer;
         private float saveStatusTimer;
 
@@ -88,29 +86,13 @@ namespace Wanwan.Runtime
             shade.raycastTarget = false;
             UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
             UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f)).raycastTarget = false;
-            CreateLaunchHero(background.transform);
             CreateScanlines(background.transform);
             return background;
         }
 
-        private void CreateLaunchHero(Transform parent)
-        {
-            cinematicShip = UiFactory.CreatePanel(parent, "MenuLaunchJet", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            cinematicShip.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
-            cinematicShip.color = Color.Lerp(Color.white, ShipDefinition.Get(selectedShip).AccentColor, 0.35f);
-            cinematicShip.preserveAspect = true;
-            cinematicShip.raycastTarget = false;
-            cinematicShip.rectTransform.sizeDelta = new Vector2(230f, 230f);
-
-            cinematicExhaust = UiFactory.CreatePanel(cinematicShip.transform, "MenuLaunchExhaust", new Color(0.38f, 0.9f, 1f, 0.74f), new Vector2(0.41f, -0.42f), new Vector2(0.59f, 0.1f));
-            cinematicExhaust.raycastTarget = false;
-            UiFactory.CreateDivider(parent, "LaunchWakeLeft", new Color(0.7f, 0.95f, 1f, 0.22f), new Vector2(0.18f, 0f), new Vector2(0.188f, 0.68f));
-            UiFactory.CreateDivider(parent, "LaunchWakeRight", new Color(0.7f, 0.95f, 1f, 0.22f), new Vector2(0.812f, 0f), new Vector2(0.82f, 0.68f));
-        }
-
         private void AnimateCinematicBackground()
         {
-            if (cinematicBackground == null || cinematicShip == null)
+            if (cinematicBackground == null)
             {
                 return;
             }
@@ -118,17 +100,7 @@ namespace Wanwan.Runtime
             cinematicTimer += Time.unscaledDeltaTime;
             float loop = Mathf.Repeat(cinematicTimer, 5.2f) / 5.2f;
             float eased = loop * loop * (3f - (2f * loop));
-            cinematicShip.rectTransform.anchoredPosition = new Vector2(Mathf.Sin(cinematicTimer * 1.9f) * 26f, Mathf.Lerp(-640f, 290f, eased));
-            cinematicShip.rectTransform.localScale = Vector3.one * Mathf.Lerp(0.9f, 1.3f, eased);
-            cinematicBackground.rectTransform.anchoredPosition = new Vector2(0f, Mathf.Lerp(70f, -60f, eased));
-
-            if (cinematicExhaust != null)
-            {
-                Color exhaustColor = cinematicExhaust.color;
-                exhaustColor.a = Mathf.Lerp(0.45f, 0.88f, Mathf.PingPong(cinematicTimer * 2.4f, 1f));
-                cinematicExhaust.color = exhaustColor;
-                cinematicExhaust.rectTransform.localScale = new Vector3(1f, Mathf.Lerp(0.8f, 1.55f, Mathf.PingPong(cinematicTimer * 3f, 1f)), 1f);
-            }
+            cinematicBackground.rectTransform.anchoredPosition = new Vector2(0f, Mathf.Lerp(22f, -18f, eased));
         }
 
         private static void CreateScanlines(Transform parent)
@@ -159,7 +131,7 @@ namespace Wanwan.Runtime
             UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.89f), Vector2.zero);
             UiFactory.CreateArcadeLabel(background.transform, "空投爆破", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.735f), new Vector2(0.92f, 0.805f), Vector2.zero);
             UiFactory.CreateDivider(background.transform, "TitleHotLine", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.724f), new Vector2(0.8f, 0.73f));
-            UiFactory.CreateArcadeLabel(background.transform, "暴风起飞准备完成", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "街机空战准备完成", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
 
             Button leaderboard = UiFactory.CreateArcadeIconButton(background.transform, "榜", ArcadeTheme.EnergyYellow, new Vector2(104f, 104f), new Vector2(76f, -136f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             leaderboard.onClick.AddListener(ShowLeaderboard);
@@ -169,7 +141,8 @@ namespace Wanwan.Runtime
             saveStatusText = UiFactory.CreateArcadeLabel(background.transform, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.27f), new Vector2(0.88f, 0.32f), Vector2.zero);
             saveStatusText.gameObject.SetActive(false);
 
-            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.66f), ArcadeTheme.ElectricBlue, new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.265f), new Vector2(8f, 8f));
+            Image menu = UiFactory.CreatePanel(background.transform, "TitleMenu", Color.clear, new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.265f));
+            menu.raycastTarget = false;
             Button save = UiFactory.CreateArcadeCircleButton(menu.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(142f, 142f), new Vector2(-312f, 0f));
             save.onClick.AddListener(ShowAutoSaveStatus);
             Button start = UiFactory.CreateArcadeCircleButton(menu.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(190f, 190f), Vector2.zero);
