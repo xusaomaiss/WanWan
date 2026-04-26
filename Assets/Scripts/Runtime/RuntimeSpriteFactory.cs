@@ -6,6 +6,7 @@ namespace Wanwan.Runtime
     public static class RuntimeSpriteFactory
     {
         public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet_128";
+        public const string RaidenEnemyJetResourcePath = "RaidenArt/Ships/enemy_jet_128";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -63,7 +64,7 @@ namespace Wanwan.Runtime
 
         public static Sprite GetEnemyInterceptorSprite()
         {
-            return GetOrCreate("enemy-interceptor", BuildEnemyInterceptorTexture);
+            return GetResourceSpriteOrFallback("raiden-enemy-jet", RaidenEnemyJetResourcePath, GetGeneratedEnemyInterceptorSprite);
         }
 
         public static Sprite GetEliteInterceptorSprite()
@@ -79,6 +80,11 @@ namespace Wanwan.Runtime
         public static Sprite GetPlaneSprite()
         {
             return GetEnemyInterceptorSprite();
+        }
+
+        private static Sprite GetGeneratedEnemyInterceptorSprite()
+        {
+            return GetOrCreate("enemy-interceptor", BuildEnemyInterceptorTexture);
         }
 
         public static Sprite GetBattlefieldBackgroundSprite()
@@ -121,6 +127,16 @@ namespace Wanwan.Runtime
         public static Sprite GetExplosionSprite()
         {
             return GetOrCreate("explosion-fireball", BuildExplosionTexture);
+        }
+
+        public static Sprite GetCoinSprite()
+        {
+            return GetOrCreate("coin", BuildCoinTexture);
+        }
+
+        public static Sprite GetBombPickupSprite()
+        {
+            return GetOrCreate("bomb-pickup", BuildBombPickupTexture);
         }
 
         private static Sprite GetOrCreate(string key, System.Func<Texture2D> textureFactory)
@@ -328,6 +344,95 @@ namespace Wanwan.Runtime
             return texture;
         }
 
+        private static Texture2D BuildCoinTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), center);
+                    if (distance > 54f)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float shine = Mathf.InverseLerp(54f, 0f, distance);
+                    Color pixel = Color.Lerp(new Color(1f, 0.58f, 0.08f), new Color(1f, 0.95f, 0.32f), shine);
+                    if (distance > 43f)
+                    {
+                        pixel = new Color(1f, 0.78f, 0.12f, 1f);
+                    }
+
+                    bool innerRing = Mathf.Abs(distance - 31f) < 3f;
+                    bool coinMark = Mathf.Abs(x - center.x) < 5f && y > 34f && y < 94f;
+                    if (innerRing || coinMark)
+                    {
+                        pixel = Color.Lerp(pixel, Color.white, 0.46f);
+                    }
+
+                    texture.SetPixel(x, y, pixel);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildBombPickupTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 point = new Vector2(x, y);
+                    float distance = Vector2.Distance(point, center);
+                    bool body = distance <= 38f;
+                    bool cap = x >= 76 && x <= 100 && y >= 86 && y <= 104;
+                    bool fuse = Mathf.Abs((y - 98f) - ((x - 92f) * 0.5f)) < 4f && x >= 92 && x <= 118;
+                    bool spark = Vector2.Distance(point, new Vector2(116f, 110f)) <= 9f;
+
+                    if (!(body || cap || fuse || spark))
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Color pixel = new Color(0.05f, 0.09f, 0.14f, 1f);
+                    if (body)
+                    {
+                        pixel = Color.Lerp(new Color(0.06f, 0.12f, 0.2f), new Color(0.28f, 0.74f, 1f), Mathf.InverseLerp(40f, 0f, distance) * 0.55f);
+                    }
+
+                    if (cap)
+                    {
+                        pixel = new Color(0.76f, 0.88f, 0.96f, 1f);
+                    }
+                    else if (fuse)
+                    {
+                        pixel = new Color(1f, 0.9f, 0.44f, 1f);
+                    }
+                    else if (spark)
+                    {
+                        pixel = new Color(1f, 0.42f, 0.2f, 1f);
+                    }
+
+                    texture.SetPixel(x, y, pixel);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
         private static Texture2D BuildMissileTexture()
         {
             const int width = 160;
@@ -397,50 +502,77 @@ namespace Wanwan.Runtime
                 {
                     float dx = Mathf.Abs(x - center.x);
                     float dy = Mathf.Abs(y - center.y);
-                    bool filled;
-                    Color pixel = core;
+                    Color pixel = Color.clear;
 
                     switch (type)
                     {
                         case AmmoPowerupType.Laser:
-                            filled = dx <= 5f && y >= 8f && y <= 136f;
-                            pixel = dx <= 2f ? Color.white : core;
+                            float laserLengthFade = Mathf.Min(Mathf.InverseLerp(2f, 18f, y), Mathf.InverseLerp(142f, 124f, y));
+                            float laserCore = Mathf.InverseLerp(7f, 0f, dx);
+                            float laserInner = Mathf.InverseLerp(15f, 4f, dx) * 0.72f;
+                            float laserOuter = Mathf.InverseLerp(25f, 9f, dx) * 0.34f;
+                            float laserAlpha = Mathf.Clamp01(Mathf.Max(laserCore, Mathf.Max(laserInner, laserOuter)) * laserLengthFade);
+                            pixel = Color.Lerp(core, Color.white, Mathf.Clamp01(laserCore * 0.9f + 0.1f));
+                            pixel.a = laserAlpha;
                             break;
                         case AmmoPowerupType.Plasma:
                             float plasmaDistance = Vector2.Distance(new Vector2(x, y), center);
-                            filled = plasmaDistance <= 30f;
-                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(30f, 0f, plasmaDistance) * 0.7f);
+                            float plasmaAlpha = Mathf.InverseLerp(36f, 12f, plasmaDistance);
+                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(30f, 0f, plasmaDistance) * 0.8f);
+                            pixel.a = plasmaAlpha;
                             break;
                         case AmmoPowerupType.Burst:
-                            filled = dy + (dx * 0.8f) <= 42f;
-                            pixel = dx <= 8f ? Color.white : core;
+                            float burstShape = 48f - dy - (dx * 0.82f);
+                            float burstAlpha = Mathf.Clamp01(Mathf.InverseLerp(-5f, 10f, burstShape));
+                            pixel = dx <= 9f ? Color.white : Color.Lerp(core, new Color(1f, 0.62f, 0.18f), 0.35f);
+                            pixel.a = burstAlpha;
                             break;
                         case AmmoPowerupType.Homing:
-                            filled = (dx <= 8f && y >= 20f && y <= 124f) || (dx >= 10f && dx <= 28f && y >= 26f && y <= 58f);
+                            float homingBeam = Mathf.InverseLerp(13f, 2f, dx) * Mathf.Min(Mathf.InverseLerp(12f, 28f, y), Mathf.InverseLerp(136f, 118f, y));
+                            float homingWing = Mathf.InverseLerp(7f, 0f, Mathf.Abs(dx - 22f)) * Mathf.InverseLerp(68f, 34f, y) * Mathf.InverseLerp(18f, 30f, y);
+                            pixel = Color.Lerp(core, Color.white, Mathf.Clamp01(homingBeam * 0.65f));
+                            pixel.a = Mathf.Clamp01(Mathf.Max(homingBeam, homingWing * 0.82f));
                             break;
                         case AmmoPowerupType.Wave:
-                            filled = dy <= 45f - (dx * 0.75f) && dx <= 44f;
+                            float waveCenter = Mathf.Sin((y - center.y) * 0.12f) * 10f;
+                            float waveAlpha = Mathf.InverseLerp(20f, 2f, Mathf.Abs((x - center.x) - waveCenter)) * Mathf.Min(Mathf.InverseLerp(8f, 24f, y), Mathf.InverseLerp(138f, 116f, y));
+                            pixel = Color.Lerp(core, Color.white, Mathf.Clamp01(waveAlpha * 0.55f));
+                            pixel.a = waveAlpha;
                             break;
                         case AmmoPowerupType.Guard:
-                            filled = Mathf.Abs(Vector2.Distance(new Vector2(x, y), center) - 24f) <= 5f || (dx <= 5f && dy <= 36f);
+                            float ring = Mathf.InverseLerp(8f, 0f, Mathf.Abs(Vector2.Distance(new Vector2(x, y), center) - 26f));
+                            float guardBeam = Mathf.InverseLerp(10f, 1f, dx) * Mathf.InverseLerp(44f, 20f, dy);
+                            pixel = Color.Lerp(core, Color.white, Mathf.Clamp01(guardBeam));
+                            pixel.a = Mathf.Clamp01(Mathf.Max(ring * 0.78f, guardBeam));
                             break;
                         case AmmoPowerupType.Scatter:
-                            filled = dx <= Mathf.Lerp(3f, 14f, Mathf.InverseLerp(136f, 16f, y)) && y >= 16f && y <= 136f;
+                            float scatterRadius = Mathf.Lerp(5f, 18f, Mathf.InverseLerp(136f, 16f, y));
+                            float scatterFade = Mathf.Min(Mathf.InverseLerp(8f, 24f, y), Mathf.InverseLerp(140f, 126f, y));
+                            float scatterAlpha = Mathf.InverseLerp(scatterRadius + 5f, scatterRadius - 1f, dx) * scatterFade;
+                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(scatterRadius, 0f, dx) * 0.75f);
+                            pixel.a = scatterAlpha;
                             break;
                         case AmmoPowerupType.RapidFire:
-                            filled = dx <= 4f && y >= 10f && y <= 134f;
-                            pixel = Color.Lerp(core, Color.white, dx <= 2f ? 0.75f : 0.1f);
+                            float rapidLengthFade = Mathf.Min(Mathf.InverseLerp(6f, 18f, y), Mathf.InverseLerp(138f, 124f, y));
+                            float rapidAlpha = Mathf.Max(Mathf.InverseLerp(7f, 0f, dx), Mathf.InverseLerp(16f, 7f, dx) * 0.32f) * rapidLengthFade;
+                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(7f, 0f, dx) * 0.78f);
+                            pixel.a = rapidAlpha;
                             break;
                         case AmmoPowerupType.Pierce:
-                            filled = dx <= 7f && y >= 10f && y <= 134f;
-                            pixel = dx <= 3f ? Color.white : core;
+                            float pierceLengthFade = Mathf.Min(Mathf.InverseLerp(6f, 20f, y), Mathf.InverseLerp(140f, 122f, y));
+                            float pierceAlpha = Mathf.Max(Mathf.InverseLerp(9f, 0f, dx), Mathf.InverseLerp(19f, 8f, dx) * 0.38f) * pierceLengthFade;
+                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(8f, 0f, dx) * 0.86f);
+                            pixel.a = pierceAlpha;
                             break;
                         default:
-                            filled = dx <= 8f && y >= 18f && y <= 126f;
+                            float normalLengthFade = Mathf.Min(Mathf.InverseLerp(10f, 24f, y), Mathf.InverseLerp(134f, 116f, y));
+                            float normalAlpha = Mathf.Max(Mathf.InverseLerp(11f, 1f, dx), Mathf.InverseLerp(20f, 9f, dx) * 0.26f) * normalLengthFade;
+                            pixel = Color.Lerp(core, Color.white, Mathf.InverseLerp(10f, 0f, dx) * 0.7f);
+                            pixel.a = normalAlpha;
                             break;
                     }
 
-                    texture.SetPixel(x, y, filled ? pixel : Color.clear);
+                    texture.SetPixel(x, y, pixel.a > 0.01f ? pixel : Color.clear);
                 }
             }
 
@@ -533,7 +665,7 @@ namespace Wanwan.Runtime
                 case AmmoPowerupType.Pierce:
                     return new Color(0.45f, 0.95f, 1f);
                 case AmmoPowerupType.Laser:
-                    return new Color(0.35f, 1f, 0.55f);
+                    return new Color(0.2f, 0.82f, 1f);
                 case AmmoPowerupType.Plasma:
                     return new Color(0.7f, 0.38f, 1f);
                 case AmmoPowerupType.Burst:

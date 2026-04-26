@@ -12,11 +12,12 @@ namespace Wanwan.Runtime
         private BlockSpawner blockSpawner;
         private PlayerController playerController;
         private readonly ActivePowerupState activePowerup = new ActivePowerupState();
-        private readonly BombState bombState = new BombState(3);
+        private readonly GameplayRewardConfig rewardConfig = GameplayRewardConfig.Default;
+        private readonly GameplayRewardState rewardState = new GameplayRewardState(GameplayRewardConfig.Default);
+        private readonly FireLevelState fireLevelState = new FireLevelState();
         private bool gameEnded;
         private bool paused;
         private bool stageClear;
-        private bool launchSequenceActive = true;
         private float elapsedTime;
         private float stageProgress;
         private string stageBannerText = string.Empty;
@@ -30,13 +31,14 @@ namespace Wanwan.Runtime
         private int bombsUsed;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
+        public GameFlowState CurrentState { get; private set; } = GameFlowState.Intro;
         public int Score { get; private set; }
         public int Lives { get; private set; } = 5;
         public float LeftBound { get; private set; }
         public float RightBound { get; private set; }
         public float TopBound { get; private set; }
         public float BottomBound { get; private set; }
-        public bool IsPlaying => !gameEnded && !paused && !launchSequenceActive;
+        public bool IsPlaying => CurrentState == GameFlowState.Playing && !gameEnded && !paused;
         public bool IsPaused => paused;
         public float ElapsedTime => elapsedTime;
         public GameDifficulty Difficulty => SessionState.SelectedDifficulty;
@@ -44,9 +46,13 @@ namespace Wanwan.Runtime
         public int ActivePowerupLevel => activePowerup.Level;
         public float ActivePowerupRemainingSeconds => activePowerup.RemainingSeconds;
         public bool HasActivePowerup => activePowerup.HasActivePowerup;
-        public int BombCount => bombState.Count;
+        public GameplayRewardConfig RewardConfig => rewardConfig;
+        public int CoinCount => rewardState.CoinsCollected;
+        public int FireLevel => fireLevelState.Level;
+        public Vector3 PlayerPosition => playerController != null ? playerController.transform.position : Vector3.zero;
+        public int BombCount => Mathf.Max(0, rewardState.BombPickupsEarned - bombsUsed);
         public int BombsUsed => bombsUsed;
-        public bool HasBomb => bombState.HasBomb;
+        public bool HasBomb => BombCount > 0;
         public StagePhase CurrentStagePhase => currentStagePhase;
         public string StageLabel => stageLabel;
         public float StageProgress => stageProgress;
@@ -84,28 +90,38 @@ namespace Wanwan.Runtime
             uiController.Bind(this);
         }
 
-        public void BeginLaunchSequence()
+        public void BeginIntro()
         {
             if (gameEnded)
             {
                 return;
             }
 
+            CurrentState = GameFlowState.Intro;
             stageLabel = "航母起飞";
             ShowStageBanner("航母起飞");
-            uiController.RefreshHud();
+            if (uiController != null)
+            {
+                uiController.ShowIntroPrompt();
+                uiController.RefreshHud();
+            }
         }
 
-        public void CompleteLaunchSequence()
+        public void CompleteIntro()
         {
             if (gameEnded)
             {
                 return;
             }
 
-            launchSequenceActive = false;
-            ShowStageBanner("起飞完成");
-            uiController.RefreshHud();
+            CurrentState = GameFlowState.Playing;
+            stageLabel = "敌机来袭";
+            ShowStageBanner("START");
+            if (uiController != null)
+            {
+                uiController.HideIntroPrompt();
+                uiController.RefreshHud();
+            }
         }
 
         private void Update()
@@ -131,6 +147,26 @@ namespace Wanwan.Runtime
             }
 
             Score += amount;
+            uiController.RefreshHud();
+        }
+
+        public void CollectCoin(Vector3 position)
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            int earnedBombPickups = rewardState.CollectCoins(1);
+            Score += rewardConfig.ScorePerCoin;
+            effectsController.PlayScorePopup(position, rewardConfig.ScorePerCoin);
+
+            for (int i = 0; i < earnedBombPickups; i++)
+            {
+                blockSpawner.SpawnBombPickupAtRandomReachablePosition();
+                ShowStageBanner("BOMB READY");
+            }
+
             uiController.RefreshHud();
         }
 
@@ -250,12 +286,19 @@ namespace Wanwan.Runtime
             }
 
             activePowerup.Activate(type, durationSeconds);
+            fireLevelState.Increase();
+            effectsController.PlayPowerupPickup(PlayerPosition, PowerupCycle.GetCategoryColor(type), "火力 Lv" + fireLevelState.Level);
             uiController.RefreshHud();
         }
 
         public bool TryActivateBomb()
         {
-            if (gameEnded || paused || !bombState.TryConsume())
+            return false;
+        }
+
+        public bool ActivateBombFromPickup(Vector3 origin)
+        {
+            if (gameEnded || paused || !IsPlaying)
             {
                 uiController.RefreshHud();
                 return false;
@@ -268,7 +311,7 @@ namespace Wanwan.Runtime
 
             foreach (BlockController block in FindObjectsByType<BlockController>(FindObjectsSortMode.None))
             {
-                block.ApplyHit(4);
+                block.ClearByBomb();
             }
 
             foreach (BossController boss in FindObjectsByType<BossController>(FindObjectsSortMode.None))
@@ -276,7 +319,7 @@ namespace Wanwan.Runtime
                 boss.ApplyHit(5);
             }
 
-            effectsController.PlayBombDetonation(Vector3.zero);
+            effectsController.PlayBombDetonation(origin);
             bombsUsed++;
             ShowStageBanner("BOMB");
             uiController.RefreshHud();
@@ -285,7 +328,7 @@ namespace Wanwan.Runtime
 
         public void TogglePause()
         {
-            if (gameEnded)
+            if (gameEnded || CurrentState != GameFlowState.Playing)
             {
                 return;
             }
@@ -320,6 +363,7 @@ namespace Wanwan.Runtime
                 yield break;
             }
 
+            CurrentState = GameFlowState.GameOver;
             gameEnded = true;
             SetPaused(false);
             activePowerup.Clear();
@@ -338,6 +382,7 @@ namespace Wanwan.Runtime
                 yield break;
             }
 
+            CurrentState = GameFlowState.GameOver;
             gameEnded = true;
             SetPaused(false);
             activePowerup.Clear();

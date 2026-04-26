@@ -9,6 +9,7 @@ namespace Wanwan.Runtime
         private const string MusicVolumeKey = "wanwan.music_volume";
         private const string SfxVolumeKey = "wanwan.sfx_volume";
         private const string SelectedShipKey = "wanwan.selected_ship";
+        private const string SelectedDifficultyKey = "wanwan.selected_difficulty";
         private const string ControlSensitivityKey = "wanwan.control_sensitivity";
         private const string VibrationEnabledKey = "wanwan.vibration_enabled";
         private const string DamageNumbersEnabledKey = "wanwan.damage_numbers_enabled";
@@ -21,11 +22,11 @@ namespace Wanwan.Runtime
         public static float MusicVolume => PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
         public static float SfxVolume => PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
         public static PlayerShipType SelectedShip => (PlayerShipType)PlayerPrefs.GetInt(SelectedShipKey, (int)PlayerShipType.Green);
+        public static GameDifficulty SelectedDifficulty => (GameDifficulty)PlayerPrefs.GetInt(SelectedDifficultyKey, (int)GameDifficulty.Medium);
         public static ControlSensitivity ControlSensitivity => (ControlSensitivity)PlayerPrefs.GetInt(ControlSensitivityKey, (int)ControlSensitivity.Medium);
         public static bool VibrationEnabled => PlayerPrefs.GetInt(VibrationEnabledKey, 1) == 1;
         public static bool DamageNumbersEnabled => PlayerPrefs.GetInt(DamageNumbersEnabledKey, 1) == 1;
         public static float VirtualButtonOpacity => PlayerPrefs.GetFloat(VirtualButtonOpacityKey, 0.4f);
-        public static GameDifficulty SelectedDifficulty { get; private set; } = GameDifficulty.Low;
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "B";
         public static string LastRunSummary { get; private set; } = string.Empty;
@@ -47,7 +48,8 @@ namespace Wanwan.Runtime
 
         public static void SelectDifficulty(GameDifficulty difficulty)
         {
-            SelectedDifficulty = difficulty;
+            PlayerPrefs.SetInt(SelectedDifficultyKey, (int)difficulty);
+            PlayerPrefs.Save();
             ResetCampaign();
         }
 
@@ -70,7 +72,6 @@ namespace Wanwan.Runtime
         public static void ResetProgress()
         {
             LastScore = 0;
-            SelectedDifficulty = GameDifficulty.Low;
             LastRunWasVictory = false;
             LastRunRating = "B";
             LastRunSummary = string.Empty;
@@ -81,6 +82,7 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(MusicVolumeKey);
             PlayerPrefs.DeleteKey(SfxVolumeKey);
             PlayerPrefs.DeleteKey(SelectedShipKey);
+            PlayerPrefs.DeleteKey(SelectedDifficultyKey);
             PlayerPrefs.DeleteKey(ControlSensitivityKey);
             PlayerPrefs.DeleteKey(VibrationEnabledKey);
             PlayerPrefs.DeleteKey(DamageNumbersEnabledKey);
@@ -95,6 +97,7 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(MusicVolumeKey);
             PlayerPrefs.DeleteKey(SfxVolumeKey);
             PlayerPrefs.DeleteKey(SelectedShipKey);
+            PlayerPrefs.DeleteKey(SelectedDifficultyKey);
             PlayerPrefs.DeleteKey(ControlSensitivityKey);
             PlayerPrefs.DeleteKey(VibrationEnabledKey);
             PlayerPrefs.DeleteKey(DamageNumbersEnabledKey);

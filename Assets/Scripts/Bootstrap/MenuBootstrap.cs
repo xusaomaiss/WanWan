@@ -111,7 +111,7 @@ namespace Wanwan.Runtime
             UiFactory.CreateArcadeLabel(background.transform, "INSERT COIN / 插入硬币", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f), Vector2.zero);
 
             Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.DimGray, new Vector2(0.16f, 0.12f), new Vector2(0.84f, 0.38f), new Vector2(8f, 8f));
-            UiFactory.CreateMenuItem(menu.transform, "开始游戏", 0, ShowShipSelect);
+            UiFactory.CreateMenuItem(menu.transform, "开始游戏", 0, SceneNavigator.LoadGame);
             UiFactory.CreateMenuItem(menu.transform, "排行榜", 1, ShowLeaderboard);
             UiFactory.CreateMenuItem(menu.transform, "设置", 2, ShowSettings);
             UiFactory.CreateMenuItem(menu.transform, "退出", 3, Application.Quit);
@@ -243,19 +243,24 @@ namespace Wanwan.Runtime
                 if (opacityValueText != null) opacityValueText.text = Mathf.RoundToInt(SessionState.VirtualButtonOpacity * 100f) + "%";
             }, out opacityValueText);
 
-            Button sensitivityButton = UiFactory.CreatePixelButton(panel.transform, "灵敏度 " + BuildSensitivityText(), ArcadeTheme.EnergyYellow, new Vector2(420f, 72f), new Vector2(-220f, -176f));
+            Button defaultShipButton = UiFactory.CreatePixelButton(panel.transform, "默认战机 " + BuildDefaultShipText(), ArcadeTheme.EnergyYellow, new Vector2(420f, 72f), new Vector2(-220f, -136f));
+            defaultShipButton.onClick.AddListener(CycleDefaultShip);
+            Button defaultDifficultyButton = UiFactory.CreatePixelButton(panel.transform, "默认难度 " + BuildDifficultySettingText(SessionState.SelectedDifficulty), ArcadeTheme.ElectricBlue, new Vector2(420f, 72f), new Vector2(220f, -136f));
+            defaultDifficultyButton.onClick.AddListener(CycleDefaultDifficulty);
+
+            Button sensitivityButton = UiFactory.CreatePixelButton(panel.transform, "灵敏度 " + BuildSensitivityText(), ArcadeTheme.EnergyYellow, new Vector2(420f, 72f), new Vector2(-220f, -226f));
             sensitivityButton.onClick.AddListener(CycleSensitivity);
-            Button vibrationButton = UiFactory.CreatePixelToggle(panel.transform, "震动", SessionState.VibrationEnabled, new Vector2(220f, -176f), () =>
+            Button vibrationButton = UiFactory.CreatePixelToggle(panel.transform, "震动", SessionState.VibrationEnabled, new Vector2(220f, -226f), () =>
             {
                 SessionState.SetVibrationEnabled(!SessionState.VibrationEnabled);
                 ShowSettings();
             });
-            Button damageButton = UiFactory.CreatePixelToggle(panel.transform, "伤害数字", SessionState.DamageNumbersEnabled, new Vector2(-220f, -266f), () =>
+            Button damageButton = UiFactory.CreatePixelToggle(panel.transform, "伤害数字", SessionState.DamageNumbersEnabled, new Vector2(-220f, -316f), () =>
             {
                 SessionState.SetDamageNumbersEnabled(!SessionState.DamageNumbersEnabled);
                 ShowSettings();
             });
-            Button resetButton = UiFactory.CreatePixelButton(panel.transform, "恢复默认", ArcadeTheme.WarningRed, new Vector2(420f, 72f), new Vector2(220f, -266f));
+            Button resetButton = UiFactory.CreatePixelButton(panel.transform, "恢复默认", ArcadeTheme.WarningRed, new Vector2(420f, 72f), new Vector2(220f, -316f));
             resetButton.onClick.AddListener(() =>
             {
                 SessionState.ResetSettings();
@@ -284,6 +289,24 @@ namespace Wanwan.Runtime
             }
         }
 
+        private static string BuildDifficultySettingText(GameDifficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case GameDifficulty.Low:
+                    return "简单";
+                case GameDifficulty.High:
+                    return "困难";
+                default:
+                    return "普通";
+            }
+        }
+
+        private static string BuildDefaultShipText()
+        {
+            return ShipDefinition.Get(SessionState.SelectedShip).DisplayName;
+        }
+
         private string BuildAudioText()
         {
             return SessionState.AudioEnabled ? "AUDIO ON" : "AUDIO OFF";
@@ -308,6 +331,34 @@ namespace Wanwan.Runtime
                 ? ControlSensitivity.Medium
                 : SessionState.ControlSensitivity == ControlSensitivity.Medium ? ControlSensitivity.High : ControlSensitivity.Low;
             SessionState.SetControlSensitivity(next);
+            ShowSettings();
+        }
+
+        private void CycleDefaultShip()
+        {
+            PlayerShipType next = SessionState.SelectedShip == PlayerShipType.Green ? PlayerShipType.Blue : PlayerShipType.Green;
+            selectedShip = next;
+            SessionState.SelectShip(next);
+            ShowSettings();
+        }
+
+        private void CycleDefaultDifficulty()
+        {
+            GameDifficulty next;
+            switch (SessionState.SelectedDifficulty)
+            {
+                case GameDifficulty.Low:
+                    next = GameDifficulty.Medium;
+                    break;
+                case GameDifficulty.Medium:
+                    next = GameDifficulty.High;
+                    break;
+                default:
+                    next = GameDifficulty.Low;
+                    break;
+            }
+
+            SessionState.SelectDifficulty(next);
             ShowSettings();
         }
     }

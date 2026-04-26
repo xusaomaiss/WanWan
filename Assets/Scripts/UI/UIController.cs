@@ -43,7 +43,6 @@ namespace Wanwan.Runtime
             gameManager = manager;
             Build();
             RefreshHud();
-            StartCoroutine(ShowLevelIntroSequence());
         }
 
         public void RefreshHud()
@@ -53,8 +52,8 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            scoreText.text = $"得分\n{gameManager.Score:0000000}";
-            livesText.text = $"战机 {gameManager.Lives}\n待命";
+            scoreText.text = $"得分 {gameManager.Score:0000000}\n金币 {gameManager.CoinCount:000}";
+            livesText.text = $"战机 {gameManager.Lives}\n{BuildBombIcons()}";
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
             stageProgressText.text = $"第{gameManager.StageNumber}关 {(gameManager.StageProgress * 100f):0}%\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
@@ -75,7 +74,7 @@ namespace Wanwan.Runtime
             pauseButtonText.text = gameManager.IsPaused ? "▶" : "Ⅱ";
             pauseOverlay.gameObject.SetActive(gameManager.IsPaused);
             pauseOverlayHighScore.text = $"最高分 {SessionState.HighScore:0000000}";
-            pauseOverlayMission.text = $"第{gameManager.StageNumber}关 {gameManager.StageName}\n目标 {gameManager.BossDisplayName}\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  BOMB {gameManager.BombCount}";
+            pauseOverlayMission.text = $"第{gameManager.StageNumber}关 {gameManager.StageName}\n目标 {gameManager.BossDisplayName}\n击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  炸弹 {gameManager.BombCount}";
             pauseOverlayAudioText.text = gameManager.AudioEnabled ? "声音 开" : "声音 关";
             bossBarRoot.gameObject.SetActive(gameManager.HasBoss);
             if (gameManager.HasBoss)
@@ -100,6 +99,26 @@ namespace Wanwan.Runtime
             {
                 overlayBestScore.text = $"本关得分 {score:0000000}  击落 {gameManager.EnemiesDestroyed}";
                 overlaySummary.text = $"使用BOMB {gameManager.BombsUsed}  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}";
+            }
+        }
+
+        public void ShowIntroPrompt()
+        {
+            if (introOverlay == null)
+            {
+                return;
+            }
+
+            introOverlay.gameObject.SetActive(true);
+            introTitle.text = "LAUNCH SEQUENCE";
+            introCountdown.text = "TAP / ANY KEY SKIP";
+        }
+
+        public void HideIntroPrompt()
+        {
+            if (introOverlay != null)
+            {
+                introOverlay.gameObject.SetActive(false);
             }
         }
 
@@ -141,11 +160,7 @@ namespace Wanwan.Runtime
             powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "火力 普通", ArcadeTheme.SmallSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.05f, 0f), new Vector2(0.95f, 1f), Vector2.zero);
             Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.39f, 0.36f), new Vector2(0.67f, 0.64f));
             stageProgressFill = UiFactory.CreatePanel(progressTrack.transform, "ProgressFill", ArcadeTheme.EnergyYellow, Vector2.zero, Vector2.one);
-            Button bombButton = UiFactory.CreateButton(bottomBar.transform, "BOMB", ArcadeTheme.ElectricBlue, Color.white, new Vector2(230f, 78f), new Vector2(374f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            bombButton.onClick.AddListener(() => gameManager.TryActivateBomb());
-            Text bombButtonText = bombButton.GetComponentInChildren<Text>();
-            bombButtonText.fontStyle = FontStyle.Bold;
-            bombButtonText.fontSize = 30;
+            UiFactory.CreateArcadeLabel(bottomBar.transform, "吃炸弹图标清屏", 24, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.7f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
 
             bossBarRoot = UiFactory.CreatePixelPanel(canvas.transform, "BossBarRoot", new Color(0.14f, 0.03f, 0.08f, 0.92f), ArcadeTheme.WarningRed, new Vector2(0.05f, 0.86f), new Vector2(0.95f, 0.9f), new Vector2(6f, 6f));
             bossBarRoot.gameObject.SetActive(false);
@@ -175,10 +190,12 @@ namespace Wanwan.Runtime
             Button menuButton = UiFactory.CreatePixelButton(pauseCard.transform, "返回标题", ArcadeTheme.EnergyYellow, new Vector2(300f, 82f), new Vector2(170f, -160f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
 
-            introOverlay = UiFactory.CreatePanel(canvas.transform, "LevelIntroOverlay", new Color(0.02f, 0.02f, 0.06f, 0.86f), Vector2.zero, Vector2.one);
+            introOverlay = UiFactory.CreatePanel(canvas.transform, "LevelIntroOverlay", new Color(0.02f, 0.02f, 0.06f, 0.18f), Vector2.zero, Vector2.one);
+            introOverlay.raycastTarget = false;
             introTitle = UiFactory.CreateArcadeLabel(introOverlay.transform, "第1关", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.68f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(introOverlay.transform, "WARNING: ENEMY APPROACHING", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.55f), Vector2.zero);
-            introCountdown = UiFactory.CreateArcadeLabel(introOverlay.transform, "3", 96, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.34f, 0.34f), new Vector2(0.66f, 0.48f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(introOverlay.transform, "CARRIER DECK READY", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.55f), Vector2.zero);
+            introCountdown = UiFactory.CreateArcadeLabel(introOverlay.transform, "TAP / ANY KEY SKIP", 34, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.34f), new Vector2(0.88f, 0.44f), Vector2.zero);
+            introOverlay.gameObject.SetActive(false);
 
             bossWarningOverlay = UiFactory.CreatePanel(canvas.transform, "BossWarningOverlay", new Color(0.08f, 0f, 0.02f, 0.82f), Vector2.zero, Vector2.one);
             bossWarningOverlay.gameObject.SetActive(false);
@@ -199,7 +216,7 @@ namespace Wanwan.Runtime
         {
             if (!gameManager.HasActivePowerup)
             {
-                return $"火力 普通\nBOMB {gameManager.BombCount}";
+                return $"火力 Lv{gameManager.FireLevel} 普通\n{BuildBombIcons()}";
             }
 
             string name;
@@ -237,7 +254,19 @@ namespace Wanwan.Runtime
                     break;
             }
 
-            return $"火力 {name} Lv{gameManager.ActivePowerupLevel} {gameManager.ActivePowerupRemainingSeconds:0.0}s\nBOMB {gameManager.BombCount}";
+            return $"火力 Lv{gameManager.FireLevel} {name} {gameManager.ActivePowerupRemainingSeconds:0.0}s\n{BuildBombIcons()}";
+        }
+
+        private string BuildBombIcons()
+        {
+            int active = Mathf.Clamp(gameManager.BombCount, 0, 3);
+            char[] icons = { '◇', '◇', '◇' };
+            for (int i = 0; i < active; i++)
+            {
+                icons[i] = '◆';
+            }
+
+            return $"炸弹 {new string(icons)}";
         }
 
         private string BuildDifficultyText()
@@ -251,25 +280,6 @@ namespace Wanwan.Runtime
                 default:
                     return $"低级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
             }
-        }
-
-        private IEnumerator ShowLevelIntroSequence()
-        {
-            if (introOverlay == null || gameManager == null)
-            {
-                yield break;
-            }
-
-            introOverlay.gameObject.SetActive(true);
-            introTitle.text = $"第 {gameManager.StageNumber} 关\n{gameManager.StageName}";
-            string[] steps = { "3", "2", "1", "START" };
-            for (int i = 0; i < steps.Length; i++)
-            {
-                introCountdown.text = steps[i];
-                yield return new WaitForSeconds(0.55f);
-            }
-
-            introOverlay.gameObject.SetActive(false);
         }
 
         private IEnumerator ShowBossWarningSequence()

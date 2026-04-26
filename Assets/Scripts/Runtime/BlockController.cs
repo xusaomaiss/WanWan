@@ -9,6 +9,7 @@ namespace Wanwan.Runtime
         private EffectsController effectsController;
         private SpriteRenderer spriteRenderer;
         private TextMesh hitPointText;
+        private Color effectColor;
         private int hitPoints;
         private int scoreValue;
         private float fallSpeed;
@@ -41,7 +42,8 @@ namespace Wanwan.Runtime
             spawnPosition = transform.position;
             fireTimer = GetFireInterval() * Random.Range(0.55f, 1.1f);
             spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.color = color;
+            effectColor = color;
+            spriteRenderer.color = elite ? color : Color.white;
             BuildHealthLabel();
             RefreshHealthLabel();
         }
@@ -71,7 +73,7 @@ namespace Wanwan.Runtime
             if (other.GetComponent<PlayerController>() != null)
             {
                 resolved = true;
-                effectsController.PlayPlayerPierced(transform.position, spriteRenderer.color);
+                effectsController.PlayPlayerPierced(transform.position, effectColor);
                 gameManager.DestroyPlayerByCollision();
                 blockSpawner.NotifyEnemyResolved();
                 Destroy(gameObject);
@@ -86,19 +88,18 @@ namespace Wanwan.Runtime
             }
 
             hitPoints -= damage;
-            effectsController.PlayHit(transform.position, spriteRenderer.color);
+            effectsController.PlayHit(transform.position, effectColor);
 
             if (hitPoints <= 0)
             {
                 resolved = true;
-                gameManager.AddScore(scoreValue);
                 gameManager.NotifyEnemyDestroyed();
-                effectsController.PlayScorePopup(transform.position, scoreValue);
+                blockSpawner.SpawnCoinsAtPosition(transform.position);
                 if (guaranteedDrop != AmmoPowerupType.None)
                 {
                     blockSpawner.SpawnAmmoPackAtPosition(guaranteedDrop, transform.position);
                 }
-                effectsController.PlayBurst(transform.position, spriteRenderer.color);
+                effectsController.PlayBurst(transform.position, effectColor);
                 blockSpawner.NotifyEnemyResolved();
                 Destroy(gameObject);
                 return;
@@ -106,6 +107,19 @@ namespace Wanwan.Runtime
 
             RefreshHealthLabel();
             transform.localScale *= 0.96f;
+        }
+
+        public void ClearByBomb()
+        {
+            if (resolved)
+            {
+                return;
+            }
+
+            resolved = true;
+            effectsController.PlayBurst(transform.position, effectColor);
+            blockSpawner.NotifyEnemyResolved();
+            Destroy(gameObject);
         }
 
         public void ReachBase()
@@ -165,9 +179,9 @@ namespace Wanwan.Runtime
 
             if (gameManager.EnemyUsesScatterShot)
             {
-                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.42f), new Vector2(-0.22f, -1f), spriteRenderer.color);
-                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.48f), Vector2.down, spriteRenderer.color);
-                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.42f), new Vector2(0.22f, -1f), spriteRenderer.color);
+                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.42f), new Vector2(-0.22f, -1f), effectColor);
+                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.48f), Vector2.down, effectColor);
+                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.42f), new Vector2(0.22f, -1f), effectColor);
                 return;
             }
 
@@ -179,7 +193,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.45f), Vector2.down, spriteRenderer.color);
+            blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.45f), Vector2.down, effectColor);
         }
 
         private float GetFireInterval()

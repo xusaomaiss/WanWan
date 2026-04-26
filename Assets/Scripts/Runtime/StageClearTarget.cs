@@ -13,18 +13,18 @@ namespace Wanwan.Runtime
             switch (difficulty)
             {
                 case GameDifficulty.High:
-                    baseTarget = 40;
+                    baseTarget = 90;
                     break;
                 case GameDifficulty.Medium:
-                    baseTarget = 30;
+                    baseTarget = 82;
                     break;
                 default:
-                    baseTarget = 6;
+                    baseTarget = 75;
                     break;
             }
 
-            int stageBonus = stageIndex == 1 ? 1 : stageIndex * 2;
-            int loopBonus = loopIndex * 8;
+            int stageBonus = stageIndex * 2;
+            int loopBonus = loopIndex * 12;
             return baseTarget + stageBonus + loopBonus;
         }
     }

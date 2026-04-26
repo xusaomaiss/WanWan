@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Wanwan.Runtime
@@ -6,8 +6,6 @@ namespace Wanwan.Runtime
     public class GameBootstrap : MonoBehaviour
     {
         private const float PlayerShipWorldSize = 1f;
-        private const float PlayerLaunchStartInset = 1.25f;
-        private const float PlayerLaunchTargetInset = 4.15f;
 
         private void Awake()
         {
@@ -22,8 +20,10 @@ namespace Wanwan.Runtime
             float horizontalExtent = orthographicSize * cameraComponent.aspect;
             float leftBound = -horizontalExtent + 0.9f;
             float rightBound = horizontalExtent - 0.9f;
+            CarrierLaunchIntroConfig introConfig = CarrierLaunchIntroConfig.Default;
+            Vector3 gameplayPlayerPosition = new Vector3(0f, bottomBound + introConfig.GameplayStartYInset, 0f);
 
-            CreateScrollingBattlefieldBackdrop(orthographicSize, horizontalExtent, stage);
+            ScrollingBackgroundLayer[] backgroundLayers = CreateScrollingBattlefieldBackdrop(orthographicSize, horizontalExtent, stage);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();
             effects.Initialize(cameraComponent);
 
@@ -31,14 +31,17 @@ namespace Wanwan.Runtime
             GameManager manager = new GameObject("GameManager").AddComponent<GameManager>();
             BlockSpawner spawner = new GameObject("BlockSpawner").AddComponent<BlockSpawner>();
             CreateCarrierDeck(orthographicSize, horizontalExtent, bottomBound + 0.45f);
-            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + PlayerLaunchStartInset);
+            PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + introConfig.StartYInset);
             CreateBaseBoundary(leftBound, rightBound, bottomBound + 0.85f);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
-            player.Initialize(manager, effects, cameraComponent, leftBound, rightBound);
+            player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, bottomBound, topBound);
             spawner.Initialize(manager, effects, cameraComponent, leftBound, rightBound, topBound);
-            manager.BeginLaunchSequence();
-            StartCoroutine(PlayCarrierLaunch(player.transform, bottomBound + PlayerLaunchTargetInset, manager));
+            manager.BeginIntro();
+
+            CarrierLaunchIntroController intro = new GameObject("CarrierLaunchIntroController").AddComponent<CarrierLaunchIntroController>();
+            intro.Initialize(manager, player.transform, gameplayPlayerPosition, introConfig, backgroundLayers);
+            intro.Play();
         }
 
         private static Camera EnsureCamera(Color background)
@@ -60,8 +63,9 @@ namespace Wanwan.Runtime
             return cameraComponent;
         }
 
-        private static void CreateScrollingBattlefieldBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
+        private static ScrollingBackgroundLayer[] CreateScrollingBattlefieldBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
         {
+            List<ScrollingBackgroundLayer> layers = new List<ScrollingBackgroundLayer>();
             float targetWidth = (horizontalExtent * 2f) + 3f;
             float targetHeight = (orthographicSize * 2f) + 3f;
             Color stageTint = stage.BackgroundColor;
@@ -69,20 +73,21 @@ namespace Wanwan.Runtime
             float speed = stage.BackgroundSpeedMultiplier;
             Sprite stageBackground = RuntimeSpriteFactory.GetRaidenStageBackgroundSprite(stage.Number);
             Color backgroundTint = Color.Lerp(Color.white, stageTint * 2.2f, 0.08f);
-            CreateBackgroundLayer("StageBackgroundA", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, 0f, backgroundTint);
-            CreateBackgroundLayer("StageBackgroundB", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, targetHeight, backgroundTint);
-            CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, 0f, cloudTint);
-            CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, targetHeight, cloudTint);
-            CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, 0f, Color.Lerp(Color.white, stage.AccentColor, 0.24f));
-            CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, targetHeight, Color.Lerp(Color.white, stage.AccentColor, 0.24f));
+            layers.Add(CreateBackgroundLayer("StageBackgroundA", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, 0f, backgroundTint));
+            layers.Add(CreateBackgroundLayer("StageBackgroundB", stageBackground, -62, 0.62f * speed, targetWidth, targetHeight, targetHeight, backgroundTint));
+            layers.Add(CreateBackgroundLayer("CloudLayerA", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, 0f, cloudTint));
+            layers.Add(CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, targetHeight, cloudTint));
+            layers.Add(CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, 0f, Color.Lerp(Color.white, stage.AccentColor, 0.24f)));
+            layers.Add(CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, targetHeight, Color.Lerp(Color.white, stage.AccentColor, 0.24f)));
+            return layers.ToArray();
         }
 
-        private static void CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset)
+        private static ScrollingBackgroundLayer CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset)
         {
-            CreateBackgroundLayer(name, sprite, sortingOrder, speed, targetWidth, targetHeight, yOffset, Color.white);
+            return CreateBackgroundLayer(name, sprite, sortingOrder, speed, targetWidth, targetHeight, yOffset, Color.white);
         }
 
-        private static void CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset, Color color)
+        private static ScrollingBackgroundLayer CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset, Color color)
         {
             GameObject backgroundObject = new GameObject(name);
             backgroundObject.transform.position = new Vector3(0f, yOffset, 8f);
@@ -94,7 +99,9 @@ namespace Wanwan.Runtime
 
             Vector2 spriteSize = renderer.sprite.bounds.size;
             backgroundObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
-            backgroundObject.AddComponent<ScrollingBackgroundLayer>().Initialize(speed, targetHeight);
+            ScrollingBackgroundLayer scrollingLayer = backgroundObject.AddComponent<ScrollingBackgroundLayer>();
+            scrollingLayer.Initialize(speed, targetHeight);
+            return scrollingLayer;
         }
 
         private static void CreateCarrierDeck(float orthographicSize, float horizontalExtent, float y)
@@ -110,26 +117,6 @@ namespace Wanwan.Runtime
             float targetWidth = (horizontalExtent * 2f) + 2f;
             float targetHeight = orthographicSize * 0.42f;
             deckObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
-        }
-
-        private static IEnumerator PlayCarrierLaunch(Transform playerTransform, float targetY, GameManager manager)
-        {
-            Vector3 start = playerTransform.position;
-            Vector3 end = new Vector3(start.x, targetY, start.z);
-            float duration = 1.85f;
-            float elapsed = 0f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
-                playerTransform.position = Vector3.Lerp(start, end, t);
-                yield return null;
-            }
-
-            playerTransform.position = end;
-            yield return new WaitForSeconds(1f);
-            manager.CompleteLaunchSequence();
         }
 
         private static PlayerController CreatePlayer(float leftBound, float rightBound, float y)

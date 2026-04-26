@@ -86,13 +86,13 @@ namespace Wanwan.Runtime
             renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(fromBoss ? AmmoPowerupType.Burst : AmmoPowerupType.Normal);
             renderer.color = fromBoss ? Color.Lerp(color, gameManager.StageAccentColor, 0.26f) : color;
             renderer.sortingOrder = 14;
-            fireballObject.transform.localScale = fromBoss ? new Vector3(0.208f, 0.42f, 1f) : new Vector3(0.176f, 0.368f, 1f);
+            fireballObject.transform.localScale = WeaponShotPresentation.GetEnemyScale(fromBoss);
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
             fireballObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
             BoxCollider2D collider = fireballObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = fromBoss ? new Vector2(0.18f, 0.52f) : new Vector2(0.15f, 0.46f);
+            collider.size = WeaponShotPresentation.GetEnemyColliderSize(fromBoss);
 
             Rigidbody2D rigidbody2D = fireballObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -134,6 +134,60 @@ namespace Wanwan.Runtime
 
             AmmoPackController packController = packObject.AddComponent<AmmoPackController>();
             packController.Initialize(gameManager, effectsController, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, renderer.color, GetAmmoPackLabel(type));
+        }
+
+        public void SpawnCoinsAtPosition(Vector3 position)
+        {
+            int count = gameManager.RewardConfig.CoinsPerEnemy;
+            for (int i = 0; i < count; i++)
+            {
+                GameObject coinObject = new GameObject("Coin");
+                coinObject.transform.position = position + new Vector3(Random.Range(-0.18f, 0.18f), Random.Range(-0.14f, 0.2f), 0f);
+                coinObject.transform.localScale = Vector3.one * 0.18f;
+
+                SpriteRenderer renderer = coinObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = RuntimeSpriteFactory.GetCoinSprite();
+                renderer.color = Color.white;
+                renderer.sortingOrder = 18;
+
+                CoinController coin = coinObject.AddComponent<CoinController>();
+                float angle = ((Mathf.PI * 2f) / Mathf.Max(1, count)) * i;
+                Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
+                drift.y = Mathf.Abs(drift.y) * 0.65f;
+                coin.Initialize(gameManager, drift);
+            }
+        }
+
+        public void SpawnBombPickupAtRandomReachablePosition()
+        {
+            Vector3 position = new Vector3(
+                Random.Range(leftBound + 0.7f, rightBound - 0.7f),
+                Random.Range(gameManager.BottomBound + 2.1f, gameManager.TopBound - 2.6f),
+                0f);
+            SpawnBombPickupAtPosition(position);
+        }
+
+        public void SpawnBombPickupAtPosition(Vector3 position)
+        {
+            GameObject bombObject = new GameObject("BombPickup");
+            bombObject.transform.position = position;
+            bombObject.transform.localScale = Vector3.one * 0.56f;
+
+            SpriteRenderer renderer = bombObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetBombPickupSprite();
+            renderer.sortingOrder = 19;
+
+            CircleCollider2D collider = bombObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            collider.radius = 0.52f;
+
+            Rigidbody2D rigidbody2D = bombObject.AddComponent<Rigidbody2D>();
+            rigidbody2D.gravityScale = 0f;
+            rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+
+            BombPickupController pickup = bombObject.AddComponent<BombPickupController>();
+            pickup.Initialize(gameManager);
+            effectsController.PlayPowerupSpawn(position, new Color(0.45f, 0.86f, 1f));
         }
 
         private void AdvanceToNextWave()
@@ -574,7 +628,7 @@ namespace Wanwan.Runtime
             Color normalColor = Color.Lerp(new Color(0.88f, 0.26f, 0.46f), accent, 0.24f);
             Color toughColor = Color.Lerp(new Color(1f, 0.38f, 0.52f), accent, 0.18f);
             Color eliteColor = Color.Lerp(new Color(1f, 0.88f, 0.24f), accent, 0.22f);
-            renderer.color = elite ? eliteColor : (tough ? toughColor : normalColor);
+            renderer.color = elite ? eliteColor : Color.white;
             renderer.sortingOrder = elite ? 12 : 10;
 
             float width = elite ? 0.92f : (tough ? 0.82f : 0.72f);
@@ -591,7 +645,8 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BlockController block = enemyObject.AddComponent<BlockController>();
-            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, renderer.color, moveDirection, swayAmplitude, swayFrequency, elite, guaranteedDrop);
+            Color effectColor = elite ? eliteColor : (tough ? toughColor : normalColor);
+            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, elite, guaranteedDrop);
             activeEnemyCount++;
         }
 

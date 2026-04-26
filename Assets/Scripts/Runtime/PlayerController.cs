@@ -15,19 +15,23 @@ namespace Wanwan.Runtime
         private Camera worldCamera;
         private float leftBound;
         private float rightBound;
-        private float targetX;
-        private float horizontalVelocity;
+        private float topBound;
+        private float bottomBound;
+        private Vector2 targetPosition;
+        private Vector2 moveVelocity;
         private float fireTimer;
         private bool combatEnabled = true;
 
-        public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX)
+        public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float minY, float maxY)
         {
             gameManager = manager;
             effectsController = effects;
             worldCamera = camera;
             leftBound = minX;
             rightBound = maxX;
-            targetX = transform.position.x;
+            bottomBound = minY;
+            topBound = maxY;
+            targetPosition = transform.position;
         }
 
         private void Update()
@@ -38,15 +42,9 @@ namespace Wanwan.Runtime
             }
 
             UpdateTargetPosition();
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                gameManager.TryActivateBomb();
-            }
-
-            float clampedX = Mathf.Clamp(targetX, leftBound, rightBound);
-            Vector3 current = transform.position;
-            current.x = Mathf.SmoothDamp(current.x, clampedX, ref horizontalVelocity, MoveSmoothTime, MaxHorizontalSpeed, Time.deltaTime);
-            transform.position = current;
+            Vector2 clampedTarget = ClampToBounds(targetPosition);
+            Vector2 current = transform.position;
+            transform.position = Vector2.SmoothDamp(current, clampedTarget, ref moveVelocity, MoveSmoothTime, MaxHorizontalSpeed, Time.deltaTime);
 
             fireTimer -= Time.deltaTime;
             if (fireTimer <= 0f)
@@ -61,64 +59,59 @@ namespace Wanwan.Runtime
             combatEnabled = false;
         }
 
+        public void ResetForGameplayPosition(Vector3 position)
+        {
+            transform.position = position;
+            targetPosition = ClampToBounds(position);
+            moveVelocity = Vector2.zero;
+            fireTimer = 0f;
+        }
+
         private void UpdateTargetPosition()
         {
             if (Input.touchCount > 0)
             {
-                targetX = ScreenToWorldX(Input.GetTouch(0).position);
+                targetPosition = ScreenToWorldPosition(Input.GetTouch(0).position);
                 return;
             }
 
             if (Input.GetMouseButton(0))
             {
-                targetX = ScreenToWorldX(Input.mousePosition);
+                targetPosition = ScreenToWorldPosition(Input.mousePosition);
             }
         }
 
-        private float ScreenToWorldX(Vector3 screenPosition)
+        private Vector2 ScreenToWorldPosition(Vector3 screenPosition)
         {
             Vector3 worldPosition = worldCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, -worldCamera.transform.position.z));
-            return worldPosition.x;
+            return ClampToBounds(worldPosition);
+        }
+
+        private Vector2 ClampToBounds(Vector2 position)
+        {
+            const float shipInset = 0.55f;
+            return new Vector2(
+                Mathf.Clamp(position.x, leftBound + shipInset, rightBound - shipInset),
+                Mathf.Clamp(position.y, bottomBound + shipInset, topBound - shipInset));
         }
 
         private void Fire()
         {
             AmmoPowerupType type = gameManager.HasActivePowerup ? gameManager.ActivePowerupType : AmmoPowerupType.Normal;
-            int level = Mathf.Max(1, gameManager.ActivePowerupLevel);
             effectsController.PlayPlayerShot(type);
 
-            switch (type)
+            PlayerShotSpec[] shots = PlayerFirePattern.GetShots(gameManager.FireLevel);
+            bool canPierce = type == AmmoPowerupType.Pierce || type == AmmoPowerupType.Laser;
+            int damage = Mathf.Max(1, gameManager.FireLevel >= 4 ? 2 : 1);
+            int pierceHits = canPierce ? 2 + gameManager.ActivePowerupLevel : 1;
+            BulletMotionType motionType = type == AmmoPowerupType.Homing ? BulletMotionType.Homing : (type == AmmoPowerupType.Wave ? BulletMotionType.Wave : BulletMotionType.Straight);
+            float homingStrength = motionType == BulletMotionType.Homing ? 2.8f + gameManager.FireLevel : 0f;
+            float waveAmplitude = motionType == BulletMotionType.Wave ? 0.18f + (gameManager.FireLevel * 0.04f) : 0f;
+            float waveFrequency = motionType == BulletMotionType.Wave ? 10f : 0f;
+
+            for (int i = 0; i < shots.Length; i++)
             {
-                case AmmoPowerupType.Scatter:
-                    FireScatterShot(level);
-                    break;
-                case AmmoPowerupType.Pierce:
-                    FireSingleShot(type, Vector2.up, 0.208f, true, level + 2, level, BulletMotionType.Straight, 0f, 0f, 0f);
-                    break;
-                case AmmoPowerupType.RapidFire:
-                    FireRapidShot(level);
-                    break;
-                case AmmoPowerupType.Laser:
-                    FireLaser(level);
-                    break;
-                case AmmoPowerupType.Plasma:
-                    FireSingleShot(type, Vector2.up, 0.28f + (level * 0.04f), false, 1, 2 + level, BulletMotionType.Straight, 0f, 0f, 0f);
-                    break;
-                case AmmoPowerupType.Burst:
-                    FireSingleShot(type, Vector2.up, 0.32f + (level * 0.04f), false, 1, 3 + level, BulletMotionType.Straight, 0f, 0f, 0f);
-                    break;
-                case AmmoPowerupType.Homing:
-                    FireHoming(level);
-                    break;
-                case AmmoPowerupType.Wave:
-                    FireWave(level);
-                    break;
-                case AmmoPowerupType.Guard:
-                    FireGuard(level);
-                    break;
-                default:
-                    FireSingleShot(AmmoPowerupType.Normal, Vector2.up, 0.192f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
-                    break;
+                FireOffsetShot(type, shots[i].Offset, shots[i].Direction, shots[i].Width, canPierce, pierceHits, damage, motionType, homingStrength, waveAmplitude, waveFrequency);
             }
         }
 
@@ -137,7 +130,7 @@ namespace Wanwan.Runtime
                 case AmmoPowerupType.Burst:
                     return 0.22f;
                 default:
-                    return DefaultFireCooldown;
+                    return Mathf.Max(0.08f, DefaultFireCooldown - ((gameManager.FireLevel - 1) * 0.015f));
             }
         }
 
@@ -157,21 +150,23 @@ namespace Wanwan.Runtime
 
         private void FireRapidShot(int level)
         {
-            FireSingleShot(AmmoPowerupType.RapidFire, Vector2.up, 0.14f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
+            FireSingleShot(AmmoPowerupType.RapidFire, Vector2.up, 0.17f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
             if (level >= 2)
             {
-                FireOffsetShot(AmmoPowerupType.RapidFire, new Vector3(-0.18f, 0.06f, 0f), Vector2.up, 0.12f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
-                FireOffsetShot(AmmoPowerupType.RapidFire, new Vector3(0.18f, 0.06f, 0f), Vector2.up, 0.12f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
+                float sideOffset = WeaponShotPresentation.GetRapidSideOffset();
+                FireOffsetShot(AmmoPowerupType.RapidFire, new Vector3(-sideOffset, 0.06f, 0f), Vector2.up, 0.145f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
+                FireOffsetShot(AmmoPowerupType.RapidFire, new Vector3(sideOffset, 0.06f, 0f), Vector2.up, 0.145f, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 0f);
             }
         }
 
         private void FireLaser(int level)
         {
-            FireSingleShot(AmmoPowerupType.Laser, Vector2.up, 0.12f, true, 2 + level, 1 + level, BulletMotionType.Straight, 0f, 0f, 0f);
+            FireSingleShot(AmmoPowerupType.Laser, Vector2.up, 0.14f, true, 2 + level, 1 + level, BulletMotionType.Straight, 0f, 0f, 0f);
             if (level >= 2)
             {
-                FireOffsetShot(AmmoPowerupType.Laser, new Vector3(-0.22f, 0f, 0f), Vector2.up, 0.1f, true, 2, 1, BulletMotionType.Straight, 0f, 0f, 0f);
-                FireOffsetShot(AmmoPowerupType.Laser, new Vector3(0.22f, 0f, 0f), Vector2.up, 0.1f, true, 2, 1, BulletMotionType.Straight, 0f, 0f, 0f);
+                float sideOffset = WeaponShotPresentation.GetLaserSideOffset();
+                FireOffsetShot(AmmoPowerupType.Laser, new Vector3(-sideOffset, 0f, 0f), Vector2.up, 0.12f, true, 2, 1, BulletMotionType.Straight, 0f, 0f, 0f);
+                FireOffsetShot(AmmoPowerupType.Laser, new Vector3(sideOffset, 0f, 0f), Vector2.up, 0.12f, true, 2, 1, BulletMotionType.Straight, 0f, 0f, 0f);
             }
         }
 
@@ -220,15 +215,15 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = bulletObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(type);
-            renderer.color = RuntimeSpriteFactory.GetWeaponColor(type);
+            renderer.color = Color.white;
             renderer.sortingOrder = 15;
-            bulletObject.transform.localScale = new Vector3(width, canPierce ? 0.48f : 0.36f, 1f);
+            bulletObject.transform.localScale = WeaponShotPresentation.GetPlayerScale(type, canPierce, width);
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
             bulletObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
             BoxCollider2D collider = bulletObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = new Vector2(0.224f, canPierce ? 0.72f : 0.656f);
+            collider.size = WeaponShotPresentation.GetPlayerColliderSize(type, canPierce);
 
             Rigidbody2D rigidbody2D = bulletObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;

@@ -51,6 +51,22 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void DefaultDifficulty_IsMediumForOneTapStart()
+        {
+            Assert.That(SessionState.SelectedDifficulty, Is.EqualTo(GameDifficulty.Medium));
+        }
+
+        [Test]
+        public void SelectDifficulty_PersistsAsDefaultStartPreference()
+        {
+            SessionState.SelectDifficulty(GameDifficulty.High);
+            SessionState.ResetRun();
+
+            Assert.That(SessionState.SelectedDifficulty, Is.EqualTo(GameDifficulty.High));
+            Assert.That(PlayerPrefs.GetInt("wanwan.selected_difficulty", -1), Is.EqualTo((int)GameDifficulty.High));
+        }
+
+        [Test]
         public void AdvanceStage_MovesThroughEightStagesAndLoops()
         {
             Assert.That(SessionState.CurrentStageNumber, Is.EqualTo(1));
@@ -103,6 +119,7 @@ namespace Wanwan.Tests.EditMode
             SessionState.ResetSettings();
 
             Assert.That(SessionState.SelectedShip, Is.EqualTo(PlayerShipType.Green));
+            Assert.That(SessionState.SelectedDifficulty, Is.EqualTo(GameDifficulty.Medium));
             Assert.That(SessionState.ControlSensitivity, Is.EqualTo(ControlSensitivity.Medium));
             Assert.That(SessionState.VibrationEnabled, Is.True);
             Assert.That(SessionState.DamageNumbersEnabled, Is.True);
