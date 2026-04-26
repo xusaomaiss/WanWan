@@ -69,12 +69,25 @@
   - `./scripts/run_editmode_tests.sh`
 - 用 Unity Hub CLI 安装 Editor + Android 模块：
   - `./scripts/install_unity_editor.sh`
-- 构建 Android Debug APK：
+- 构建 Android Debug APK（只用于干净安装或没有同包名旧版本时的临时测试）：
   - `./scripts/build_android.sh`
 - 构建 Android 签名 Release APK：
   - `./scripts/build_android_release.sh`
-- 安装到已连接手机并做冒烟启动：
+- 安装到已连接手机并做冒烟启动（默认安装 `Builds/Android/WanwanDropBlaster-release.apk`）：
   - `./scripts/android_smoke_test.sh`
+
+## Android 真机更新
+
+真机已有 `com.mark.wanwan.dropblaster` 时，更新包必须和设备上现有应用使用同一套签名。不要用 debug APK 覆盖 release 版本；Android 会因为同包名签名不一致拦截安装，而且为了保留本机进度和 `PlayerPrefs`，也不应先卸载再安装。
+
+以后更新到真机时直接走 release 同签名流程：
+
+```bash
+./scripts/build_android_release.sh
+./scripts/android_smoke_test.sh
+```
+
+`build_android_release.sh` 默认使用 `Builds/Android/wanwan-release.keystore` 生成签名包；如需指定正式 keystore，再设置 `WANWAN_ANDROID_KEYSTORE`、`WANWAN_ANDROID_KEYSTORE_PASS`、`WANWAN_ANDROID_KEYALIAS` 和 `WANWAN_ANDROID_KEYALIAS_PASS`。`android_smoke_test.sh` 默认安装 `Builds/Android/WanwanDropBlaster-release.apk`，因此会按同签名 release 包更新并保留设备数据。
 
 如果 Unity 不在默认路径，先指定：
 

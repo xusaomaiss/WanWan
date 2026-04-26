@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ADB_BIN="${ADB_BIN:-$HOME/Library/Android/sdk/platform-tools/adb}"
-APK_PATH="${APK_PATH:-$ROOT_DIR/Builds/Android/WanwanDropBlaster.apk}"
+APK_PATH="${APK_PATH:-$ROOT_DIR/Builds/Android/WanwanDropBlaster-release.apk}"
 PACKAGE_NAME="${PACKAGE_NAME:-com.mark.wanwan.dropblaster}"
 ACTIVITY_NAME="${ACTIVITY_NAME:-com.unity3d.player.UnityPlayerGameActivity}"
 
