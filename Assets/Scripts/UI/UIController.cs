@@ -189,7 +189,7 @@ namespace Wanwan.Runtime
             playerHealthRoot.gameObject.SetActive(false);
 
             pauseHintText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 40, TextAnchor.MiddleCenter, new Color(0.6f, 0.84f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.3f, 0.79f), new Vector2(0.7f, 0.84f), Vector2.zero);
-            stageBannerText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 58, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.54f, 0.96f), FontStyle.Bold, new Vector2(0.08f, 0.54f), new Vector2(0.92f, 0.62f), Vector2.zero);
+            stageBannerText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 48, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.54f, 0.94f), FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.61f), Vector2.zero);
             Outline stageBannerOutline = stageBannerText.gameObject.AddComponent<Outline>();
             stageBannerOutline.effectColor = new Color(0f, 0f, 0f, 0.9f);
             stageBannerOutline.effectDistance = new Vector2(3f, -3f);
@@ -226,7 +226,7 @@ namespace Wanwan.Runtime
             bossWarningOverlay = UiFactory.CreatePanel(canvas.transform, "BossWarningOverlay", Color.clear, Vector2.zero, Vector2.one);
             bossWarningOverlay.raycastTarget = false;
             bossWarningOverlay.gameObject.SetActive(false);
-            bossWarningTitle = UiFactory.CreateArcadeLabel(bossWarningOverlay.transform, "警报", 72, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.06f, 0.57f), new Vector2(0.94f, 0.72f), Vector2.zero);
+            bossWarningTitle = UiFactory.CreateArcadeLabel(bossWarningOverlay.transform, "警报", 64, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.06f, 0.58f), new Vector2(0.94f, 0.7f), Vector2.zero);
             Outline bossWarningOutline = bossWarningTitle.gameObject.AddComponent<Outline>();
             bossWarningOutline.effectColor = new Color(0f, 0f, 0f, 0.92f);
             bossWarningOutline.effectDistance = new Vector2(4f, -4f);
