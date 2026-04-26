@@ -33,7 +33,7 @@ namespace Wanwan.Runtime
 
         public string GetDisplayText()
         {
-            return $"Combo: {CurrentCombo}  x{CurrentMultiplier}";
+            return $"连击 {CurrentCombo}  倍率 {CurrentMultiplier}倍";
         }
 
         public static int GetMultiplier(int combo)

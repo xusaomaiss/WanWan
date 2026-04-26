@@ -15,11 +15,11 @@ namespace Wanwan.Tests.EditMode
             Assert.That(PowerupCycle.GetWeaponTypeAt(WeaponType.Spread, 4), Is.EqualTo(WeaponType.Spread));
         }
 
-        [TestCase(WeaponType.Spread, "S")]
-        [TestCase(WeaponType.Laser, "L")]
-        [TestCase(WeaponType.Homing, "H")]
-        [TestCase(WeaponType.Burst, "B")]
-        public void GetLabel_ReturnsArcadeLetter(WeaponType type, string expectedLabel)
+        [TestCase(WeaponType.Spread, "散")]
+        [TestCase(WeaponType.Laser, "激")]
+        [TestCase(WeaponType.Homing, "追")]
+        [TestCase(WeaponType.Burst, "爆")]
+        public void GetLabel_ReturnsChineseArcadeLabel(WeaponType type, string expectedLabel)
         {
             Assert.That(PowerupCycle.GetLabel(type), Is.EqualTo(expectedLabel));
         }

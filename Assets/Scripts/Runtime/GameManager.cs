@@ -123,7 +123,7 @@ namespace Wanwan.Runtime
 
             CurrentState = GameFlowState.Playing;
             stageLabel = "敌机来袭";
-            ShowStageBanner("START");
+            ShowStageBanner("开始出击");
             if (uiController != null)
             {
                 uiController.HideIntroPrompt();
@@ -189,7 +189,7 @@ namespace Wanwan.Runtime
             for (int i = 0; i < earnedBombPickups; i++)
             {
                 blockSpawner.SpawnBombPickupAtRandomReachablePosition();
-                ShowStageBanner("BOMB READY");
+                ShowStageBanner("炸弹就绪");
             }
 
             uiController.RefreshHud();
@@ -229,7 +229,7 @@ namespace Wanwan.Runtime
             }
 
             comboState.RegisterBossPhaseClear();
-            ShowStageBanner("COMBO x" + comboState.CurrentMultiplier);
+            ShowStageBanner("连击倍率 " + comboState.CurrentMultiplier + "倍");
             uiController.RefreshHud();
         }
 
@@ -346,7 +346,7 @@ namespace Wanwan.Runtime
             bossCurrentHitPoints = 0;
             bossMaxHitPoints = 0;
             gameOverTitle = "任务完成";
-            ShowStageBanner("游戏胜利");
+            ShowStageBanner("任务完成");
             StartCoroutine(EndVictoryRun());
         }
 
@@ -368,7 +368,7 @@ namespace Wanwan.Runtime
             }
 
             weaponState.ApplyWeaponPickup(type);
-            ShowStageBanner(WeaponConfig.Get(type).DisplayName + " Lv" + weaponState.FireLevel);
+            ShowStageBanner(WeaponConfig.Get(type).DisplayName + " " + weaponState.FireLevel + "级");
             uiController.RefreshHud();
         }
 
@@ -412,7 +412,7 @@ namespace Wanwan.Runtime
 
             effectsController.PlayBombDetonation(origin);
             bombsUsed++;
-            ShowStageBanner("BOMB");
+            ShowStageBanner("炸弹清屏");
             uiController.RefreshHud();
             return true;
         }
@@ -479,10 +479,10 @@ namespace Wanwan.Runtime
             activePowerup.Clear();
             blockSpawner.StopSpawning();
             playerController.StopCombat();
-            uiController.ShowGameOverOverlay("游戏胜利", Score);
+            uiController.ShowGameOverOverlay("任务完成", Score);
             SessionState.CommitRunScore(Score, true, BuildRunRating(), BuildRunSummary(), comboState.MaxCombo, comboState.MaxMultiplier);
-            yield return new WaitForSeconds(3f);
-            SceneNavigator.LoadNextStage();
+            yield return new WaitForSeconds(1.15f);
+            SceneNavigator.LoadGameOver();
         }
 
         private void SetPaused(bool value)
@@ -502,15 +502,15 @@ namespace Wanwan.Runtime
         {
             if (!stageClear)
             {
-                return "C";
+                return "丙";
             }
 
             if (Difficulty == GameDifficulty.High)
             {
-                return "S";
+                return "特";
             }
 
-            return Difficulty == GameDifficulty.Medium ? "A" : "B";
+            return Difficulty == GameDifficulty.Medium ? "甲" : "乙";
         }
 
         private string BuildRunSummary()

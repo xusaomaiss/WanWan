@@ -46,10 +46,10 @@ namespace Wanwan.Runtime
             string title = victory ? "任务完成" : "任务失败";
             string stageLine = $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}  {BuildDifficultyText()}";
             string recordLine = $"评级 {SessionState.LastRunRating}  最高分 {SessionState.HighScore:0000000}";
-            string comboLine = $"Max Combo: {SessionState.LastRunMaxCombo}\nMax Multiplier: x{SessionState.LastRunMaxMultiplier}";
+            string comboLine = $"最高连击 {SessionState.LastRunMaxCombo}\n最高倍率 {SessionState.LastRunMaxMultiplier}倍";
             string summary = victory
                 ? $"{SessionState.LastRunSummary}\n下一空域：{StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}"
-                : string.IsNullOrEmpty(SessionState.LastRunSummary) ? "再试一次，打穿敌方编队。\n优先保命，BOMB留给精英或旗舰压制。" : SessionState.LastRunSummary;
+                : string.IsNullOrEmpty(SessionState.LastRunSummary) ? "再试一次，打穿敌方编队。\n优先保命，炸弹留给精英或旗舰压制。" : SessionState.LastRunSummary;
             string actionCopy = victory ? "继续下一关" : "重新挑战";
 
             UiFactory.CreateArcadeLabel(resultCard.transform, title, 84, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.1f, 0.74f), new Vector2(0.9f, 0.9f), Vector2.zero);
@@ -59,7 +59,7 @@ namespace Wanwan.Runtime
             UiFactory.CreateArcadeLabel(resultCard.transform, comboLine, 28, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.16f, 0.36f), new Vector2(0.84f, 0.45f), Vector2.zero);
             UiFactory.CreateArcadeLabel(resultCard.transform, summary, 22, TextAnchor.MiddleCenter, victory ? new Color(0.84f, 0.94f, 1f) : new Color(1f, 0.8f, 0.86f), FontStyle.Bold, new Vector2(0.14f, 0.27f), new Vector2(0.86f, 0.35f), Vector2.zero);
 
-            Button retryButton = UiFactory.CreateButton(background.transform, actionCopy, victory ? new Color(0.18f, 0.58f, 1f) : new Color(1f, 0.36f, 0.34f), Color.white, new Vector2(420f, 136f), new Vector2(0f, -150f));
+            Button retryButton = UiFactory.CreatePixelButton(background.transform, actionCopy, victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed, new Vector2(420f, 116f), new Vector2(0f, -150f));
             retryButton.onClick.AddListener(() =>
             {
                 if (victory)
@@ -71,11 +71,9 @@ namespace Wanwan.Runtime
                     SceneNavigator.LoadGame();
                 }
             });
-            retryButton.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
 
-            Button menuButton = UiFactory.CreateButton(background.transform, "返回主页", new Color(0.46f, 0.32f, 0.9f), Color.white, new Vector2(420f, 136f), new Vector2(0f, -326f));
+            Button menuButton = UiFactory.CreatePixelButton(background.transform, "返回主页", ArcadeTheme.EnergyYellow, new Vector2(420f, 116f), new Vector2(0f, -326f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
-            menuButton.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
         }
 
         private static string BuildDifficultyText()

@@ -4,6 +4,8 @@ namespace Wanwan.Runtime
 {
     public class CoinController : MonoBehaviour
     {
+        public const float BaseVisualScale = 0.36f;
+
         private GameManager gameManager;
         private SpriteRenderer spriteRenderer;
         private Vector3 driftVelocity;
@@ -48,7 +50,7 @@ namespace Wanwan.Runtime
             }
 
             float pulse = 1f + (Mathf.Sin(age * 9f) * 0.12f);
-            transform.localScale = Vector3.one * (0.18f * pulse);
+            transform.localScale = Vector3.one * (BaseVisualScale * pulse);
             transform.rotation = Quaternion.Euler(0f, 0f, age * 180f);
 
             if (spriteRenderer != null)

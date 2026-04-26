@@ -27,10 +27,10 @@ namespace Wanwan.Runtime
         {
             if (type == PlayerShipType.Blue)
             {
-                return new ShipDefinition(type, "蓝色战机", "激光 Laser", "追踪导弹", 4, 3, ArcadeTheme.ElectricBlue);
+                return new ShipDefinition(type, "蓝色战机", "激光弹", "追踪导弹", 4, 3, ArcadeTheme.ElectricBlue);
             }
 
-            return new ShipDefinition(PlayerShipType.Green, "绿色战机", "散射炮 Vulcan", "追踪导弹", 3, 4, ArcadeTheme.MilitaryGreen);
+            return new ShipDefinition(PlayerShipType.Green, "绿色战机", "散射炮", "追踪导弹", 3, 4, ArcadeTheme.MilitaryGreen);
         }
     }
 }

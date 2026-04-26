@@ -30,7 +30,7 @@ namespace Wanwan.Runtime
 
         public string GetCurrentWeaponDisplayText()
         {
-            return $"Weapon: {WeaponConfig.Get(CurrentWeaponType).DisplayName} Lv.{FireLevel}";
+            return $"武器 {WeaponConfig.Get(CurrentWeaponType).DisplayName} {FireLevel}级";
         }
     }
 }

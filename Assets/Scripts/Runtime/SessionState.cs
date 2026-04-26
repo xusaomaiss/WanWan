@@ -28,7 +28,7 @@ namespace Wanwan.Runtime
         public static bool DamageNumbersEnabled => PlayerPrefs.GetInt(DamageNumbersEnabledKey, 1) == 1;
         public static float VirtualButtonOpacity => PlayerPrefs.GetFloat(VirtualButtonOpacityKey, 0.4f);
         public static bool LastRunWasVictory { get; private set; }
-        public static string LastRunRating { get; private set; } = "B";
+        public static string LastRunRating { get; private set; } = "乙";
         public static string LastRunSummary { get; private set; } = string.Empty;
         public static int LastRunMaxCombo { get; private set; }
         public static int LastRunMaxMultiplier { get; private set; } = 1;
@@ -44,7 +44,7 @@ namespace Wanwan.Runtime
         {
             LastScore = 0;
             LastRunWasVictory = false;
-            LastRunRating = "B";
+            LastRunRating = "乙";
             LastRunSummary = string.Empty;
             LastRunMaxCombo = 0;
             LastRunMaxMultiplier = 1;
@@ -77,7 +77,7 @@ namespace Wanwan.Runtime
         {
             LastScore = 0;
             LastRunWasVictory = false;
-            LastRunRating = "B";
+            LastRunRating = "乙";
             LastRunSummary = string.Empty;
             LastRunDifficulty = GameDifficulty.Low;
             LastRunMaxCombo = 0;
@@ -159,7 +159,7 @@ namespace Wanwan.Runtime
             PlayerPrefs.Save();
         }
 
-        public static void CommitRunScore(int score, bool victory = false, string rating = "B", string summary = "", int maxCombo = 0, int maxMultiplier = 1)
+        public static void CommitRunScore(int score, bool victory = false, string rating = "乙", string summary = "", int maxCombo = 0, int maxMultiplier = 1)
         {
             LastScore = score;
             LastRunWasVictory = victory;

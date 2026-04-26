@@ -180,6 +180,57 @@ namespace Wanwan.Runtime
             return button;
         }
 
+        public static Button CreateArcadeCircleButton(Transform parent, string label, Color accentColor, Vector2 size, Vector2 anchoredPosition)
+        {
+            Button button = CreateButton(parent, label, ArcadeTheme.PanelBase, ArcadeTheme.White, size, anchoredPosition);
+            Image image = button.GetComponent<Image>();
+            image.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            image.color = ArcadeTheme.InkBlack;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = ArcadeTheme.PanelBase;
+            colors.highlightedColor = Color.Lerp(ArcadeTheme.PanelBase, accentColor, 0.42f);
+            colors.pressedColor = Color.Lerp(ArcadeTheme.WarningRed, accentColor, 0.22f);
+            colors.selectedColor = accentColor;
+            colors.disabledColor = ArcadeTheme.DimGray;
+            button.colors = colors;
+
+            Image outer = CreatePanel(button.transform, "OuterRing", accentColor, new Vector2(0.04f, 0.04f), new Vector2(0.96f, 0.96f));
+            outer.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            outer.raycastTarget = false;
+
+            Image face = CreatePanel(button.transform, "ButtonFace", ArcadeTheme.PanelBase, new Vector2(0.13f, 0.13f), new Vector2(0.87f, 0.87f));
+            face.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            face.raycastTarget = false;
+            button.targetGraphic = face;
+
+            Image shine = CreatePanel(button.transform, "ButtonShine", new Color(1f, 1f, 1f, 0.22f), new Vector2(0.24f, 0.62f), new Vector2(0.74f, 0.82f));
+            shine.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            shine.raycastTarget = false;
+
+            Text text = button.GetComponentInChildren<Text>();
+            text.transform.SetAsLastSibling();
+            text.fontStyle = FontStyle.Bold;
+            text.fontSize = 30;
+            text.resizeTextMinSize = 18;
+            text.resizeTextMaxSize = 30;
+            text.color = ArcadeTheme.White;
+            return button;
+        }
+
+        public static Button CreateArcadeIconButton(Transform parent, string icon, Color accentColor, Vector2 size, Vector2 anchoredPosition, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Button button = CreateArcadeCircleButton(parent, icon, accentColor, size, anchoredPosition);
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+
+            Text text = button.GetComponentInChildren<Text>();
+            text.fontSize = 34;
+            text.resizeTextMaxSize = 34;
+            return button;
+        }
+
         public static Button CreateMenuItem(Transform parent, string label, int order, UnityEngine.Events.UnityAction onClick)
         {
             Button button = CreatePixelButton(parent, "▶ " + label, ArcadeTheme.EnergyYellow, new Vector2(600f, 88f), new Vector2(0f, 180f - (order * 104f)));
@@ -219,7 +270,7 @@ namespace Wanwan.Runtime
 
         public static Button CreatePixelToggle(Transform parent, string label, bool enabled, Vector2 anchoredPosition, UnityEngine.Events.UnityAction onClick)
         {
-            Button button = CreatePixelButton(parent, $"{label} {(enabled ? "ON" : "OFF")}", enabled ? ArcadeTheme.MilitaryGreen : ArcadeTheme.WarningRed, new Vector2(420f, 76f), anchoredPosition);
+            Button button = CreatePixelButton(parent, $"{label} {(enabled ? "开" : "关")}", enabled ? ArcadeTheme.MilitaryGreen : ArcadeTheme.WarningRed, new Vector2(420f, 76f), anchoredPosition);
             button.onClick.AddListener(onClick);
             return button;
         }

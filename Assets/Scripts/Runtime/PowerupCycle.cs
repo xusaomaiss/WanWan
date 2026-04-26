@@ -52,13 +52,13 @@ namespace Wanwan.Runtime
             switch (type)
             {
                 case WeaponType.Laser:
-                    return "L";
+                    return "激";
                 case WeaponType.Homing:
-                    return "H";
+                    return "追";
                 case WeaponType.Burst:
-                    return "B";
+                    return "爆";
                 default:
-                    return "S";
+                    return "散";
             }
         }
 
@@ -105,25 +105,25 @@ namespace Wanwan.Runtime
             switch (type)
             {
                 case AmmoPowerupType.Scatter:
-                    return "S";
+                    return "散";
                 case AmmoPowerupType.RapidFire:
-                    return "R";
+                    return "速";
                 case AmmoPowerupType.Burst:
-                    return "B";
+                    return "爆";
                 case AmmoPowerupType.Laser:
-                    return "L";
+                    return "激";
                 case AmmoPowerupType.Homing:
-                    return "H";
+                    return "追";
                 case AmmoPowerupType.Pierce:
-                    return "P";
+                    return "穿";
                 case AmmoPowerupType.Plasma:
-                    return "O";
+                    return "离";
                 case AmmoPowerupType.Wave:
-                    return "W";
+                    return "波";
                 case AmmoPowerupType.Guard:
-                    return "G";
+                    return "护";
                 default:
-                    return "N";
+                    return "无";
             }
         }
 

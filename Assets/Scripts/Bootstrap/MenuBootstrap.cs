@@ -15,10 +15,12 @@ namespace Wanwan.Runtime
         private Text musicValueText;
         private Text sfxValueText;
         private Text opacityValueText;
+        private Text saveStatusText;
         private Image cinematicBackground;
         private Image cinematicShip;
         private Image cinematicExhaust;
         private float cinematicTimer;
+        private float saveStatusTimer;
 
         private void Awake()
         {
@@ -33,6 +35,7 @@ namespace Wanwan.Runtime
         private void Update()
         {
             AnimateCinematicBackground();
+            RefreshSaveStatus();
         }
 
         private static void EnsureCamera(Color background)
@@ -64,6 +67,8 @@ namespace Wanwan.Runtime
 
         private void ClearCanvas()
         {
+            saveStatusText = null;
+            saveStatusTimer = 0f;
             for (int i = canvas.transform.childCount - 1; i >= 0; i--)
             {
                 Destroy(canvas.transform.GetChild(i).gameObject);
@@ -140,9 +145,9 @@ namespace Wanwan.Runtime
             state = MenuUiState.Logo;
             Image background = CreateBackground("LogoBackground");
             UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.65f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(background.transform, "DROP BLASTER", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.56f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "空投爆破", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.56f), Vector2.zero);
             UiFactory.CreateDivider(background.transform, "LogoDivider", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.47f), new Vector2(0.8f, 0.476f));
-            UiFactory.CreateArcadeLabel(background.transform, "ARCADE AIR COMMAND", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.39f), new Vector2(0.92f, 0.45f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "街机空战指挥部", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.39f), new Vector2(0.92f, 0.45f), Vector2.zero);
         }
 
         private void ShowTitle()
@@ -152,21 +157,27 @@ namespace Wanwan.Runtime
 
             UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.68f), FontStyle.Bold, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.89f), new Vector2(4f, -5f));
             UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.89f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(background.transform, "DROP BLASTER", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.735f), new Vector2(0.92f, 0.805f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "空投爆破", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.735f), new Vector2(0.92f, 0.805f), Vector2.zero);
             UiFactory.CreateDivider(background.transform, "TitleHotLine", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.724f), new Vector2(0.8f, 0.73f));
-            UiFactory.CreateArcadeLabel(background.transform, "STORM LAUNCH READY", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "暴风起飞准备完成", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
 
-            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.72f), ArcadeTheme.ElectricBlue, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.31f), new Vector2(8f, 8f));
-            Button start = UiFactory.CreatePixelButton(menu.transform, "开始出击", ArcadeTheme.EnergyYellow, new Vector2(660f, 104f), new Vector2(0f, 104f));
-            start.onClick.AddListener(SceneNavigator.LoadGame);
-            Button leaderboard = UiFactory.CreatePixelButton(menu.transform, "排行榜", ArcadeTheme.ElectricBlue, new Vector2(310f, 78f), new Vector2(-175f, -24f));
+            Button leaderboard = UiFactory.CreateArcadeIconButton(background.transform, "榜", ArcadeTheme.EnergyYellow, new Vector2(104f, 104f), new Vector2(76f, -136f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             leaderboard.onClick.AddListener(ShowLeaderboard);
-            Button settings = UiFactory.CreatePixelButton(menu.transform, "设置", ArcadeTheme.ElectricBlue, new Vector2(310f, 78f), new Vector2(175f, -24f));
+            Button settings = UiFactory.CreateArcadeIconButton(background.transform, "设", ArcadeTheme.ElectricBlue, new Vector2(104f, 104f), new Vector2(-76f, -136f), Vector2.one, Vector2.one);
             settings.onClick.AddListener(ShowSettings);
-            Button exit = UiFactory.CreatePixelButton(menu.transform, "退出", ArcadeTheme.DimGray, new Vector2(660f, 64f), new Vector2(0f, -112f));
+
+            saveStatusText = UiFactory.CreateArcadeLabel(background.transform, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.27f), new Vector2(0.88f, 0.32f), Vector2.zero);
+            saveStatusText.gameObject.SetActive(false);
+
+            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.72f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.25f), new Vector2(8f, 8f));
+            Button save = UiFactory.CreateArcadeCircleButton(menu.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(142f, 142f), new Vector2(-258f, 0f));
+            save.onClick.AddListener(ShowAutoSaveStatus);
+            Button start = UiFactory.CreateArcadeCircleButton(menu.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(162f, 162f), Vector2.zero);
+            start.onClick.AddListener(SceneNavigator.LoadGame);
+            Button exit = UiFactory.CreateArcadeCircleButton(menu.transform, "退出", ArcadeTheme.WarningRed, new Vector2(142f, 142f), new Vector2(258f, 0f));
             exit.onClick.AddListener(Application.Quit);
 
-            string hiScore = $"HI-SCORE {SessionState.HighScore:0000000}";
+            string hiScore = $"最高分 {SessionState.HighScore:0000000}";
             UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
         }
 
@@ -174,7 +185,7 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.ShipSelect;
             Image background = CreateBackground("ShipSelectBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "SELECT SHIP / 选择战机", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "选择战机", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
             CreateShipCard(background.transform, PlayerShipType.Green, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.78f));
             CreateShipCard(background.transform, PlayerShipType.Blue, new Vector2(0.08f, 0.17f), new Vector2(0.92f, 0.47f));
             Button back = UiFactory.CreatePixelButton(background.transform, "返回", ArcadeTheme.DimGray, new Vector2(260f, 76f), new Vector2(-230f, -812f));
@@ -218,7 +229,7 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Difficulty;
             Image background = CreateBackground("DifficultyBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "DIFFICULTY / 选择难度", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "选择难度", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
             CreateDifficultyCard(background.transform, GameDifficulty.Low, "简单", "初始生命 5 / 敌弹较慢 / 适合长流程验收", ArcadeTheme.MilitaryGreen, new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.78f));
             CreateDifficultyCard(background.transform, GameDifficulty.Medium, "普通", "初始生命 3 / 标准弹幕 / 推荐体验", ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.58f));
             CreateDifficultyCard(background.transform, GameDifficulty.High, "困难", "初始生命 2 / 强化火力 / 高压挑战", ArcadeTheme.WarningRed, new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.38f));
@@ -239,13 +250,13 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Leaderboard;
             Image background = CreateBackground("LeaderboardBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "TOP 10 / 排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
             Image board = UiFactory.CreatePixelPanel(background.transform, "LeaderboardPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.EnergyYellow, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
-            UiFactory.CreateArcadeLabel(board.transform, "RK  NAME   SCORE    DIF  STAGE", ArcadeTheme.BodySize, TextAnchor.UpperLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.9f), new Vector2(0.92f, 0.98f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(board.transform, "名次  名号   分数      难度  关卡", ArcadeTheme.BodySize, TextAnchor.UpperLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.9f), new Vector2(0.92f, 0.98f), Vector2.zero);
             LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
             if (entries.Length == 0)
             {
-                UiFactory.CreateArcadeLabel(board.transform, "NO RECORD\nAAA 0000000", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.DimGray, FontStyle.Bold, new Vector2(0.1f, 0.35f), new Vector2(0.9f, 0.62f), Vector2.zero);
+                UiFactory.CreateArcadeLabel(board.transform, "暂无记录\n出击后刷新榜单", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.DimGray, FontStyle.Bold, new Vector2(0.1f, 0.35f), new Vector2(0.9f, 0.62f), Vector2.zero);
             }
             else
             {
@@ -253,7 +264,7 @@ namespace Wanwan.Runtime
                 {
                     LeaderboardEntry entry = entries[i];
                     Color color = i < 3 ? ArcadeTheme.EnergyYellow : ArcadeTheme.White;
-                    string row = $"{i + 1:00}  {entry.Name,-3}  {entry.Score:0000000}  {BuildDifficultyShort(entry.Difficulty),-2}   L{entry.LoopNumber}-{entry.StageNumber}";
+                    string row = $"{i + 1:00}  {entry.Name,-3}  {entry.Score:0000000}  {BuildDifficultyShort(entry.Difficulty),-2}   {entry.LoopNumber}-{entry.StageNumber}";
                     float top = 0.84f - i * 0.075f;
                     UiFactory.CreateArcadeLabel(board.transform, row, ArcadeTheme.BodySize, TextAnchor.MiddleLeft, color, FontStyle.Bold, new Vector2(0.08f, top - 0.055f), new Vector2(0.92f, top), Vector2.zero);
                 }
@@ -267,7 +278,7 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Settings;
             Image background = CreateBackground("SettingsBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "SETTINGS / 设置", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "设置", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
             Image panel = UiFactory.CreatePixelPanel(background.transform, "SettingsPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
             audioStatusText = UiFactory.CreateArcadeLabel(panel.transform, BuildAudioText(), ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.86f), new Vector2(0.88f, 0.96f), Vector2.zero);
 
@@ -331,11 +342,11 @@ namespace Wanwan.Runtime
             switch (difficulty)
             {
                 case GameDifficulty.Medium:
-                    return "NM";
+                    return "普";
                 case GameDifficulty.High:
-                    return "HD";
+                    return "难";
                 default:
-                    return "EZ";
+                    return "易";
             }
         }
 
@@ -359,7 +370,32 @@ namespace Wanwan.Runtime
 
         private string BuildAudioText()
         {
-            return SessionState.AudioEnabled ? "AUDIO ON" : "AUDIO OFF";
+            return SessionState.AudioEnabled ? "声音开启" : "声音关闭";
+        }
+
+        private void ShowAutoSaveStatus()
+        {
+            PlayerPrefs.Save();
+            saveStatusTimer = 2.2f;
+            if (saveStatusText != null)
+            {
+                saveStatusText.text = "已自动保存";
+                saveStatusText.gameObject.SetActive(true);
+            }
+        }
+
+        private void RefreshSaveStatus()
+        {
+            if (saveStatusText == null || saveStatusTimer <= 0f)
+            {
+                return;
+            }
+
+            saveStatusTimer = Mathf.Max(0f, saveStatusTimer - Time.unscaledDeltaTime);
+            if (saveStatusTimer <= 0f)
+            {
+                saveStatusText.gameObject.SetActive(false);
+            }
         }
 
         private string BuildSensitivityText()

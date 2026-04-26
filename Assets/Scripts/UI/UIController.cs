@@ -15,6 +15,7 @@ namespace Wanwan.Runtime
         private Text comboText;
         private Text powerupText;
         private Text pauseHintText;
+        private Image stageBannerPanel;
         private Text stageBannerText;
         private Image playerHealthRoot;
         private Image playerHealthFill;
@@ -59,7 +60,7 @@ namespace Wanwan.Runtime
             }
 
             scoreText.text = $"得分 {gameManager.Score:0000000}\n金币 {gameManager.CoinCount:000}";
-            livesText.text = $"HP {BuildHealthBar()}\n{BuildBombIcons()}";
+            livesText.text = $"装甲 {BuildHealthBar()}\n{BuildBombIcons()}";
             RefreshPlayerHealthBar();
             highScoreText.text = $"最高分\n{SessionState.HighScore:0000000}";
             difficultyText.text = $"难度 {BuildDifficultyText()}";
@@ -75,7 +76,9 @@ namespace Wanwan.Runtime
             powerupText.text = BuildPowerupHudText();
             pauseHintText.text = gameManager.IsPaused ? "已暂停" : string.Empty;
             stageBannerText.text = gameManager.StageBannerText;
-            stageBannerText.gameObject.SetActive(!string.IsNullOrEmpty(gameManager.StageBannerText));
+            bool hasBanner = !string.IsNullOrEmpty(gameManager.StageBannerText);
+            stageBannerPanel.gameObject.SetActive(hasBanner);
+            stageBannerText.gameObject.SetActive(hasBanner);
             stageBannerText.color = gameManager.StageBannerText.Contains("警报")
                 ? new Color(1f, 0.34f, 0.2f, 0.98f)
                 : new Color(0.82f, 0.94f, 1f, 0.98f);
@@ -104,14 +107,14 @@ namespace Wanwan.Runtime
         {
             overlay.gameObject.SetActive(true);
             overlayTitle.text = title;
-            overlayStage.text = $"L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}  {BuildDifficultyText()}";
+            overlayStage.text = $"第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}  {BuildDifficultyText()}";
             overlayScore.text = $"本局得分 {score:0000000}";
             overlayBestScore.text = $"最高分 {SessionState.HighScore:0000000}";
-            overlaySummary.text = $"击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  BOMB {gameManager.BombsUsed}  目标 {gameManager.BossDisplayName}\nMax Combo: {gameManager.MaxCombo}  Max Multiplier: x{gameManager.MaxComboMultiplier}";
-            if (title == "游戏胜利")
+            overlaySummary.text = $"击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}  炸弹 {gameManager.BombsUsed}  目标 {gameManager.BossDisplayName}\n最高连击 {gameManager.MaxCombo}  最高倍率 {gameManager.MaxComboMultiplier}倍";
+            if (title == "任务完成")
             {
                 overlayBestScore.text = $"本关得分 {score:0000000}  击落 {gameManager.EnemiesDestroyed}";
-                overlaySummary.text = $"使用BOMB {gameManager.BombsUsed}  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}\nMax Combo: {gameManager.MaxCombo}  Max Multiplier: x{gameManager.MaxComboMultiplier}";
+                overlaySummary.text = $"使用炸弹 {gameManager.BombsUsed}  下一关 {StageCatalog.GetStage(StageCatalog.GetNextStageIndex(SessionState.CurrentStageIndex)).Name}\n最高连击 {gameManager.MaxCombo}  最高倍率 {gameManager.MaxComboMultiplier}倍";
             }
         }
 
@@ -123,8 +126,8 @@ namespace Wanwan.Runtime
             }
 
             introOverlay.gameObject.SetActive(true);
-            introTitle.text = "LAUNCH SEQUENCE";
-            introCountdown.text = "TAP / ANY KEY SKIP";
+            introTitle.text = "起飞准备";
+            introCountdown.text = "点击或按任意键跳过";
         }
 
         public void HideIntroPrompt()
@@ -142,7 +145,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            bossWarningTitle.text = $"WARNING\n{bossDisplayName}";
+            bossWarningTitle.text = $"警报\n{bossDisplayName} 来袭";
             StartCoroutine(ShowBossWarningSequence());
         }
 
@@ -160,8 +163,8 @@ namespace Wanwan.Runtime
             highScoreText = UiFactory.CreateArcadeLabel(leftCell.transform, "最高分\n0000000", ArcadeTheme.SmallSize, TextAnchor.LowerLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.34f), Vector2.zero);
             difficultyText = UiFactory.CreateArcadeLabel(centerCell.transform, "难度 低级", 20, TextAnchor.UpperCenter, new Color(0.72f, 0.82f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.66f), new Vector2(0.96f, 0.92f), Vector2.zero);
             stageProgressText = UiFactory.CreateArcadeLabel(centerCell.transform, "第1关 0%", 25, TextAnchor.MiddleCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.06f, 0.3f), new Vector2(0.94f, 0.62f), Vector2.zero);
-            comboText = UiFactory.CreateArcadeLabel(centerCell.transform, "Combo: 0  x1", 22, TextAnchor.LowerCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.06f, 0.05f), new Vector2(0.94f, 0.3f), Vector2.zero);
-            livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "HP ■■■■■■■■■■\n待命", 24, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
+            comboText = UiFactory.CreateArcadeLabel(centerCell.transform, "连击 0  倍率 1倍", 22, TextAnchor.LowerCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.06f, 0.05f), new Vector2(0.94f, 0.3f), Vector2.zero);
+            livesText = UiFactory.CreateArcadeLabel(rightCell.transform, "装甲 ■■■■■■■■■■\n待命", 24, TextAnchor.UpperCenter, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.32f), new Vector2(0.96f, 0.94f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(rightCell.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(64f, 64f), new Vector2(-94f, 0f), new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
@@ -170,7 +173,7 @@ namespace Wanwan.Runtime
 
             Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.08f, 0.08f, 0.16f, SessionState.VirtualButtonOpacity + 0.25f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, 0.065f), new Vector2(6f, 6f));
             Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.04f, 0.18f), new Vector2(0.36f, 0.82f), new Vector2(4f, 4f));
-            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "Weapon: 扇形弹 Lv.1", 22, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
+            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 22, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
             Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.39f, 0.36f), new Vector2(0.67f, 0.64f));
             stageProgressFill = UiFactory.CreatePanel(progressTrack.transform, "ProgressFill", ArcadeTheme.EnergyYellow, Vector2.zero, Vector2.one);
             UiFactory.CreateArcadeLabel(bottomBar.transform, "吃炸弹图标清屏", 24, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.7f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
@@ -188,7 +191,10 @@ namespace Wanwan.Runtime
             playerHealthLabel = UiFactory.CreateArcadeLabel(playerHealthRoot.transform, "装甲 10/10", 22, TextAnchor.MiddleCenter, new Color(0.98f, 1f, 1f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
 
             pauseHintText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 40, TextAnchor.MiddleCenter, new Color(0.6f, 0.84f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.3f, 0.79f), new Vector2(0.7f, 0.84f), Vector2.zero);
-            stageBannerText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 86, TextAnchor.MiddleCenter, new Color(1f, 0.34f, 0.2f, 0.98f), FontStyle.Bold, new Vector2(0.08f, 0.63f), new Vector2(0.92f, 0.77f), Vector2.zero);
+            stageBannerPanel = UiFactory.CreatePixelPanel(canvas.transform, "StageBannerPanel", new Color(0.02f, 0.02f, 0.06f, 0.88f), ArcadeTheme.WarningRed, new Vector2(0.1f, 0.48f), new Vector2(0.9f, 0.58f), new Vector2(6f, 6f));
+            stageBannerPanel.raycastTarget = false;
+            stageBannerText = UiFactory.CreateArcadeLabel(stageBannerPanel.transform, string.Empty, 54, TextAnchor.MiddleCenter, new Color(1f, 0.34f, 0.2f, 0.98f), FontStyle.Bold, new Vector2(0.04f, 0f), new Vector2(0.96f, 1f), Vector2.zero);
+            stageBannerPanel.gameObject.SetActive(false);
             stageBannerText.gameObject.SetActive(false);
 
             pauseOverlay = UiFactory.CreatePanel(canvas.transform, "PauseOverlay", new Color(0.02f, 0.05f, 0.11f, 0.72f), Vector2.zero, Vector2.one);
@@ -213,23 +219,24 @@ namespace Wanwan.Runtime
             introOverlay = UiFactory.CreatePanel(canvas.transform, "LevelIntroOverlay", new Color(0.02f, 0.02f, 0.06f, 0.18f), Vector2.zero, Vector2.one);
             introOverlay.raycastTarget = false;
             introTitle = UiFactory.CreateArcadeLabel(introOverlay.transform, "第1关", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.68f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(introOverlay.transform, "CARRIER DECK READY", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.55f), Vector2.zero);
-            introCountdown = UiFactory.CreateArcadeLabel(introOverlay.transform, "TAP / ANY KEY SKIP", 34, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.34f), new Vector2(0.88f, 0.44f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(introOverlay.transform, "航母甲板就绪", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.55f), Vector2.zero);
+            introCountdown = UiFactory.CreateArcadeLabel(introOverlay.transform, "点击或按任意键跳过", 34, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.34f), new Vector2(0.88f, 0.44f), Vector2.zero);
             introOverlay.gameObject.SetActive(false);
 
-            bossWarningOverlay = UiFactory.CreatePanel(canvas.transform, "BossWarningOverlay", new Color(0.08f, 0f, 0.02f, 0.82f), Vector2.zero, Vector2.one);
+            bossWarningOverlay = UiFactory.CreatePixelPanel(canvas.transform, "BossWarningOverlay", new Color(0.08f, 0f, 0.02f, 0.9f), ArcadeTheme.WarningRed, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.58f), new Vector2(8f, 8f));
+            bossWarningOverlay.raycastTarget = false;
             bossWarningOverlay.gameObject.SetActive(false);
-            UiFactory.CreateDivider(bossWarningOverlay.transform, "WarningTop", ArcadeTheme.WarningRed, new Vector2(0f, 0.78f), new Vector2(1f, 0.84f));
-            UiFactory.CreateDivider(bossWarningOverlay.transform, "WarningBottom", ArcadeTheme.WarningRed, new Vector2(0f, 0.16f), new Vector2(1f, 0.22f));
-            bossWarningTitle = UiFactory.CreateArcadeLabel(bossWarningOverlay.transform, "WARNING", 72, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.38f), new Vector2(0.92f, 0.62f), Vector2.zero);
+            UiFactory.CreateDivider(bossWarningOverlay.transform, "WarningTop", ArcadeTheme.EnergyYellow, new Vector2(0f, 0.82f), new Vector2(1f, 0.88f));
+            UiFactory.CreateDivider(bossWarningOverlay.transform, "WarningBottom", ArcadeTheme.EnergyYellow, new Vector2(0f, 0.12f), new Vector2(1f, 0.18f));
+            bossWarningTitle = UiFactory.CreateArcadeLabel(bossWarningOverlay.transform, "警报", 58, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), Vector2.zero);
 
             overlay = UiFactory.CreatePanel(canvas.transform, "Overlay", new Color(0.02f, 0.05f, 0.11f, 0.8f), Vector2.zero, Vector2.one);
             overlay.gameObject.SetActive(false);
             overlayTitle = UiFactory.CreateArcadeLabel(overlay.transform, "任务失败", 84, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.15f, 0.58f), new Vector2(0.85f, 0.72f), Vector2.zero);
-            overlayStage = UiFactory.CreateArcadeLabel(overlay.transform, "L1-1 乡村", 34, TextAnchor.MiddleCenter, new Color(0.7f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.5f), new Vector2(0.88f, 0.57f), Vector2.zero);
+            overlayStage = UiFactory.CreateArcadeLabel(overlay.transform, "第1轮-1关 乡村", 34, TextAnchor.MiddleCenter, new Color(0.7f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.5f), new Vector2(0.88f, 0.57f), Vector2.zero);
             overlayScore = UiFactory.CreateArcadeLabel(overlay.transform, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.4f), new Vector2(0.85f, 0.49f), Vector2.zero);
             overlayBestScore = UiFactory.CreateArcadeLabel(overlay.transform, "最高分 0000000", 38, TextAnchor.MiddleCenter, new Color(0.54f, 0.85f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.32f), new Vector2(0.85f, 0.4f), Vector2.zero);
-            overlaySummary = UiFactory.CreateArcadeLabel(overlay.transform, "击落 0/0", 30, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.82f), FontStyle.Bold, new Vector2(0.12f, 0.24f), new Vector2(0.88f, 0.31f), Vector2.zero);
+            overlaySummary = UiFactory.CreateArcadeLabel(overlay.transform, "击落 0/0", 30, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.82f), FontStyle.Bold, new Vector2(0.12f, 0.22f), new Vector2(0.88f, 0.31f), Vector2.zero);
         }
 
         private string BuildPowerupHudText()
@@ -299,11 +306,11 @@ namespace Wanwan.Runtime
             switch (gameManager.Difficulty)
             {
                 case GameDifficulty.Medium:
-                    return $"中级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
+                    return $"中级  第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
                 case GameDifficulty.High:
-                    return $"高级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
+                    return $"高级  第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
                 default:
-                    return $"低级  L{gameManager.LoopNumber}-{gameManager.StageNumber} {gameManager.StageName}";
+                    return $"低级  第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
             }
         }
 

@@ -148,7 +148,7 @@ namespace Wanwan.Runtime
             {
                 GameObject coinObject = new GameObject("Coin");
                 coinObject.transform.position = position + new Vector3(Random.Range(-0.18f, 0.18f), Random.Range(-0.14f, 0.2f), 0f);
-                coinObject.transform.localScale = Vector3.one * 0.18f;
+                coinObject.transform.localScale = Vector3.one * CoinController.BaseVisualScale;
 
                 SpriteRenderer renderer = coinObject.AddComponent<SpriteRenderer>();
                 renderer.sprite = RuntimeSpriteFactory.GetCoinSprite();
