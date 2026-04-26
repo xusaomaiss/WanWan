@@ -234,6 +234,41 @@ namespace Wanwan.Runtime
             return button;
         }
 
+        public static Button CreateArcadeSpriteIconButton(Transform parent, Sprite icon, Color accentColor, Vector2 size, Vector2 anchoredPosition, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Button button = CreateButton(parent, string.Empty, Color.clear, Color.clear, size, anchoredPosition);
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+
+            Image background = button.GetComponent<Image>();
+            background.color = new Color(0f, 0f, 0f, 0.18f);
+            background.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+
+            Image glow = CreatePanel(button.transform, "IconGlow", accentColor, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.92f));
+            glow.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+            glow.color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.22f);
+            glow.raycastTarget = false;
+
+            Image iconImage = CreatePanel(button.transform, "Icon", accentColor, new Vector2(0.18f, 0.18f), new Vector2(0.82f, 0.82f));
+            iconImage.sprite = icon;
+            iconImage.preserveAspect = true;
+            iconImage.raycastTarget = false;
+            button.targetGraphic = iconImage;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = accentColor;
+            colors.highlightedColor = Color.Lerp(accentColor, Color.white, 0.18f);
+            colors.pressedColor = Color.Lerp(accentColor, ArcadeTheme.WarningRed, 0.28f);
+            colors.selectedColor = accentColor;
+            colors.disabledColor = ArcadeTheme.DimGray;
+            button.colors = colors;
+
+            ArcadeButtonPressFeedback feedback = button.gameObject.AddComponent<ArcadeButtonPressFeedback>();
+            feedback.Configure(iconImage, null, glow, accentColor);
+            return button;
+        }
+
         public static Button CreateMenuItem(Transform parent, string label, int order, UnityEngine.Events.UnityAction onClick)
         {
             Button button = CreatePixelButton(parent, "▶ " + label, ArcadeTheme.EnergyYellow, new Vector2(600f, 88f), new Vector2(0f, 180f - (order * 104f)));

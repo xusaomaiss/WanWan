@@ -43,6 +43,16 @@ namespace Wanwan.Runtime
             return GetOrCreate("circle", BuildCircleTexture);
         }
 
+        public static Sprite GetLeaderboardIconSprite()
+        {
+            return GetOrCreate("leaderboard-icon", BuildLeaderboardIconTexture);
+        }
+
+        public static Sprite GetSettingsIconSprite()
+        {
+            return GetOrCreate("settings-icon", BuildSettingsIconTexture);
+        }
+
         public static Sprite GetMissileSprite()
         {
             return GetOrCreate("missile", BuildMissileTexture);
@@ -299,6 +309,61 @@ namespace Wanwan.Runtime
                     float distance = Vector2.Distance(new Vector2(x, y), center);
                     float alpha = distance <= radius ? 1f : 0f;
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildLeaderboardIconTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    bool cup = x >= 38 && x <= 90 && y >= 52 && y <= 91;
+                    bool cupLip = x >= 32 && x <= 96 && y >= 86 && y <= 100;
+                    bool cupCut = Mathf.Abs(x - 64f) > Mathf.Lerp(34f, 21f, Mathf.InverseLerp(52f, 91f, y)) && y < 88;
+                    bool leftHandle = x >= 20 && x < 40 && y >= 60 && y <= 88 && Vector2.Distance(new Vector2(x, y), new Vector2(39f, 74f)) < 23f;
+                    bool rightHandle = x > 88 && x <= 108 && y >= 60 && y <= 88 && Vector2.Distance(new Vector2(x, y), new Vector2(89f, 74f)) < 23f;
+                    bool handleHole = (x < 37 || x > 91) && Vector2.Distance(new Vector2(x, y), new Vector2(x < 64 ? 39f : 89f, 74f)) < 12f;
+                    bool stem = x >= 56 && x <= 72 && y >= 33 && y <= 54;
+                    bool baseTop = x >= 45 && x <= 83 && y >= 25 && y <= 36;
+                    bool baseBottom = x >= 32 && x <= 96 && y >= 15 && y <= 28;
+                    bool star = Mathf.Abs(x - 64f) + Mathf.Abs(y - 73f) < 13f || (x >= 58 && x <= 70 && y >= 62 && y <= 84);
+                    bool lit = ((cup || cupLip) && !cupCut) || (leftHandle || rightHandle) && !handleHole || stem || baseTop || baseBottom || star;
+                    texture.SetPixel(x, y, lit ? Color.white : Color.clear);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildSettingsIconTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(64f, 64f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 p = new Vector2(x, y) - center;
+                    float radius = p.magnitude;
+                    float angle = Mathf.Atan2(p.y, p.x);
+                    float tooth = Mathf.Abs(Mathf.Sin(angle * 6f));
+                    bool outerTeeth = radius >= 38f && radius <= Mathf.Lerp(46f, 56f, tooth);
+                    bool ring = radius >= 25f && radius <= 40f;
+                    bool hub = radius >= 10f && radius <= 19f;
+                    bool centerHole = radius < 8f;
+                    bool lit = (outerTeeth || ring || hub) && !centerHole;
+                    texture.SetPixel(x, y, lit ? Color.white : Color.clear);
                 }
             }
 
