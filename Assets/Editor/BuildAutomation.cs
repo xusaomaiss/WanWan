@@ -26,6 +26,7 @@ namespace Wanwan.Editor
         public static void BuildAndroidDebug()
         {
             ConfigureAndroidPlayerSettings();
+            ConfigureAndroidDebugSigning();
             Directory.CreateDirectory(OutputDirectory);
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
@@ -134,6 +135,15 @@ namespace Wanwan.Editor
             PlayerSettings.Android.keystorePass = keystorePass;
             PlayerSettings.Android.keyaliasName = keyAlias;
             PlayerSettings.Android.keyaliasPass = keyAliasPass;
+        }
+
+        private static void ConfigureAndroidDebugSigning()
+        {
+            PlayerSettings.Android.useCustomKeystore = false;
+            PlayerSettings.Android.keystoreName = string.Empty;
+            PlayerSettings.Android.keystorePass = string.Empty;
+            PlayerSettings.Android.keyaliasName = string.Empty;
+            PlayerSettings.Android.keyaliasPass = string.Empty;
         }
 
         private static void ConfigureLaunchPresentation()
