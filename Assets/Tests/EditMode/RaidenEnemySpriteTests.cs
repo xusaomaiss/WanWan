@@ -42,5 +42,19 @@ namespace Wanwan.Tests.EditMode
             Assert.That(resource.height, Is.EqualTo(128));
             Assert.That(RuntimeSpriteFactory.GetCoinSprite().texture, Is.SameAs(resource));
         }
+
+        [Test]
+        public void CinematicSprites_UseAiGeneratedResources()
+        {
+            Texture2D introResource = Resources.Load<Texture2D>(RuntimeSpriteFactory.LaunchWeatherIntroResourcePath);
+            Texture2D menuResource = Resources.Load<Texture2D>(RuntimeSpriteFactory.MenuStormTitleResourcePath);
+
+            Assert.That(introResource, Is.Not.Null);
+            Assert.That(menuResource, Is.Not.Null);
+            Assert.That(introResource.height, Is.GreaterThan(introResource.width));
+            Assert.That(menuResource.height, Is.GreaterThan(menuResource.width));
+            Assert.That(RuntimeSpriteFactory.GetLaunchWeatherIntroSprite().texture, Is.SameAs(introResource));
+            Assert.That(RuntimeSpriteFactory.GetMenuStormTitleSprite().texture, Is.SameAs(menuResource));
+        }
     }
 }

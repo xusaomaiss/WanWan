@@ -32,6 +32,7 @@ namespace Wanwan.Runtime
             BlockSpawner spawner = new GameObject("BlockSpawner").AddComponent<BlockSpawner>();
             CreateCarrierDeck(orthographicSize, horizontalExtent, bottomBound + 0.45f);
             PlayerController player = CreatePlayer(leftBound, rightBound, bottomBound + introConfig.StartYInset);
+            SpriteRenderer introBackdrop = CreateIntroCinematicBackdrop(orthographicSize, horizontalExtent);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
             player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, bottomBound, topBound);
@@ -39,7 +40,7 @@ namespace Wanwan.Runtime
             manager.BeginIntro();
 
             CarrierLaunchIntroController intro = new GameObject("CarrierLaunchIntroController").AddComponent<CarrierLaunchIntroController>();
-            intro.Initialize(manager, player.transform, gameplayPlayerPosition, introConfig, backgroundLayers);
+            intro.Initialize(manager, player.transform, gameplayPlayerPosition, introConfig, backgroundLayers, introBackdrop, cameraComponent);
             intro.Play();
         }
 
@@ -116,6 +117,24 @@ namespace Wanwan.Runtime
             float targetWidth = (horizontalExtent * 2f) + 2f;
             float targetHeight = orthographicSize * 0.42f;
             deckObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
+        }
+
+        private static SpriteRenderer CreateIntroCinematicBackdrop(float orthographicSize, float horizontalExtent)
+        {
+            GameObject backdropObject = new GameObject("LaunchWeatherIntroBackdrop");
+            backdropObject.transform.position = new Vector3(0f, 0f, 7f);
+
+            SpriteRenderer renderer = backdropObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetLaunchWeatherIntroSprite();
+            renderer.sortingOrder = -59;
+            renderer.color = Color.white;
+
+            Vector2 spriteSize = renderer.sprite.bounds.size;
+            float targetWidth = (horizontalExtent * 2f) + 3.5f;
+            float targetHeight = (orthographicSize * 2f) + 3.5f;
+            float scale = Mathf.Max(targetWidth / spriteSize.x, targetHeight / spriteSize.y);
+            backdropObject.transform.localScale = new Vector3(scale, scale, 1f);
+            return renderer;
         }
 
         private static PlayerController CreatePlayer(float leftBound, float rightBound, float y)

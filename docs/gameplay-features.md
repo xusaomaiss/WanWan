@@ -30,6 +30,23 @@
 - `Assets/Scripts/Runtime/PlayerController.cs`
 - `Assets/Scripts/Bootstrap/GameBootstrap.cs`
 
+## 开场与开始菜单
+
+游戏开局使用 AI 生成的关键画面 `launch_weather_intro_ai` 作为 `4.2` 秒起飞天气层引导：
+
+- 战机从航母甲板加速进入云层。
+- 背景滚动速度、喷焰粒子、速度线和白光过渡同步增强。
+- 玩家可在短暂保护时间后点击或触摸跳过。
+
+开始菜单使用 AI 生成的 `menu_storm_title_ai` 作为风暴云层主视觉，并将标题、主按钮、排行榜、设置和退出入口重新分层，突出“开始出击”。
+
+相关代码：
+
+- `Assets/Scripts/Runtime/CarrierLaunchIntroController.cs`
+- `Assets/Scripts/Runtime/CarrierLaunchIntroConfig.cs`
+- `Assets/Scripts/Bootstrap/MenuBootstrap.cs`
+- `Assets/Scripts/Runtime/RuntimeSpriteFactory.cs`
+
 ## 金币与分数系统
 
 敌机被击毁后会掉落金币：

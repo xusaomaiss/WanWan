@@ -11,6 +11,8 @@ namespace Wanwan.Runtime
         public const string EliteEnemyResourcePath = "RaidenArt/Ships/elite_enemy_ai";
         public const string BossFlagshipResourcePath = "RaidenArt/Ships/boss_flagship_ai";
         public const string CoinResourcePath = "RaidenArt/Pickups/coin_ai";
+        public const string LaunchWeatherIntroResourcePath = "RaidenArt/Cinematics/launch_weather_intro_ai";
+        public const string MenuStormTitleResourcePath = "RaidenArt/Cinematics/menu_storm_title_ai";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -141,6 +143,16 @@ namespace Wanwan.Runtime
         public static Sprite GetCarrierDeckSprite()
         {
             return GetOrCreate("carrier-deck", BuildCarrierDeckTexture);
+        }
+
+        public static Sprite GetLaunchWeatherIntroSprite()
+        {
+            return GetResourceSpriteOrFallback("launch-weather-intro-ai", LaunchWeatherIntroResourcePath, GetSkyBackgroundSprite);
+        }
+
+        public static Sprite GetMenuStormTitleSprite()
+        {
+            return GetResourceSpriteOrFallback("menu-storm-title-ai", MenuStormTitleResourcePath, GetSkyBackgroundSprite);
         }
 
         public static Sprite GetExplosionSprite()

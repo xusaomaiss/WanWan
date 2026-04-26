@@ -39,14 +39,14 @@ namespace Wanwan.Runtime
         public float TotalDurationSeconds => HoldSeconds + LaunchDurationSeconds;
 
         public static CarrierLaunchIntroConfig Default => new CarrierLaunchIntroConfig(
-            0.5f,
-            3.2f,
+            0.35f,
+            3.85f,
             1.15f,
             9.4f,
             4.15f,
             0.18f,
             1.0f,
-            3.1f,
+            3.4f,
             1.0f,
             0.35f);
     }

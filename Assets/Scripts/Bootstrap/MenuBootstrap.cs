@@ -64,7 +64,15 @@ namespace Wanwan.Runtime
         private Image CreateBackground(string name)
         {
             ClearCanvas();
-            Image background = UiFactory.CreatePanel(canvas.transform, name, ArcadeTheme.BackgroundBlack, Vector2.zero, Vector2.one);
+            Image background = UiFactory.CreatePanel(canvas.transform, name, Color.white, Vector2.zero, Vector2.one);
+            background.sprite = RuntimeSpriteFactory.GetMenuStormTitleSprite();
+            background.preserveAspect = false;
+            background.raycastTarget = false;
+
+            Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.42f), Vector2.zero, Vector2.one);
+            shade.raycastTarget = false;
+            UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.28f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
+            UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.48f), Vector2.zero, new Vector2(1f, 0.34f)).raycastTarget = false;
             CreateScanlines(background.transform);
             return background;
         }
@@ -82,10 +90,10 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Logo;
             Image background = CreateBackground("LogoBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "RAIDEN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.62f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(background.transform, "雷电", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.45f), new Vector2(0.92f, 0.53f), Vector2.zero);
-            UiFactory.CreateDivider(background.transform, "LogoDivider", ArcadeTheme.WarningRed, new Vector2(0.18f, 0.44f), new Vector2(0.82f, 0.447f));
-            UiFactory.CreateArcadeLabel(background.transform, "WANWAN ARCADE SYSTEM", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.36f), new Vector2(0.92f, 0.42f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.65f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "DROP BLASTER", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.56f), Vector2.zero);
+            UiFactory.CreateDivider(background.transform, "LogoDivider", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.47f), new Vector2(0.8f, 0.476f));
+            UiFactory.CreateArcadeLabel(background.transform, "ARCADE AIR COMMAND", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.39f), new Vector2(0.92f, 0.45f), Vector2.zero);
         }
 
         private void ShowTitle()
@@ -93,31 +101,24 @@ namespace Wanwan.Runtime
             state = MenuUiState.Title;
             Image background = CreateBackground("TitleBackground");
 
-            Image attract = UiFactory.CreatePixelPanel(background.transform, "AttractPreview", new Color(0.03f, 0.04f, 0.1f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.93f), new Vector2(8f, 8f));
-            UiFactory.CreateArcadeLabel(attract.transform, "P1  AUTO FIRE        P2  PATROL", ArcadeTheme.SmallSize, TextAnchor.UpperCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.04f, 0.78f), new Vector2(0.96f, 0.94f), Vector2.zero);
-            Image p1 = UiFactory.CreatePanel(attract.transform, "P1Ship", ShipDefinition.Get(PlayerShipType.Green).AccentColor, new Vector2(0.26f, 0.4f), new Vector2(0.26f, 0.4f));
-            ConfigureShipPreview(p1, ShipDefinition.Get(PlayerShipType.Green).AccentColor);
-            Image p2 = UiFactory.CreatePanel(attract.transform, "P2Ship", ShipDefinition.Get(PlayerShipType.Blue).AccentColor, new Vector2(0.74f, 0.4f), new Vector2(0.74f, 0.4f));
-            ConfigureShipPreview(p2, ShipDefinition.Get(PlayerShipType.Blue).AccentColor);
-            p2.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -12f);
-            for (int i = 0; i < 5; i++)
-            {
-                UiFactory.CreatePanel(attract.transform, "Shot" + i, ArcadeTheme.EnergyYellow, new Vector2(0.46f + i * 0.04f, 0.48f), new Vector2(0.475f + i * 0.04f, 0.56f));
-            }
+            UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.68f), FontStyle.Bold, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.89f), new Vector2(4f, -5f));
+            UiFactory.CreateArcadeLabel(background.transform, "WANWAN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.89f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "DROP BLASTER", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.735f), new Vector2(0.92f, 0.805f), Vector2.zero);
+            UiFactory.CreateDivider(background.transform, "TitleHotLine", ArcadeTheme.WarningRed, new Vector2(0.2f, 0.724f), new Vector2(0.8f, 0.73f));
+            UiFactory.CreateArcadeLabel(background.transform, "STORM LAUNCH READY", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.67f), new Vector2(0.92f, 0.715f), Vector2.zero);
 
-            UiFactory.CreateArcadeLabel(background.transform, "RAIDEN", ArcadeTheme.LogoSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.54f), new Vector2(0.92f, 0.65f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(background.transform, "雷电", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.56f), Vector2.zero);
-            UiFactory.CreateDivider(background.transform, "RedDivider", ArcadeTheme.WarningRed, new Vector2(0.18f, 0.48f), new Vector2(0.82f, 0.487f));
-            UiFactory.CreateArcadeLabel(background.transform, "INSERT COIN / 插入硬币", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.48f), Vector2.zero);
-
-            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.DimGray, new Vector2(0.16f, 0.12f), new Vector2(0.84f, 0.38f), new Vector2(8f, 8f));
-            UiFactory.CreateMenuItem(menu.transform, "开始游戏", 0, SceneNavigator.LoadGame);
-            UiFactory.CreateMenuItem(menu.transform, "排行榜", 1, ShowLeaderboard);
-            UiFactory.CreateMenuItem(menu.transform, "设置", 2, ShowSettings);
-            UiFactory.CreateMenuItem(menu.transform, "退出", 3, Application.Quit);
+            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.86f), ArcadeTheme.ElectricBlue, new Vector2(0.1f, 0.105f), new Vector2(0.9f, 0.34f), new Vector2(8f, 8f));
+            Button start = UiFactory.CreatePixelButton(menu.transform, "开始出击", ArcadeTheme.EnergyYellow, new Vector2(660f, 104f), new Vector2(0f, 104f));
+            start.onClick.AddListener(SceneNavigator.LoadGame);
+            Button leaderboard = UiFactory.CreatePixelButton(menu.transform, "排行榜", ArcadeTheme.ElectricBlue, new Vector2(310f, 78f), new Vector2(-175f, -24f));
+            leaderboard.onClick.AddListener(ShowLeaderboard);
+            Button settings = UiFactory.CreatePixelButton(menu.transform, "设置", ArcadeTheme.ElectricBlue, new Vector2(310f, 78f), new Vector2(175f, -24f));
+            settings.onClick.AddListener(ShowSettings);
+            Button exit = UiFactory.CreatePixelButton(menu.transform, "退出", ArcadeTheme.DimGray, new Vector2(660f, 64f), new Vector2(0f, -112f));
+            exit.onClick.AddListener(Application.Quit);
 
             string hiScore = $"HI-SCORE {SessionState.HighScore:0000000}";
-            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.16f, 0.045f), new Vector2(0.84f, 0.09f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.045f), new Vector2(0.88f, 0.09f), Vector2.zero);
         }
 
         private void ShowShipSelect()

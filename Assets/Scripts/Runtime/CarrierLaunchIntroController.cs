@@ -11,6 +11,10 @@ namespace Wanwan.Runtime
         private Vector3 gameplayPosition;
         private CarrierLaunchIntroConfig config;
         private ScrollingBackgroundLayer[] backgroundLayers;
+        private SpriteRenderer introBackdrop;
+        private SpriteRenderer whiteFlash;
+        private SpriteRenderer[] speedLines;
+        private Camera sceneCamera;
         private ParticleSystem exhaustParticles;
         private Coroutine playRoutine;
         private bool completed;
@@ -23,14 +27,30 @@ namespace Wanwan.Runtime
             CarrierLaunchIntroConfig introConfig,
             ScrollingBackgroundLayer[] scrollingLayers)
         {
+            Initialize(gameManager, player, playerGameplayPosition, introConfig, scrollingLayers, null, null);
+        }
+
+        public void Initialize(
+            GameManager gameManager,
+            Transform player,
+            Vector3 playerGameplayPosition,
+            CarrierLaunchIntroConfig introConfig,
+            ScrollingBackgroundLayer[] scrollingLayers,
+            SpriteRenderer cinematicBackdrop,
+            Camera cameraComponent)
+        {
             manager = gameManager;
             playerTransform = player;
             playerController = player == null ? null : player.GetComponent<PlayerController>();
             gameplayPosition = playerGameplayPosition;
             config = introConfig;
             backgroundLayers = scrollingLayers ?? new ScrollingBackgroundLayer[0];
+            introBackdrop = cinematicBackdrop;
+            sceneCamera = cameraComponent;
             skipInputEnabledAt = Time.unscaledTime + config.SkipInputGraceSeconds;
             CreateExhaustParticles();
+            CreateSpeedLines();
+            CreateWhiteFlash();
         }
 
         public void Play()
@@ -87,6 +107,8 @@ namespace Wanwan.Runtime
 
             ApplyBackgroundBoost(0.35f);
             SetExhaustIntensity(0.16f);
+            SetIntroBackdropAlpha(1f);
+            SetWhiteFlashAlpha(0f);
             yield return new WaitForSeconds(config.HoldSeconds);
 
             Vector3 start = playerTransform.position;
@@ -102,6 +124,9 @@ namespace Wanwan.Runtime
                 playerTransform.position = Vector3.LerpUnclamped(start, end, eased);
                 ApplyBackgroundBoost(Mathf.Lerp(0.65f, config.BackgroundBoost, speedBlend));
                 SetExhaustIntensity(Mathf.Lerp(0.45f, config.ExhaustIntensity, speedBlend));
+                AnimateIntroBackdrop(normalized);
+                AnimateSpeedLines(normalized);
+                AnimateWhiteFlash(normalized);
                 yield return null;
             }
 
@@ -124,6 +149,8 @@ namespace Wanwan.Runtime
 
             ApplyBackgroundBoost(1f);
             SetExhaustIntensity(0f);
+            SetWhiteFlashAlpha(0f);
+            CleanupIntroVisuals();
             if (playerController != null)
             {
                 playerController.ResetForGameplayPosition(gameplayPosition);
@@ -197,6 +224,150 @@ namespace Wanwan.Runtime
 
             ParticleSystem.EmissionModule emission = exhaustParticles.emission;
             emission.rateOverTime = Mathf.Max(0f, intensity) * 70f;
+        }
+
+        private void AnimateIntroBackdrop(float normalized)
+        {
+            if (introBackdrop == null)
+            {
+                return;
+            }
+
+            float exitFade = Mathf.InverseLerp(0.76f, 1f, normalized);
+            SetIntroBackdropAlpha(1f - exitFade);
+            introBackdrop.transform.localScale *= 1f + (Time.deltaTime * Mathf.Lerp(0.015f, 0.045f, normalized));
+            introBackdrop.transform.position = new Vector3(0f, Mathf.Lerp(0f, -0.8f, normalized), 7f);
+        }
+
+        private void SetIntroBackdropAlpha(float alpha)
+        {
+            if (introBackdrop == null)
+            {
+                return;
+            }
+
+            Color color = introBackdrop.color;
+            color.a = Mathf.Clamp01(alpha);
+            introBackdrop.color = color;
+        }
+
+        private void CreateSpeedLines()
+        {
+            if (sceneCamera == null)
+            {
+                return;
+            }
+
+            speedLines = new SpriteRenderer[14];
+            float halfHeight = sceneCamera.orthographicSize + 1.5f;
+            float halfWidth = sceneCamera.orthographicSize * sceneCamera.aspect;
+            for (int i = 0; i < speedLines.Length; i++)
+            {
+                GameObject line = new GameObject("LaunchSpeedLine" + i);
+                line.transform.position = new Vector3(Mathf.Lerp(-halfWidth, halfWidth, (i + 0.5f) / speedLines.Length), Random.Range(-halfHeight, halfHeight), -0.05f);
+                line.transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(-3f, 3f));
+                line.transform.localScale = new Vector3(Random.Range(0.025f, 0.055f), Random.Range(1.2f, 3.6f), 1f);
+
+                SpriteRenderer renderer = line.AddComponent<SpriteRenderer>();
+                renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+                renderer.sortingOrder = 18;
+                renderer.color = new Color(0.65f, 0.95f, 1f, 0f);
+                speedLines[i] = renderer;
+            }
+        }
+
+        private void AnimateSpeedLines(float normalized)
+        {
+            if (speedLines == null || sceneCamera == null)
+            {
+                return;
+            }
+
+            float halfHeight = sceneCamera.orthographicSize + 1.8f;
+            float alpha = Mathf.InverseLerp(0.16f, 0.46f, normalized) * (1f - Mathf.InverseLerp(0.86f, 1f, normalized));
+            for (int i = 0; i < speedLines.Length; i++)
+            {
+                SpriteRenderer renderer = speedLines[i];
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                Transform lineTransform = renderer.transform;
+                float speed = Mathf.Lerp(7f, 19f, normalized) * Time.deltaTime;
+                lineTransform.position += Vector3.down * speed;
+                if (lineTransform.position.y < -halfHeight)
+                {
+                    lineTransform.position = new Vector3(lineTransform.position.x, halfHeight, lineTransform.position.z);
+                }
+
+                Color color = renderer.color;
+                color.a = alpha * Random.Range(0.22f, 0.72f);
+                renderer.color = color;
+            }
+        }
+
+        private void CreateWhiteFlash()
+        {
+            if (sceneCamera == null)
+            {
+                return;
+            }
+
+            GameObject flash = new GameObject("LaunchWeatherFlash");
+            flash.transform.position = new Vector3(0f, 0f, -0.1f);
+            flash.transform.localScale = new Vector3(sceneCamera.orthographicSize * sceneCamera.aspect * 2.6f, sceneCamera.orthographicSize * 2.6f, 1f);
+
+            whiteFlash = flash.AddComponent<SpriteRenderer>();
+            whiteFlash.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+            whiteFlash.sortingOrder = 40;
+            whiteFlash.color = new Color(1f, 0.96f, 0.78f, 0f);
+        }
+
+        private void AnimateWhiteFlash(float normalized)
+        {
+            float alpha = Mathf.InverseLerp(0.72f, 0.9f, normalized) * (1f - Mathf.InverseLerp(0.92f, 1f, normalized));
+            SetWhiteFlashAlpha(alpha * 0.55f);
+        }
+
+        private void SetWhiteFlashAlpha(float alpha)
+        {
+            if (whiteFlash == null)
+            {
+                return;
+            }
+
+            Color color = whiteFlash.color;
+            color.a = Mathf.Clamp01(alpha);
+            whiteFlash.color = color;
+        }
+
+        private void CleanupIntroVisuals()
+        {
+            if (introBackdrop != null)
+            {
+                Destroy(introBackdrop.gameObject);
+                introBackdrop = null;
+            }
+
+            if (whiteFlash != null)
+            {
+                Destroy(whiteFlash.gameObject);
+                whiteFlash = null;
+            }
+
+            if (speedLines != null)
+            {
+                for (int i = 0; i < speedLines.Length; i++)
+                {
+                    if (speedLines[i] != null)
+                    {
+                        Destroy(speedLines[i].gameObject);
+                    }
+                }
+
+                speedLines = null;
+            }
         }
     }
 }
