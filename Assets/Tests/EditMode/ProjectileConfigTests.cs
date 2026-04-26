@@ -25,5 +25,29 @@ namespace Wanwan.Tests.EditMode
         {
             Assert.That(WeaponShotPattern.GetShots(type, level).Length, Is.EqualTo(expectedCount));
         }
+
+        [Test]
+        public void GetShots_RapidAndGuardModulesAddSupportFire()
+        {
+            PlayerShotSpec[] shots = WeaponShotPattern.GetShots(WeaponType.Spread, 2, new[] { WeaponModuleType.RapidFire, WeaponModuleType.Guard });
+
+            Assert.That(shots.Length, Is.GreaterThan(WeaponShotPattern.GetShots(WeaponType.Spread, 2).Length));
+            Assert.That(shots[0].SpeedMultiplier, Is.GreaterThan(1f));
+            Assert.That(shots, Has.Some.Matches<PlayerShotSpec>(shot => shot.WeaponType == WeaponType.Spread && shot.Offset.x < -0.4f));
+            Assert.That(shots, Has.Some.Matches<PlayerShotSpec>(shot => shot.WeaponType == WeaponType.Spread && shot.Offset.x > 0.4f));
+        }
+
+        [Test]
+        public void GetShots_PierceHomingWaveModulesMutateShotPropertiesAndPlasmaHasBlast()
+        {
+            PlayerShotSpec[] pierceHomingShots = WeaponShotPattern.GetShots(WeaponType.Laser, 1, new[] { WeaponModuleType.Pierce, WeaponModuleType.Homing });
+            PlayerShotSpec[] waveShots = WeaponShotPattern.GetShots(WeaponType.Burst, 2, new[] { WeaponModuleType.Wave });
+            PlayerShotSpec[] plasmaShots = WeaponShotPattern.GetShots(WeaponType.Plasma, 1);
+
+            Assert.That(pierceHomingShots, Has.All.Matches<PlayerShotSpec>(shot => shot.CanPierce));
+            Assert.That(pierceHomingShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.MotionType == BulletMotionType.Homing));
+            Assert.That(waveShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.MotionType == BulletMotionType.Wave));
+            Assert.That(plasmaShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.ExplosionRadius >= 1f));
+        }
     }
 }

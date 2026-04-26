@@ -30,7 +30,7 @@ namespace Wanwan.Runtime
 
             if (type == AmmoPowerupType.Burst || type == AmmoPowerupType.Plasma)
             {
-                return new Vector2(0.28f, 0.62f);
+                return new Vector2(0.32f, 0.64f);
             }
 
             return new Vector2(0.24f, canPierce ? 0.78f : 0.7f);
@@ -124,7 +124,7 @@ namespace Wanwan.Runtime
                     return 0.48f;
                 case AmmoPowerupType.Plasma:
                 case AmmoPowerupType.Burst:
-                    return 0.5f;
+                    return 0.54f;
                 default:
                     return canPierce ? 0.68f : 0.48f;
             }

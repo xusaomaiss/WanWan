@@ -5,6 +5,9 @@ namespace Wanwan.Runtime
 {
     public class GameOverBootstrap : MonoBehaviour
     {
+        private Text nameText;
+        private char[] initials;
+
         private void Awake()
         {
             bool victory = SessionState.LastRunWasVictory;
@@ -41,7 +44,7 @@ namespace Wanwan.Runtime
             BuildFloatingGameOver(background.transform, victory);
         }
 
-        private static void BuildFloatingGameOver(Transform background, bool victory)
+        private void BuildFloatingGameOver(Transform background, bool victory)
         {
             Color titleColor = victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed;
             Color outlineColor = victory ? new Color(0.78f, 1f, 0.94f, 0.9f) : new Color(1f, 0.84f, 0.28f, 0.9f);
@@ -69,11 +72,39 @@ namespace Wanwan.Runtime
             stageOutline.effectColor = new Color(0f, 0f, 0f, 0.78f);
             stageOutline.effectDistance = new Vector2(2f, -2f);
 
+            initials = SessionState.LeaderboardName.ToCharArray();
+            Image namePanel = UiFactory.CreatePixelPanel(background, "NameEntryPanel", new Color(0.03f, 0.04f, 0.09f, 0.82f), ArcadeTheme.ElectricBlue, new Vector2(0.2f, 0.31f), new Vector2(0.8f, 0.43f), new Vector2(5f, 5f));
+            UiFactory.CreateArcadeLabel(namePanel.transform, "本地榜名", 24, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.07f, 0.52f), new Vector2(0.42f, 0.92f), Vector2.zero);
+            nameText = UiFactory.CreateArcadeLabel(namePanel.transform, new string(initials), 46, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.38f, 0.1f), new Vector2(0.62f, 0.9f), Vector2.zero);
+            for (int i = 0; i < 3; i++)
+            {
+                int index = i;
+                Button up = UiFactory.CreatePixelButton(namePanel.transform, "+", ArcadeTheme.ElectricBlue, new Vector2(58f, 42f), new Vector2(42f + i * 58f, 34f));
+                up.onClick.AddListener(() => CycleInitial(index, 1));
+                Button down = UiFactory.CreatePixelButton(namePanel.transform, "-", ArcadeTheme.DimGray, new Vector2(58f, 42f), new Vector2(42f + i * 58f, -34f));
+                down.onClick.AddListener(() => CycleInitial(index, -1));
+            }
+
             string primaryCopy = victory ? "继续下一关" : "重新挑战";
             Button primaryButton = UiFactory.CreatePixelButton(background, primaryCopy, victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed, new Vector2(390f, 118f), new Vector2(-226f, -610f));
             primaryButton.onClick.AddListener(victory ? SceneNavigator.LoadNextStage : SceneNavigator.LoadGame);
             Button menuButton = UiFactory.CreatePixelButton(background, "返回主页", ArcadeTheme.EnergyYellow, new Vector2(390f, 118f), new Vector2(226f, -610f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
+        }
+
+        private void CycleInitial(int index, int delta)
+        {
+            if (initials == null || index < 0 || index >= initials.Length)
+            {
+                return;
+            }
+
+            int value = initials[index] - 'A';
+            value = (value + delta + 26) % 26;
+            initials[index] = (char)('A' + value);
+            string name = new string(initials);
+            nameText.text = name;
+            SessionState.UpdateLastLeaderboardName(name);
         }
 
         private static string BuildDifficultyText()

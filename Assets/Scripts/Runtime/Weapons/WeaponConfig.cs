@@ -34,11 +34,13 @@ namespace Wanwan.Runtime
                 case WeaponType.Laser:
                     return new WeaponConfig(type, "激光弹", 0.12f, 27.5f, 2, true, 0f, 0f, new Color(0.2f, 0.82f, 1f));
                 case WeaponType.Homing:
-                    return new WeaponConfig(type, "追踪弹", 0.18f, 19.5f, 1, false, 0f, 3.25f, new Color(0.28f, 0.72f, 1f));
+                    return new WeaponConfig(type, "追踪弹", 0.15f, 24.5f, 1, false, 0f, 3.8f, new Color(0.28f, 0.72f, 1f));
                 case WeaponType.Burst:
-                    return new WeaponConfig(type, "爆裂弹", 0.22f, 18.5f, 1, false, 0.72f, 0f, new Color(1f, 0.22f, 0.34f));
+                    return new WeaponConfig(type, "爆裂弹", 0.18f, 24f, 1, false, 0.82f, 0f, new Color(1f, 0.22f, 0.34f));
+                case WeaponType.Plasma:
+                    return new WeaponConfig(type, "等离子弹", 0.2f, 23.5f, 2, false, 1.02f, 0f, new Color(0.7f, 0.38f, 1f));
                 default:
-                    return new WeaponConfig(WeaponType.Spread, "扇形弹", 0.16f, 21.25f, 1, false, 0f, 0f, new Color(1f, 0.48f, 0.32f));
+                    return new WeaponConfig(WeaponType.Spread, "扇形弹", 0.13f, 26.5f, 1, false, 0f, 0f, new Color(1f, 0.48f, 0.32f));
             }
         }
     }

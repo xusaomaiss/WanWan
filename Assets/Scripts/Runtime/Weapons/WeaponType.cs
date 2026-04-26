@@ -5,6 +5,7 @@ namespace Wanwan.Runtime
         Spread = 0,
         Laser = 1,
         Homing = 2,
-        Burst = 3
+        Burst = 3,
+        Plasma = 4
     }
 }

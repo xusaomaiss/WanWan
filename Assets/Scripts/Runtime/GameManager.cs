@@ -59,6 +59,7 @@ namespace Wanwan.Runtime
         public int CoinCount => rewardState.CoinsCollected;
         public int FireLevel => weaponState.FireLevel;
         public WeaponType CurrentWeaponType => weaponState.CurrentWeaponType;
+        public WeaponModuleType[] CurrentWeaponModules => weaponState.GetEquippedModules();
         public int CurrentCombo => comboState.CurrentCombo;
         public int CurrentComboMultiplier => comboState.CurrentMultiplier;
         public int MaxCombo => comboState.MaxCombo;
@@ -318,6 +319,11 @@ namespace Wanwan.Runtime
             }
 
             comboState.BreakCombo();
+            if (!playerHealth.IsDepleted)
+            {
+                DropRecoveryPowerupsAfterDamage();
+            }
+
             invulnerabilityState.Trigger();
             PlayerDamageFeedback.TriggerVibration(damageApplied);
             effectsController.PlayBaseHit();
@@ -328,6 +334,31 @@ namespace Wanwan.Runtime
                 gameOverTitle = depletedTitle;
                 StartCoroutine(EndRun());
             }
+        }
+
+        private void DropRecoveryPowerupsAfterDamage()
+        {
+            WeaponType previousWeapon = weaponState.CurrentWeaponType;
+            int previousLevel = weaponState.FireLevel;
+            WeaponModuleType[] previousModules = weaponState.GetEquippedModules();
+            if (!weaponState.ApplyDeathPenalty())
+            {
+                return;
+            }
+
+            Vector3 origin = PlayerPosition;
+            blockSpawner.SpawnAmmoPackAtPosition(previousWeapon, origin + new Vector3(-0.42f, 0.64f, 0f));
+            if (previousModules.Length > 0)
+            {
+                blockSpawner.SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(previousModules[previousModules.Length - 1]), origin + new Vector3(0.42f, 0.64f, 0f));
+            }
+            else if (previousLevel >= 3)
+            {
+                WeaponType supportType = previousWeapon == WeaponType.Spread ? WeaponType.Laser : WeaponType.Spread;
+                blockSpawner.SpawnAmmoPackAtPosition(supportType, origin + new Vector3(0.42f, 0.64f, 0f));
+            }
+
+            ShowStageBanner("火力重置");
         }
 
         public void SetStageState(StagePhase phase, string label)
@@ -405,6 +436,18 @@ namespace Wanwan.Runtime
 
             weaponState.ApplyWeaponPickup(type);
             ShowStageBanner(WeaponConfig.Get(type).DisplayName + " " + weaponState.FireLevel + "级");
+            uiController.RefreshHud();
+        }
+
+        public void ApplyPowerupPickup(AmmoPowerupType type)
+        {
+            if (gameEnded || type == AmmoPowerupType.None)
+            {
+                return;
+            }
+
+            weaponState.ApplyPowerup(type);
+            ShowStageBanner(PowerupCycle.GetLabel(type) + " 火力 " + weaponState.FireLevel + "级");
             uiController.RefreshHud();
         }
 

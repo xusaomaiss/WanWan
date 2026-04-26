@@ -17,6 +17,7 @@ namespace Wanwan.Runtime
         private AudioClip powerupClip;
         private AudioClip bombClip;
         private AudioClip bossAlarmClip;
+        private VisualEffectsQuality EffectsQuality => SessionState.VisualEffectsQuality;
 
         public void Initialize(Camera mainCamera)
         {
@@ -83,18 +84,18 @@ namespace Wanwan.Runtime
         {
             EmitExplosionImage(position);
             EmitParticles(position, color, 16, 0.28f, 0.68f);
-            EmitDebris(position, color, 14);
+            EmitDebris(position, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 14));
             sfxSource.PlayOneShot(explosionSmallClip, 0.86f);
-            StartCoroutine(Shake(0.07f, 0.08f));
+            StartShake(0.07f, 0.08f);
         }
 
         public void PlayGroundTargetDestroyed(Vector3 position, Color color)
         {
             EmitExplosionImage(position);
             EmitParticles(position, Color.Lerp(color, new Color(1f, 0.75f, 0.22f), 0.45f), 22, 0.36f, 0.82f);
-            EmitDebris(position, color, 22);
+            EmitDebris(position, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 22));
             sfxSource.PlayOneShot(explosionSmallClip, 1f);
-            StartCoroutine(Shake(0.1f, 0.1f));
+            StartShake(0.1f, 0.1f);
         }
 
         public void PlayBossDefeat(Vector3 position, Color color)
@@ -104,8 +105,8 @@ namespace Wanwan.Runtime
             EmitExplosionImage(position + new Vector3(-0.34f, 0.22f, 0f));
             EmitExplosionImage(position + new Vector3(0.38f, -0.18f, 0f));
             EmitParticles(position, color, 44, 0.52f, 1.32f);
-            EmitDebris(position, color, 28);
-            StartCoroutine(Shake(0.28f, 0.24f));
+            EmitDebris(position, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 28));
+            StartShake(0.28f, 0.24f);
             StartCoroutine(PlayBossDefeatCascade(position, color));
         }
 
@@ -117,22 +118,27 @@ namespace Wanwan.Runtime
         public void PlayBombDetonation(Vector3 center)
         {
             sfxSource.PlayOneShot(bombClip, 1f);
-            StartCoroutine(Shake(0.18f, 0.2f));
+            StartShake(0.18f, 0.2f);
             StartCoroutine(AnimateBombFlash(center));
             StartCoroutine(AnimateBombShockwave(center));
+            if (EffectsQuality == VisualEffectsQuality.Full)
+            {
+                EmitExplosionImage(center + new Vector3(-0.85f, 0.15f, 0f));
+                EmitExplosionImage(center + new Vector3(0.82f, -0.12f, 0f));
+            }
         }
 
         public void PlayBaseHit()
         {
             sfxSource.PlayOneShot(baseClip, 0.86f);
-            StartCoroutine(Shake(0.12f, 0.15f));
+            StartShake(0.12f, 0.15f);
         }
 
         public void PlayPowerupPickup(Vector3 position, Color color, string label)
         {
             EmitParticles(position, color, 15, 0.28f, 0.62f);
             sfxSource.PlayOneShot(powerupClip, 0.92f);
-            StartCoroutine(Shake(0.08f, 0.12f));
+            StartShake(0.08f, 0.12f);
             StartCoroutine(AnimatePowerupLabel(position, color, label));
         }
 
@@ -145,19 +151,27 @@ namespace Wanwan.Runtime
         {
             EmitParticles(position, color, 20, 0.34f, 0.72f);
             sfxSource.PlayOneShot(baseClip, 1f);
-            StartCoroutine(Shake(0.18f, 0.22f));
+            StartShake(0.18f, 0.22f);
         }
 
         public void PlayBossArrival(Vector3 position, Color color)
         {
             EmitParticles(position, color, 28, 0.42f, 1.15f);
             sfxSource.PlayOneShot(bossAlarmClip, 1f);
-            StartCoroutine(Shake(0.22f, 0.18f));
+            StartShake(0.22f, 0.18f);
+        }
+
+        private void StartShake(float duration, float magnitude)
+        {
+            StartCoroutine(Shake(
+                VisualEffectsBudget.GetShakeDuration(EffectsQuality, duration),
+                VisualEffectsBudget.GetShakeMagnitude(EffectsQuality, magnitude)));
         }
 
         private void EmitParticles(Vector3 position, Color color, int count, float duration, float radius)
         {
-            for (int i = 0; i < count; i++)
+            int budgetedCount = VisualEffectsBudget.GetParticleCount(EffectsQuality, count);
+            for (int i = 0; i < budgetedCount; i++)
             {
                 GameObject particle = new GameObject("CandyParticle");
                 SpriteRenderer renderer = particle.AddComponent<SpriteRenderer>();
@@ -175,12 +189,13 @@ namespace Wanwan.Runtime
         {
             GameObject explosion = new GameObject("ExplosionImage");
             SpriteRenderer renderer = explosion.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetExplosionSprite();
+            Sprite[] frames = RuntimeSpriteFactory.GetArcadeExplosionFrameSprites();
+            renderer.sprite = frames[0];
             renderer.color = Color.white;
             renderer.sortingOrder = 24;
             explosion.transform.position = position;
             explosion.transform.localScale = Vector3.one * Random.Range(0.78f, 1.08f);
-            StartCoroutine(AnimateExplosionImage(explosion, renderer));
+            StartCoroutine(AnimateExplosionImage(explosion, renderer, frames));
         }
 
         private void EmitDebris(Vector3 position, Color color, int count)
@@ -201,7 +216,7 @@ namespace Wanwan.Runtime
             }
         }
 
-        private IEnumerator AnimateExplosionImage(GameObject explosion, SpriteRenderer renderer)
+        private IEnumerator AnimateExplosionImage(GameObject explosion, SpriteRenderer renderer, Sprite[] frames)
         {
             float duration = 0.42f;
             float elapsed = 0f;
@@ -212,6 +227,8 @@ namespace Wanwan.Runtime
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
+                int frameIndex = Mathf.Clamp(Mathf.FloorToInt(t * frames.Length), 0, frames.Length - 1);
+                renderer.sprite = frames[frameIndex];
                 explosion.transform.localScale = Vector3.Lerp(startScale, endScale, t);
                 Color color = renderer.color;
                 color.a = 1f - t;
@@ -267,13 +284,15 @@ namespace Wanwan.Runtime
 
         private IEnumerator PlayBossDefeatCascade(Vector3 position, Color color)
         {
-            for (int i = 0; i < 5; i++)
+            int cascadeCount = VisualEffectsBudget.GetExplosionCascadeCount(EffectsQuality);
+            for (int i = 0; i < cascadeCount; i++)
             {
                 yield return new WaitForSeconds(0.11f);
-                Vector3 burstPosition = position + (Vector3)(Random.insideUnitCircle * Mathf.Lerp(0.55f, 1.35f, i / 4f));
+                float normalized = cascadeCount <= 1 ? 1f : i / (float)(cascadeCount - 1);
+                Vector3 burstPosition = position + (Vector3)(Random.insideUnitCircle * Mathf.Lerp(0.55f, 1.35f, normalized));
                 EmitExplosionImage(burstPosition);
                 EmitParticles(burstPosition, Color.Lerp(color, new Color(1f, 0.78f, 0.28f), 0.42f), 18, 0.32f, 0.78f);
-                EmitDebris(burstPosition, color, 12);
+                EmitDebris(burstPosition, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 12));
                 sfxSource.PlayOneShot(explosionSmallClip, 0.7f);
             }
         }

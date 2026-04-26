@@ -214,10 +214,11 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Leaderboard;
             Image background = CreateBackground("LeaderboardBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, "本地排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, BuildDifficultySettingText(SessionState.SelectedDifficulty) + " / 单机记录", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.1f, 0.81f), new Vector2(0.9f, 0.86f), Vector2.zero);
             Image board = UiFactory.CreatePixelPanel(background.transform, "LeaderboardPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.EnergyYellow, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
             UiFactory.CreateArcadeLabel(board.transform, "名次  名号   分数      难度  关卡", ArcadeTheme.BodySize, TextAnchor.UpperLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.9f), new Vector2(0.92f, 0.98f), Vector2.zero);
-            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
+            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries(SessionState.SelectedDifficulty);
             if (entries.Length == 0)
             {
                 UiFactory.CreateArcadeLabel(board.transform, "暂无记录\n出击后刷新榜单", ArcadeTheme.TitleSize, TextAnchor.MiddleCenter, ArcadeTheme.DimGray, FontStyle.Bold, new Vector2(0.1f, 0.35f), new Vector2(0.9f, 0.62f), Vector2.zero);
@@ -275,17 +276,21 @@ namespace Wanwan.Runtime
 
             Button sensitivityButton = UiFactory.CreatePixelButton(panel.transform, "灵敏度 " + BuildSensitivityText(), ArcadeTheme.EnergyYellow, new Vector2(420f, 72f), new Vector2(-220f, -226f));
             sensitivityButton.onClick.AddListener(CycleSensitivity);
-            Button vibrationButton = UiFactory.CreatePixelToggle(panel.transform, "震动", SessionState.VibrationEnabled, new Vector2(220f, -226f), () =>
+            Button nameButton = UiFactory.CreatePixelButton(panel.transform, "榜名 " + SessionState.LeaderboardName, ArcadeTheme.ElectricBlue, new Vector2(420f, 72f), new Vector2(220f, -226f));
+            nameButton.onClick.AddListener(CycleLeaderboardName);
+            Button vibrationButton = UiFactory.CreatePixelToggle(panel.transform, "震动", SessionState.VibrationEnabled, new Vector2(-220f, -316f), () =>
             {
                 SessionState.SetVibrationEnabled(!SessionState.VibrationEnabled);
                 ShowSettings();
             });
-            Button damageButton = UiFactory.CreatePixelToggle(panel.transform, "伤害数字", SessionState.DamageNumbersEnabled, new Vector2(-220f, -316f), () =>
+            Button damageButton = UiFactory.CreatePixelToggle(panel.transform, "伤害数字", SessionState.DamageNumbersEnabled, new Vector2(220f, -316f), () =>
             {
                 SessionState.SetDamageNumbersEnabled(!SessionState.DamageNumbersEnabled);
                 ShowSettings();
             });
-            Button resetButton = UiFactory.CreatePixelButton(panel.transform, "恢复默认", ArcadeTheme.WarningRed, new Vector2(420f, 72f), new Vector2(220f, -316f));
+            Button effectsButton = UiFactory.CreatePixelButton(panel.transform, "特效质量 " + BuildVisualEffectsQualityText(), ArcadeTheme.MilitaryGreen, new Vector2(420f, 72f), new Vector2(-220f, -406f));
+            effectsButton.onClick.AddListener(CycleVisualEffectsQuality);
+            Button resetButton = UiFactory.CreatePixelButton(panel.transform, "恢复默认", ArcadeTheme.WarningRed, new Vector2(420f, 72f), new Vector2(220f, -406f));
             resetButton.onClick.AddListener(() =>
             {
                 SessionState.ResetSettings();
@@ -375,6 +380,20 @@ namespace Wanwan.Runtime
             }
         }
 
+        private string BuildVisualEffectsQualityText()
+        {
+            return SessionState.VisualEffectsQuality == VisualEffectsQuality.BatterySaver ? "省电" : "完整";
+        }
+
+        private void CycleVisualEffectsQuality()
+        {
+            VisualEffectsQuality next = SessionState.VisualEffectsQuality == VisualEffectsQuality.Full
+                ? VisualEffectsQuality.BatterySaver
+                : VisualEffectsQuality.Full;
+            SessionState.SetVisualEffectsQuality(next);
+            ShowSettings();
+        }
+
         private void CycleSensitivity()
         {
             ControlSensitivity next = SessionState.ControlSensitivity == ControlSensitivity.Low
@@ -409,6 +428,16 @@ namespace Wanwan.Runtime
             }
 
             SessionState.SelectDifficulty(next);
+            ShowSettings();
+        }
+
+        private void CycleLeaderboardName()
+        {
+            string current = SessionState.LeaderboardName;
+            char[] chars = current.ToCharArray();
+            int value = chars[2] - 'A';
+            chars[2] = (char)('A' + ((value + 1) % 26));
+            SessionState.SetLeaderboardName(new string(chars));
             ShowSettings();
         }
     }

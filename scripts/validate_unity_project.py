@@ -47,6 +47,23 @@ def main() -> None:
         "Assets/Resources/RaidenArt/Effects/bullet_homing_arcade.png",
         "Assets/Resources/RaidenArt/Effects/bullet_burst_arcade.png",
         "Assets/Resources/RaidenArt/Effects/explosion_arcade.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_scatter_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_rapid_fire_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_pierce_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_laser_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_homing_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_burst_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_wave_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_plasma_ai.png",
+        "Assets/Resources/RaidenArt/Pickups/ammo_pack_guard_ai.png",
+        "Assets/Resources/RaidenArt/HUD/hud_top_frame.png",
+        "Assets/Resources/RaidenArt/HUD/hud_bottom_frame.png",
+        "Assets/Resources/RaidenArt/HUD/hud_hp_frame.png",
+        "Assets/Resources/RaidenArt/HUD/hud_power_slot.png",
+        "Assets/Resources/RaidenArt/HUD/hud_power_slot_active.png",
+        "Assets/Resources/RaidenArt/HUD/hud_boss_warning.png",
+        "Assets/Resources/RaidenArt/HUD/hud_warning_edge.png",
+        "Assets/Resources/RaidenArt/HUD/hud_meter_glow.png",
         "Assets/Scripts/UI/UIController.cs",
         "Assets/Editor/BuildAutomation.cs",
         "scripts/install_unity_editor.sh",
@@ -59,6 +76,15 @@ def main() -> None:
     for rel_path in required_files:
         check((ROOT / rel_path).exists(), f"missing required file: {rel_path}")
 
+    for stage in range(1, 9):
+        for tile in range(3):
+            rel_path = f"Assets/Resources/RaidenArt/GroundDetails/stage_{stage:02d}_detail_{tile:02d}.png"
+            check((ROOT / rel_path).exists(), f"missing required file: {rel_path}")
+
+    for frame in range(12):
+        rel_path = f"Assets/Resources/RaidenArt/Effects/Explosions/explosion_frame_{frame:02d}.png"
+        check((ROOT / rel_path).exists(), f"missing required file: {rel_path}")
+
     build_settings = (ROOT / "ProjectSettings/EditorBuildSettings.asset").read_text(encoding="utf-8")
     for scene in ("Assets/Scenes/Menu.unity", "Assets/Scenes/Game.unity", "Assets/Scenes/GameOver.unity"):
         check(scene in build_settings, f"build settings missing scene: {scene}")
@@ -66,6 +92,14 @@ def main() -> None:
     build_automation = (ROOT / "Assets/Editor/BuildAutomation.cs").read_text(encoding="utf-8")
     for token in ("BuildAndroidDebug", "BuildAndroidRelease", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
+
+    runtime_sprite_factory = (ROOT / "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs").read_text(encoding="utf-8")
+    for token in ("GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
+        check(token in runtime_sprite_factory, f"RuntimeSpriteFactory.cs missing token: {token}")
+
+    session_state = (ROOT / "Assets/Scripts/Runtime/SessionState.cs").read_text(encoding="utf-8")
+    for token in ("VisualEffectsQuality", "SetVisualEffectsQuality", "wanwan.visual_effects_quality"):
+        check(token in session_state, f"SessionState.cs missing token: {token}")
 
     print("Unity project validation passed.")
 

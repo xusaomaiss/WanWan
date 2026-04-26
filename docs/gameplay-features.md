@@ -1,6 +1,6 @@
 # 玩法功能说明
 
-本文档描述当前 Unity 版 `Wanwan Drop Blaster` 的雷电风格核心玩法，方便后续功能迭代、测试和调参。
+本文档描述当前 Unity 版 `Wanwan Drop Blaster` 的雷电风格核心玩法，方便后续功能迭代、测试和调参。项目定位是单人单机 Android 游戏，所有设置、进度、榜名和排行榜只保存在本机 `PlayerPrefs`；不规划联网、账号、云存档、在线排行榜或多人联机功能。
 
 ## 核心循环
 
@@ -48,8 +48,8 @@
 - 标题页：圆形“保存 / 开始 / 退出”按钮，左上排行榜入口，右上设置入口，底部显示最高分。
 - 战机选择：绿色战机与蓝色战机，分别对应散射/激光主武器取向和不同速度/火力星级。
 - 难度选择：简单、普通、困难，影响敌弹、敌机、Boss 与评分档位。
-- 设置页：总声音、音乐音量、音效音量、按键透明度、默认战机、默认难度、操控灵敏度、震动、伤害数字和恢复默认。
-- 本地状态：最高分、排行榜、当前关卡/循环、默认战机、默认难度和设置项通过 `PlayerPrefs` 保存。
+- 设置页：总声音、音乐音量、音效音量、按键透明度、默认战机、默认难度、操控灵敏度、震动、伤害数字、特效质量和恢复默认。
+- 本地状态：最高分、按难度分类的排行榜、三字母榜名、当前关卡/循环、默认战机、默认难度和设置项通过 `PlayerPrefs` 保存。
 
 相关代码：
 
@@ -115,12 +115,14 @@ Reward 阶段敌机金币掉落按默认值的 `1.5x` 计算，并会在每次 R
 - 敌机或 Boss 碰撞玩家扣 `1` 格 HP。
 - 受伤后进入短暂无敌闪烁窗口，避免连续碰撞或密集弹幕瞬间多段扣血。
 - 护盾会优先吸收一次伤害，并触发更短的闪烁保护。
+- 非致命受击会执行类街机死亡惩罚：当前武器重置为 1 级扇形弹，并在玩家附近掉落 1~2 个恢复火力包，方便玩家重新拾取补强。
 - HP 归零后本局失败，失败文案为战机损毁类提示。
 
 相关代码：
 
 - `Assets/Scripts/Runtime/PlayerHealthState.cs`
 - `Assets/Scripts/Runtime/PlayerInvulnerabilityState.cs`
+- `Assets/Scripts/Runtime/Weapons/PlayerWeaponState.cs`
 - `Assets/Scripts/Runtime/GameManager.cs`
 - `Assets/Scripts/Runtime/EnemyFireballController.cs`
 
@@ -145,23 +147,24 @@ Reward 阶段敌机金币掉落按默认值的 `1.5x` 计算，并会在每次 R
 
 玩家拥有 `fireLevel`，范围为 `1~4`，默认 `1`。拾取火力包后提升一级，最高不超过 `4`。
 
-四种常驻武器由 `WeaponType` 与 `WeaponConfig` 驱动：
+火力系统由“主武器 + 2 个模块槽”组成。主武器决定基础弹幕，模块会叠加射速、贯穿、追踪、波形和护卫侧弹等效果；槽满后吃到新模块会替换最旧模块。
 
 | 武器 | 显示名 | 间隔 | 速度 | 特性 |
 | --- | --- | ---: | ---: | --- |
-| `Spread` | 扇形弹 | `0.16s` | `21.25` | 默认雷电风格扩散弹，适合清理杂兵。 |
+| `Spread` | 扇形弹 | `0.13s` | `26.5` | 默认雷电风格扩散弹，适合清理杂兵。 |
 | `Laser` | 激光弹 | `0.12s` | `27.5` | 高速贯穿弹，基础伤害更高。 |
-| `Homing` | 追踪弹 | `0.18s` | `19.5` | 自动寻找最近敌机或 Boss。 |
-| `Burst` | 爆裂弹 | `0.22s` | `18.5` | 命中后产生小范围爆炸。 |
+| `Burst` | 爆裂弹 | `0.18s` | `24.0` | 命中后产生小范围爆炸。 |
+| `Plasma` | 等离子弹 | `0.20s` | `23.5` | 高伤害能量弹，爆炸半径更大。 |
 
-不同武器的等级成长不同：
+模块包包括：
 
-- 扇形弹：`1/2/3/4` 级分别为单发、双发、三发、四发扩散。
-- 激光弹：`1` 级单束，`2` 级双束，`3~4` 级三束；高等级提高贯穿次数和伤害。
-- 追踪弹：`1/2/3/4` 级分别为 1、2、3、4 发追踪弹。
-- 爆裂弹：`1` 级单发，`2` 级双发，`3~4` 级三发；`4` 级扩大爆炸半径并提高中线伤害。
+- `RapidFire`：缩短射击间隔并提高弹速。
+- `Pierce`：让弹体增加贯穿次数。
+- `Homing`：让部分弹体追踪最近敌机、地面目标或 Boss。
+- `Wave`：让部分弹体产生横向波形运动。
+- `Guard`：在两侧增加护卫侧弹，提升敌人多时的覆盖面。
 
-火力包按 `Spread -> Laser -> Homing -> Burst -> Spread` 循环显示。拾取不同武器包会切换当前武器并保留 `fireLevel`；拾取相同武器包会提升 `fireLevel`。旧的 `AmmoPowerupType.Wave` 仍作为部分编队脚本和运行时弹道类型保留，用于波形运动和胶囊/道具兼容，不代表当前所有火力包都只是一套旧红/蓝/紫系统。
+火力包按 9 类可玩包轮播显示：`Scatter / RapidFire / Pierce / Laser / Homing / Burst / Wave / Plasma / Guard`。拾取主武器包会切换主武器，重复拾取当前主武器会提升 `fireLevel`；拾取模块包会进入模块槽。Reward 阶段更容易看到火力包，Pressure/Burst 阶段也有额外掉落概率。
 
 相关代码：
 
@@ -171,6 +174,7 @@ Reward 阶段敌机金币掉落按默认值的 `1.5x` 计算，并会在每次 R
 - `Assets/Scripts/Runtime/AmmoPackController.cs`
 - `Assets/Scripts/Runtime/WeaponShotPresentation.cs`
 - `Assets/Scripts/Runtime/Weapons/WeaponConfig.cs`
+- `Assets/Scripts/Runtime/Weapons/WeaponModuleType.cs`
 - `Assets/Scripts/Runtime/Weapons/WeaponShotPattern.cs`
 
 ## Power Meter 能量胶囊系统
@@ -221,7 +225,7 @@ HUD 底部显示 `SPEED MISSILE DOUBLE LASER OPTION SHIELD`，当前高亮槽位
 | `7` | 空间站 | 轨道封锁舰 | 螺旋封锁 | 轨道环绕 |
 | `8` | 外星基地 | Cranassian核心 | 最终核心 | 核心决战 |
 
-每个关卡绑定独立背景资源 `Assets/Resources/RaidenArt/Backgrounds/stage_XX_*.png`，并通过背景速度倍率、关卡难度倍率、编队脚本和 Boss 弹幕风格形成差异。第 8 关通关后回到第 1 关并提升循环倍率。
+每个关卡绑定独立背景资源 `Assets/Resources/RaidenArt/Backgrounds/stage_XX_*.png`，并叠加 `Assets/Resources/RaidenArt/GroundDetails/stage_XX_detail_YY.png` 近景贴片，形成道路、建筑、海岸、遗迹、金属设施和外星基地细节的低空掠过感。背景速度倍率、近景贴片密度、关卡难度倍率、编队脚本和 Boss 弹幕风格共同形成差异。第 8 关通关后回到第 1 关并提升循环倍率。
 
 Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血量、敌弹速度、敌机生命和射击频率。
 
@@ -264,11 +268,17 @@ Boss 使用多阶段血量和弹幕配置，低/中/高难度会影响 Boss 血�
 - 金币吸附动画。
 - AI 生成的金色信用币图标，替换旧的纯黄色圆形金币。
 - 火力升级 banner。
-- 敌机爆炸和碎片。
+- 敌机爆炸和碎片，爆炸图使用 `Assets/Resources/RaidenArt/Effects/Explosions/explosion_frame_00~11.png` 序列帧。
 - 分数弹出文字。
-- 炸弹全屏闪光和冲击波。
-- Boss 警报与 Boss 血条。
+- 炸弹全屏闪光、冲击波和完整模式下的额外清屏爆炸。
+- Boss 警报、Boss 血条、入场震动和击败连锁爆炸。
 - 能量胶囊提示、Power Meter 高亮和护盾图标。
+- HUD 使用 `Assets/Resources/RaidenArt/HUD` 下的装饰资源强化顶部状态框、底部 Power Meter 和警示框。
+
+特效质量：
+
+- `完整`：默认模式，使用较多近景贴片、完整粒子数量、较强震动和更多 Boss 爆炸级联。
+- `省电`：设置页可切换，降低近景贴片密度、粒子数量、爆炸级联数量和震动强度，HUD 信息不降级。
 
 相关代码：
 
@@ -379,6 +389,7 @@ python3 scripts/validate_unity_project.py
 - `PerformanceBudgetTests`：帧率、内存阈值和运行时性能配置。
 - `MenuBootstrapTests`：标题按钮字号、启动 Logo 状态和菜单文案。
 - `RaidenEnemySpriteTests`：RaidenArt 敌机/Boss/金币/背景资源路径。
+- `RaidenVisualUpgradeTests`：近景贴片、爆炸序列、HUD 装饰、特效质量预算和 HUD 布局常量。
 
 PlayMode 手测建议：
 

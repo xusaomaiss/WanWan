@@ -14,7 +14,9 @@ namespace Wanwan.Runtime
         private const string VibrationEnabledKey = "wanwan.vibration_enabled";
         private const string DamageNumbersEnabledKey = "wanwan.damage_numbers_enabled";
         private const string VirtualButtonOpacityKey = "wanwan.virtual_button_opacity";
+        private const string VisualEffectsQualityKey = "wanwan.visual_effects_quality";
         private const string LeaderboardKey = "wanwan.leaderboard";
+        private const string LeaderboardNameKey = "wanwan.leaderboard_name";
 
         public static int LastScore { get; private set; }
         public static int HighScore => PlayerPrefs.GetInt(HighScoreKey, 0);
@@ -27,6 +29,8 @@ namespace Wanwan.Runtime
         public static bool VibrationEnabled => PlayerPrefs.GetInt(VibrationEnabledKey, 1) == 1;
         public static bool DamageNumbersEnabled => PlayerPrefs.GetInt(DamageNumbersEnabledKey, 1) == 1;
         public static float VirtualButtonOpacity => PlayerPrefs.GetFloat(VirtualButtonOpacityKey, 0.4f);
+        public static VisualEffectsQuality VisualEffectsQuality => (VisualEffectsQuality)PlayerPrefs.GetInt(VisualEffectsQualityKey, (int)VisualEffectsQuality.Full);
+        public static string LeaderboardName => SanitizeName(PlayerPrefs.GetString(LeaderboardNameKey, "AAA"));
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "乙";
         public static string LastRunSummary { get; private set; } = string.Empty;
@@ -93,7 +97,9 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(VibrationEnabledKey);
             PlayerPrefs.DeleteKey(DamageNumbersEnabledKey);
             PlayerPrefs.DeleteKey(VirtualButtonOpacityKey);
+            PlayerPrefs.DeleteKey(VisualEffectsQualityKey);
             PlayerPrefs.DeleteKey(LeaderboardKey);
+            PlayerPrefs.DeleteKey(LeaderboardNameKey);
             PlayerPrefs.Save();
         }
 
@@ -108,6 +114,8 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(VibrationEnabledKey);
             PlayerPrefs.DeleteKey(DamageNumbersEnabledKey);
             PlayerPrefs.DeleteKey(VirtualButtonOpacityKey);
+            PlayerPrefs.DeleteKey(VisualEffectsQualityKey);
+            PlayerPrefs.DeleteKey(LeaderboardNameKey);
             PlayerPrefs.Save();
         }
 
@@ -159,6 +167,18 @@ namespace Wanwan.Runtime
             PlayerPrefs.Save();
         }
 
+        public static void SetVisualEffectsQuality(VisualEffectsQuality quality)
+        {
+            PlayerPrefs.SetInt(VisualEffectsQualityKey, (int)quality);
+            PlayerPrefs.Save();
+        }
+
+        public static void SetLeaderboardName(string name)
+        {
+            PlayerPrefs.SetString(LeaderboardNameKey, SanitizeName(name));
+            PlayerPrefs.Save();
+        }
+
         public static void CommitRunScore(int score, bool victory = false, string rating = "乙", string summary = "", int maxCombo = 0, int maxMultiplier = 1)
         {
             LastScore = score;
@@ -168,7 +188,7 @@ namespace Wanwan.Runtime
             LastRunMaxCombo = Mathf.Max(0, maxCombo);
             LastRunMaxMultiplier = Mathf.Max(1, maxMultiplier);
             LastRunDifficulty = SelectedDifficulty;
-            RecordLeaderboardScore("AAA", score, SelectedDifficulty, CurrentStageIndex, CurrentLoopIndex);
+            RecordLeaderboardScore(LeaderboardName, score, SelectedDifficulty, CurrentStageIndex, CurrentLoopIndex);
             if (score > HighScore)
             {
                 PlayerPrefs.SetInt(HighScoreKey, score);
@@ -201,6 +221,11 @@ namespace Wanwan.Runtime
 
         public static LeaderboardEntry[] GetLeaderboardEntries()
         {
+            return GetLeaderboardEntries(null);
+        }
+
+        public static LeaderboardEntry[] GetLeaderboardEntries(GameDifficulty? difficulty)
+        {
             string raw = PlayerPrefs.GetString(LeaderboardKey, string.Empty);
             if (string.IsNullOrEmpty(raw))
             {
@@ -225,7 +250,13 @@ namespace Wanwan.Runtime
                     continue;
                 }
 
-                entries.Add(new LeaderboardEntry(parts[0], score, (GameDifficulty)difficultyValue, stageIndex, loopIndex));
+                GameDifficulty parsedDifficulty = (GameDifficulty)difficultyValue;
+                if (difficulty.HasValue && parsedDifficulty != difficulty.Value)
+                {
+                    continue;
+                }
+
+                entries.Add(new LeaderboardEntry(parts[0], score, parsedDifficulty, stageIndex, loopIndex));
             }
 
             entries.Sort((left, right) => right.Score.CompareTo(left.Score));
@@ -235,6 +266,28 @@ namespace Wanwan.Runtime
             }
 
             return entries.ToArray();
+        }
+
+        public static void UpdateLastLeaderboardName(string name)
+        {
+            string safeName = SanitizeName(name);
+            SetLeaderboardName(safeName);
+
+            LeaderboardEntry[] current = GetLeaderboardEntries();
+            for (int i = 0; i < current.Length; i++)
+            {
+                LeaderboardEntry entry = current[i];
+                if (entry.Score == LastScore &&
+                    entry.Difficulty == LastRunDifficulty &&
+                    entry.StageIndex == CurrentStageIndex &&
+                    entry.LoopIndex == CurrentLoopIndex)
+                {
+                    current[i] = new LeaderboardEntry(safeName, entry.Score, entry.Difficulty, entry.StageIndex, entry.LoopIndex);
+                    PlayerPrefs.SetString(LeaderboardKey, SerializeLeaderboard(current));
+                    PlayerPrefs.Save();
+                    return;
+                }
+            }
         }
 
         public static void ResetLeaderboard()

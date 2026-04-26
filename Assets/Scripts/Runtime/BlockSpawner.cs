@@ -120,11 +120,6 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            SpawnAmmoPackAtPosition(PowerupCycle.ToWeaponType(type), position);
-        }
-
-        public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position)
-        {
             GameObject packObject = new GameObject(type + "Pack");
             packObject.transform.position = position;
             packObject.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
@@ -143,6 +138,11 @@ namespace Wanwan.Runtime
 
             AmmoPackController packController = packObject.AddComponent<AmmoPackController>();
             packController.Initialize(gameManager, effectsController, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, renderer.color, GetAmmoPackLabel(type));
+        }
+
+        public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position)
+        {
+            SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(type), position);
         }
 
         public void SpawnCoinsAtPosition(Vector3 position)
@@ -177,6 +177,15 @@ namespace Wanwan.Runtime
 
             if (gameManager.CurrentWavePhase != WavePhase.Reward)
             {
+                float pressureChance = gameManager.CurrentWavePhase == WavePhase.Burst ? 0.16f : 0.08f;
+                if (gameManager.CurrentWavePhase == WavePhase.Pressure || gameManager.CurrentWavePhase == WavePhase.Burst)
+                {
+                    if (Random.value <= pressureChance)
+                    {
+                        SpawnAmmoPackAtPosition(GetRandomPowerupType(), position);
+                    }
+                }
+
                 return;
             }
 
@@ -187,7 +196,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (Random.value <= 0.22f)
+            if (Random.value <= 0.36f)
             {
                 SpawnAmmoPackAtPosition(GetRandomPowerupType(), position);
             }
@@ -1051,31 +1060,40 @@ namespace Wanwan.Runtime
             }
         }
 
-        private Color GetAmmoPackColor(WeaponType type)
+        private Color GetAmmoPackColor(AmmoPowerupType type)
         {
             return PowerupCycle.GetCategoryColor(type);
         }
 
-        private static string GetAmmoPackLabel(WeaponType type)
+        private static string GetAmmoPackLabel(AmmoPowerupType type)
         {
             return PowerupCycle.GetLabel(type);
         }
 
-        private static AmmoPowerupType GetRandomPowerupType()
+        private AmmoPowerupType GetRandomPowerupType()
         {
-            AmmoPowerupType[] pool =
+            AmmoPowerupType[] earlyPool =
+            {
+                AmmoPowerupType.Scatter,
+                AmmoPowerupType.RapidFire,
+                AmmoPowerupType.Pierce,
+                AmmoPowerupType.Burst
+            };
+
+            AmmoPowerupType[] fullPool =
             {
                 AmmoPowerupType.Scatter,
                 AmmoPowerupType.RapidFire,
                 AmmoPowerupType.Pierce,
                 AmmoPowerupType.Laser,
-                AmmoPowerupType.Plasma,
                 AmmoPowerupType.Burst,
                 AmmoPowerupType.Homing,
                 AmmoPowerupType.Wave,
+                AmmoPowerupType.Plasma,
                 AmmoPowerupType.Guard
             };
 
+            AmmoPowerupType[] pool = gameManager.ElapsedTime < 32f && gameManager.CurrentStagePhase != StagePhase.Boss ? earlyPool : fullPool;
             return pool[Random.Range(0, pool.Length)];
         }
     }

@@ -6,6 +6,10 @@ namespace Wanwan.Runtime
 {
     public class UIController : MonoBehaviour
     {
+        public const float TopHudAnchorHeight = 0.11f;
+        public const float BottomHudAnchorHeight = 0.105f;
+        public const int PowerMeterSlotCount = 6;
+
         private GameManager gameManager;
         private Text scoreText;
         private Text livesText;
@@ -165,25 +169,33 @@ namespace Wanwan.Runtime
             Canvas canvas = UiFactory.CreateCanvas("GameCanvas");
             canvas.transform.SetParent(transform, false);
 
-            Image topBar = UiFactory.CreatePanel(canvas.transform, "TopHud", new Color(0.02f, 0.02f, 0.04f, 0.42f), new Vector2(0f, 0.94f), Vector2.one);
-            UiFactory.CreateDivider(topBar.transform, "HudBottomLine", new Color(0.14f, 0.88f, 1f, 0.58f), Vector2.zero, new Vector2(1f, 0.045f));
+            Image topBar = UiFactory.CreatePanel(canvas.transform, "TopHud", new Color(0.015f, 0.018f, 0.035f, 0.72f), new Vector2(0f, 1f - TopHudAnchorHeight), Vector2.one);
+            topBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(0);
+            UiFactory.CreateDivider(topBar.transform, "HudBottomLine", new Color(0.14f, 0.88f, 1f, 0.78f), Vector2.zero, new Vector2(1f, 0.035f));
+            UiFactory.CreateDivider(topBar.transform, "HudAlertLine", new Color(1f, 0f, 0.25f, 0.5f), new Vector2(0.03f, 0.04f), new Vector2(0.97f, 0.06f));
 
-            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "得分 0000000\n金币 000", 30, TextAnchor.UpperLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0.1f), new Vector2(0.32f, 0.96f), Vector2.zero);
-            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "最高分 0000000", 28, TextAnchor.UpperCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.34f, 0.58f), new Vector2(0.66f, 0.98f), Vector2.zero);
-            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 20, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.33f, 0.24f), new Vector2(0.67f, 0.62f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "第1关 0%  击落 0/0", 20, TextAnchor.LowerCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.32f, 0.04f), new Vector2(0.68f, 0.28f), Vector2.zero);
-            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 22, TextAnchor.LowerCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.36f, -0.42f), new Vector2(0.64f, -0.08f), Vector2.zero);
-            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■\n炸弹 ◇◇◇", 26, TextAnchor.UpperRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.68f, 0.1f), new Vector2(0.91f, 0.96f), Vector2.zero);
+            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "得分 0000000\n金币 000", 28, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.035f, 0.18f), new Vector2(0.31f, 0.92f), Vector2.zero);
+            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "最高分 0000000", 24, TextAnchor.UpperCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.34f, 0.62f), new Vector2(0.66f, 0.96f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 19, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.32f, 0.34f), new Vector2(0.68f, 0.64f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "第1关 0%  击落 0/0", 19, TextAnchor.LowerCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.32f, 0.08f), new Vector2(0.68f, 0.34f), Vector2.zero);
+            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 24, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.34f, -0.34f), new Vector2(0.66f, -0.06f), Vector2.zero);
+            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■\n炸弹 ◇◇◇", 24, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.68f, 0.18f), new Vector2(0.91f, 0.92f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(topBar.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(54f, 54f), new Vector2(-34f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
             pauseButtonText.fontStyle = FontStyle.Bold;
             pauseButtonText.fontSize = 30;
 
-            Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.08f, 0.08f, 0.16f, SessionState.VirtualButtonOpacity + 0.25f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, 0.085f), new Vector2(6f, 6f));
-            Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.16f), new Vector2(0.25f, 0.84f), new Vector2(4f, 4f));
+            Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.06f, 0.06f, 0.14f, SessionState.VirtualButtonOpacity + 0.32f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight), new Vector2(6f, 6f));
+            bottomBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(1);
+            Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(4f, 4f));
             powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
-            Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.18f), new Vector2(0.73f, 0.82f), new Vector2(4f, 4f));
+            Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.2f), new Vector2(0.73f, 0.84f), new Vector2(4f, 4f));
+            for (int i = 1; i < PowerMeterSlotCount; i++)
+            {
+                float x = i / (float)PowerMeterSlotCount;
+                UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
+            }
             powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, "SPEED MISSILE DOUBLE LASER OPTION SHIELD", 18, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.02f, 0f), new Vector2(0.98f, 1f), Vector2.zero);
             upgradeButton = UiFactory.CreateButton(bottomBar.transform, "充能", ArcadeTheme.WarningRed, Color.white, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
@@ -230,10 +242,12 @@ namespace Wanwan.Runtime
             pauseOverlayMission = UiFactory.CreateArcadeLabel(pauseCard.transform, string.Empty, 18, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f, 0.78f), FontStyle.Bold, new Vector2(0.12f, 0.18f), new Vector2(0.88f, 0.28f), Vector2.zero);
             Button resumeButton = UiFactory.CreateButton(pauseCard.transform, "继续游戏", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, 78f));
             resumeButton.onClick.AddListener(() => gameManager.TogglePause());
-            Button audioButton = UiFactory.CreateButton(pauseCard.transform, "设置", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -12f));
+            Button restartButton = UiFactory.CreateButton(pauseCard.transform, "重新开始", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -12f));
+            restartButton.onClick.AddListener(SceneNavigator.LoadGame);
+            Button audioButton = UiFactory.CreateButton(pauseCard.transform, "设置", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -102f));
             pauseOverlayAudioText = audioButton.GetComponentInChildren<Text>();
             audioButton.onClick.AddListener(() => gameManager.ToggleAudio());
-            Button menuButton = UiFactory.CreateButton(pauseCard.transform, "退出", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -102f));
+            Button menuButton = UiFactory.CreateButton(pauseCard.transform, "退出", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -192f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
 
             introOverlay = UiFactory.CreatePanel(canvas.transform, "LevelIntroOverlay", new Color(0.02f, 0.02f, 0.06f, 0.18f), Vector2.zero, Vector2.one);

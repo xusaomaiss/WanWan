@@ -8,35 +8,28 @@ namespace Wanwan.Runtime
         {
             WeaponType.Spread,
             WeaponType.Laser,
-            WeaponType.Homing,
-            WeaponType.Burst
+            WeaponType.Burst,
+            WeaponType.Plasma
         };
 
-        private static readonly AmmoPowerupType[] RedPool =
+        private static readonly AmmoPowerupType[] CyclePool =
         {
             AmmoPowerupType.Scatter,
             AmmoPowerupType.RapidFire,
-            AmmoPowerupType.Burst
-        };
-
-        private static readonly AmmoPowerupType[] BluePool =
-        {
+            AmmoPowerupType.Pierce,
             AmmoPowerupType.Laser,
             AmmoPowerupType.Homing,
-            AmmoPowerupType.Pierce
-        };
-
-        private static readonly AmmoPowerupType[] PurplePool =
-        {
-            AmmoPowerupType.Plasma,
+            AmmoPowerupType.Burst,
             AmmoPowerupType.Wave,
+            AmmoPowerupType.Plasma,
             AmmoPowerupType.Guard
         };
 
         public static AmmoPowerupType GetTypeAt(AmmoPowerupType startingType, int index)
         {
-            AmmoPowerupType[] pool = GetPool(startingType);
-            int safeIndex = Mathf.Abs(index) % pool.Length;
+            int startIndex = GetPowerupIndex(startingType);
+            int safeIndex = Mathf.Abs(startIndex + index) % CyclePool.Length;
+            AmmoPowerupType[] pool = CyclePool;
             return pool[safeIndex];
         }
 
@@ -49,17 +42,7 @@ namespace Wanwan.Runtime
 
         public static string GetLabel(WeaponType type)
         {
-            switch (type)
-            {
-                case WeaponType.Laser:
-                    return "激";
-                case WeaponType.Homing:
-                    return "追";
-                case WeaponType.Burst:
-                    return "爆";
-                default:
-                    return "散";
-            }
+            return GetLabel(ToAmmoPowerupType(type));
         }
 
         public static Color GetCategoryColor(WeaponType type)
@@ -74,14 +57,31 @@ namespace Wanwan.Runtime
                 case AmmoPowerupType.Laser:
                 case AmmoPowerupType.Pierce:
                     return WeaponType.Laser;
-                case AmmoPowerupType.Homing:
-                case AmmoPowerupType.Wave:
-                    return WeaponType.Homing;
                 case AmmoPowerupType.Burst:
-                case AmmoPowerupType.Plasma:
                     return WeaponType.Burst;
+                case AmmoPowerupType.Plasma:
+                    return WeaponType.Plasma;
                 default:
                     return WeaponType.Spread;
+            }
+        }
+
+        public static WeaponModuleType ToWeaponModuleType(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.RapidFire:
+                    return WeaponModuleType.RapidFire;
+                case AmmoPowerupType.Pierce:
+                    return WeaponModuleType.Pierce;
+                case AmmoPowerupType.Homing:
+                    return WeaponModuleType.Homing;
+                case AmmoPowerupType.Wave:
+                    return WeaponModuleType.Wave;
+                case AmmoPowerupType.Guard:
+                    return WeaponModuleType.Guard;
+                default:
+                    return WeaponModuleType.None;
             }
         }
 
@@ -91,12 +91,31 @@ namespace Wanwan.Runtime
             {
                 case WeaponType.Laser:
                     return AmmoPowerupType.Laser;
-                case WeaponType.Homing:
-                    return AmmoPowerupType.Homing;
                 case WeaponType.Burst:
                     return AmmoPowerupType.Burst;
+                case WeaponType.Plasma:
+                    return AmmoPowerupType.Plasma;
                 default:
                     return AmmoPowerupType.Scatter;
+            }
+        }
+
+        public static AmmoPowerupType ToAmmoPowerupType(WeaponModuleType type)
+        {
+            switch (type)
+            {
+                case WeaponModuleType.RapidFire:
+                    return AmmoPowerupType.RapidFire;
+                case WeaponModuleType.Pierce:
+                    return AmmoPowerupType.Pierce;
+                case WeaponModuleType.Homing:
+                    return AmmoPowerupType.Homing;
+                case WeaponModuleType.Wave:
+                    return AmmoPowerupType.Wave;
+                case WeaponModuleType.Guard:
+                    return AmmoPowerupType.Guard;
+                default:
+                    return AmmoPowerupType.None;
             }
         }
 
@@ -127,19 +146,24 @@ namespace Wanwan.Runtime
             }
         }
 
+        public static string GetModuleLabel(WeaponModuleType type)
+        {
+            return GetLabel(ToAmmoPowerupType(type));
+        }
+
         public static Color GetCategoryColor(AmmoPowerupType type)
         {
-            if (IsInPool(type, RedPool))
+            if (type == AmmoPowerupType.Scatter || type == AmmoPowerupType.RapidFire || type == AmmoPowerupType.Burst)
             {
                 return new Color(1f, 0.28f, 0.26f);
             }
 
-            if (IsInPool(type, BluePool))
+            if (type == AmmoPowerupType.Laser || type == AmmoPowerupType.Homing || type == AmmoPowerupType.Pierce)
             {
                 return new Color(0.24f, 0.68f, 1f);
             }
 
-            if (IsInPool(type, PurplePool))
+            if (type == AmmoPowerupType.Plasma || type == AmmoPowerupType.Wave || type == AmmoPowerupType.Guard)
             {
                 return new Color(0.78f, 0.38f, 1f);
             }
@@ -147,32 +171,17 @@ namespace Wanwan.Runtime
             return RuntimeSpriteFactory.GetWeaponColor(type);
         }
 
-        private static AmmoPowerupType[] GetPool(AmmoPowerupType type)
+        private static int GetPowerupIndex(AmmoPowerupType type)
         {
-            if (IsInPool(type, BluePool))
+            for (int i = 0; i < CyclePool.Length; i++)
             {
-                return BluePool;
-            }
-
-            if (IsInPool(type, PurplePool))
-            {
-                return PurplePool;
-            }
-
-            return RedPool;
-        }
-
-        private static bool IsInPool(AmmoPowerupType type, AmmoPowerupType[] pool)
-        {
-            for (int i = 0; i < pool.Length; i++)
-            {
-                if (pool[i] == type)
+                if (CyclePool[i] == type)
                 {
-                    return true;
+                    return i;
                 }
             }
 
-            return false;
+            return 0;
         }
 
         private static int GetWeaponIndex(WeaponType type)

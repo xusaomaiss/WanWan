@@ -10,8 +10,8 @@ namespace Wanwan.Runtime
         private EffectsController effectsController;
         private SpriteRenderer spriteRenderer;
         private TextMesh labelText;
-        private WeaponType startingType;
-        private WeaponType weaponType;
+        private AmmoPowerupType startingType;
+        private AmmoPowerupType powerupType;
         private float fallSpeed;
         private float bottomDespawnY;
         private float animationTime;
@@ -23,15 +23,10 @@ namespace Wanwan.Runtime
 
         public void Initialize(GameManager manager, EffectsController effects, AmmoPowerupType type, float speed, float despawnY, Color color, string label)
         {
-            Initialize(manager, effects, PowerupCycle.ToWeaponType(type), speed, despawnY, color, label);
-        }
-
-        public void Initialize(GameManager manager, EffectsController effects, WeaponType type, float speed, float despawnY, Color color, string label)
-        {
             gameManager = manager;
             effectsController = effects;
             startingType = type;
-            weaponType = type;
+            powerupType = type;
             fallSpeed = speed;
             bottomDespawnY = despawnY;
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -80,8 +75,8 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            gameManager.CollectPowerCapsule();
-            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, "能量胶囊");
+            gameManager.ApplyPowerupPickup(powerupType);
+            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, PowerupCycle.GetLabel(powerupType) + " 火力");
             Destroy(gameObject);
         }
 
@@ -109,12 +104,12 @@ namespace Wanwan.Runtime
 
         private void RefreshDisplayedPowerup()
         {
-            weaponType = PowerupCycle.GetWeaponTypeAt(startingType, cycleIndex);
-            spriteRenderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(weaponType);
-            spriteRenderer.color = PowerupCycle.GetCategoryColor(weaponType);
+            powerupType = PowerupCycle.GetTypeAt(startingType, cycleIndex);
+            spriteRenderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(powerupType);
+            spriteRenderer.color = PowerupCycle.GetCategoryColor(powerupType);
             if (labelText != null)
             {
-                labelText.text = PowerupCycle.GetLabel(weaponType);
+                labelText.text = PowerupCycle.GetLabel(powerupType);
             }
         }
 

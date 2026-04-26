@@ -5,11 +5,16 @@ namespace Wanwan.Runtime
     public readonly struct PlayerShotSpec
     {
         public PlayerShotSpec(Vector3 offset, Vector2 direction, float width)
-            : this(offset, direction, width, WeaponType.Spread, false, 1, 1, BulletMotionType.Straight, 0f, 0f)
+            : this(offset, direction, width, WeaponType.Spread, false, 1, 1, BulletMotionType.Straight, 0f, 0f, 1f, 0f, 0f)
         {
         }
 
         public PlayerShotSpec(Vector3 offset, Vector2 direction, float width, WeaponType weaponType, bool canPierce, int pierceHits, int damage, BulletMotionType motionType, float homingStrength, float explosionRadius)
+            : this(offset, direction, width, weaponType, canPierce, pierceHits, damage, motionType, homingStrength, explosionRadius, 1f, 0f, 0f)
+        {
+        }
+
+        public PlayerShotSpec(Vector3 offset, Vector2 direction, float width, WeaponType weaponType, bool canPierce, int pierceHits, int damage, BulletMotionType motionType, float homingStrength, float explosionRadius, float speedMultiplier, float waveAmplitude, float waveFrequency)
         {
             Offset = offset;
             Direction = direction.normalized;
@@ -21,6 +26,9 @@ namespace Wanwan.Runtime
             MotionType = motionType;
             HomingStrength = Mathf.Max(0f, homingStrength);
             ExplosionRadius = Mathf.Max(0f, explosionRadius);
+            SpeedMultiplier = Mathf.Max(0.1f, speedMultiplier);
+            WaveAmplitude = Mathf.Max(0f, waveAmplitude);
+            WaveFrequency = Mathf.Max(0f, waveFrequency);
         }
 
         public Vector3 Offset { get; }
@@ -33,6 +41,9 @@ namespace Wanwan.Runtime
         public BulletMotionType MotionType { get; }
         public float HomingStrength { get; }
         public float ExplosionRadius { get; }
+        public float SpeedMultiplier { get; }
+        public float WaveAmplitude { get; }
+        public float WaveFrequency { get; }
     }
 
     public static class PlayerFirePattern

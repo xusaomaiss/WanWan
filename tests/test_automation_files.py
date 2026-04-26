@@ -83,6 +83,34 @@ class AutomationFilesTests(unittest.TestCase):
         self.assertIn("keytool", script)
         self.assertIn("clean_corrupt_gradle_artifacts", script)
 
+    def test_validation_requires_ai_ammo_pack_assets(self):
+        script = (ROOT / "scripts/validate_unity_project.py").read_text(encoding="utf-8")
+        for name in (
+            "ammo_pack_scatter_ai.png",
+            "ammo_pack_rapid_fire_ai.png",
+            "ammo_pack_pierce_ai.png",
+            "ammo_pack_laser_ai.png",
+            "ammo_pack_homing_ai.png",
+            "ammo_pack_burst_ai.png",
+            "ammo_pack_wave_ai.png",
+            "ammo_pack_plasma_ai.png",
+            "ammo_pack_guard_ai.png",
+        ):
+            self.assertIn(name, script)
+
+    def test_validation_requires_visual_upgrade_assets(self):
+        script = (ROOT / "scripts/validate_unity_project.py").read_text(encoding="utf-8")
+        for token in (
+            "GroundDetails",
+            "Effects/Explosions",
+            "hud_top_frame.png",
+            "hud_power_slot_active.png",
+            "GetGroundDetailResourcePaths",
+            "GetArcadeExplosionFrameSprites",
+            "wanwan.visual_effects_quality",
+        ):
+            self.assertIn(token, script)
+
 
 if __name__ == "__main__":
     unittest.main()

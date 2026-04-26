@@ -109,12 +109,15 @@ namespace Wanwan.Tests.EditMode
             SessionState.SetVibrationEnabled(false);
             SessionState.SetDamageNumbersEnabled(false);
             SessionState.SetVirtualButtonOpacity(1.4f);
+            SessionState.SetVisualEffectsQuality(VisualEffectsQuality.BatterySaver);
+            SessionState.SetLeaderboardName("sky");
 
             Assert.That(SessionState.SelectedShip, Is.EqualTo(PlayerShipType.Blue));
             Assert.That(SessionState.ControlSensitivity, Is.EqualTo(ControlSensitivity.High));
             Assert.That(SessionState.VibrationEnabled, Is.False);
             Assert.That(SessionState.DamageNumbersEnabled, Is.False);
             Assert.That(SessionState.VirtualButtonOpacity, Is.EqualTo(1f));
+            Assert.That(SessionState.VisualEffectsQuality, Is.EqualTo(VisualEffectsQuality.BatterySaver));
 
             SessionState.ResetSettings();
 
@@ -124,6 +127,19 @@ namespace Wanwan.Tests.EditMode
             Assert.That(SessionState.VibrationEnabled, Is.True);
             Assert.That(SessionState.DamageNumbersEnabled, Is.True);
             Assert.That(SessionState.VirtualButtonOpacity, Is.EqualTo(0.4f).Within(0.001f));
+            Assert.That(SessionState.VisualEffectsQuality, Is.EqualTo(VisualEffectsQuality.Full));
+            Assert.That(SessionState.LeaderboardName, Is.EqualTo("AAA"));
+        }
+
+        [Test]
+        public void VisualEffectsQuality_PersistsAndDefaultsToFull()
+        {
+            Assert.That(SessionState.VisualEffectsQuality, Is.EqualTo(VisualEffectsQuality.Full));
+
+            SessionState.SetVisualEffectsQuality(VisualEffectsQuality.BatterySaver);
+
+            Assert.That(SessionState.VisualEffectsQuality, Is.EqualTo(VisualEffectsQuality.BatterySaver));
+            Assert.That(PlayerPrefs.GetInt("wanwan.visual_effects_quality", -1), Is.EqualTo((int)VisualEffectsQuality.BatterySaver));
         }
 
         [Test]
@@ -141,6 +157,42 @@ namespace Wanwan.Tests.EditMode
             Assert.That(entries[0].Score, Is.EqualTo(1100));
             Assert.That(entries[9].Name, Is.EqualTo("P2"));
             Assert.That(entries[9].Score, Is.EqualTo(200));
+        }
+
+        [Test]
+        public void Leaderboard_FiltersByDifficulty()
+        {
+            SessionState.RecordLeaderboardScore("LOW", 100, GameDifficulty.Low, 0, 0);
+            SessionState.RecordLeaderboardScore("HIG", 300, GameDifficulty.High, 1, 0);
+
+            LeaderboardEntry[] highEntries = SessionState.GetLeaderboardEntries(GameDifficulty.High);
+
+            Assert.That(highEntries.Length, Is.EqualTo(1));
+            Assert.That(highEntries[0].Name, Is.EqualTo("HIG"));
+            Assert.That(highEntries[0].Difficulty, Is.EqualTo(GameDifficulty.High));
+        }
+
+        [Test]
+        public void CommitRunScore_UsesConfiguredLeaderboardName()
+        {
+            SessionState.SetLeaderboardName("ace");
+
+            SessionState.CommitRunScore(700);
+
+            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
+            Assert.That(entries[0].Name, Is.EqualTo("ACE"));
+        }
+
+        [Test]
+        public void UpdateLastLeaderboardName_RenamesCommittedRun()
+        {
+            SessionState.CommitRunScore(900);
+
+            SessionState.UpdateLastLeaderboardName("sky");
+
+            LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries();
+            Assert.That(entries[0].Name, Is.EqualTo("SKY"));
+            Assert.That(SessionState.LeaderboardName, Is.EqualTo("SKY"));
         }
     }
 }

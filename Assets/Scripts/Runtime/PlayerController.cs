@@ -114,7 +114,7 @@ namespace Wanwan.Runtime
             WeaponType type = gameManager.CurrentWeaponType;
             effectsController.PlayPlayerShot(type);
 
-            PlayerShotSpec[] shots = WeaponShotPattern.GetShots(type, gameManager.FireLevel);
+            PlayerShotSpec[] shots = WeaponShotPattern.GetShots(type, gameManager.FireLevel, gameManager.CurrentWeaponModules);
             for (int i = 0; i < shots.Length; i++)
             {
                 FireOffsetShot(shots[i]);
@@ -124,7 +124,22 @@ namespace Wanwan.Runtime
         private float GetCurrentFireCooldown()
         {
             float configuredInterval = WeaponConfig.Get(gameManager.CurrentWeaponType).FireInterval;
-            return Mathf.Max(0.08f, configuredInterval - ((gameManager.FireLevel - 1) * 0.012f));
+            float moduleBonus = HasModule(WeaponModuleType.RapidFire) ? 0.034f : 0f;
+            return Mathf.Max(0.065f, configuredInterval - moduleBonus - ((gameManager.FireLevel - 1) * 0.012f));
+        }
+
+        private bool HasModule(WeaponModuleType module)
+        {
+            WeaponModuleType[] modules = gameManager.CurrentWeaponModules;
+            for (int i = 0; i < modules.Length; i++)
+            {
+                if (modules[i] == module)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void FireScatterShot(int level)
@@ -229,7 +244,7 @@ namespace Wanwan.Runtime
 
             BulletController bullet = bulletObject.AddComponent<BulletController>();
             float speed = WeaponConfig.Get(shot.WeaponType).BulletSpeed;
-            bullet.Initialize(speed > 0f ? speed : BulletSpeed, shot.Damage, shot.Direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, shot.CanPierce, shot.PierceHits, shot.MotionType, shot.HomingStrength, 0f, 0f, shot.ExplosionRadius);
+            bullet.Initialize((speed > 0f ? speed : BulletSpeed) * shot.SpeedMultiplier, shot.Damage, shot.Direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, shot.CanPierce, shot.PierceHits, shot.MotionType, shot.HomingStrength, shot.WaveAmplitude, shot.WaveFrequency, shot.ExplosionRadius);
         }
 
         private void UpdateInvulnerabilityPresentation()

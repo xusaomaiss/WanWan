@@ -48,5 +48,23 @@ namespace Wanwan.Tests.EditMode
             Assert.That(laserScale.y, Is.GreaterThanOrEqualTo(0.78f));
             Assert.That(WeaponShotPresentation.GetLaserSideOffset(), Is.GreaterThanOrEqualTo(0.34f));
         }
+
+        [TestCase(AmmoPowerupType.Scatter)]
+        [TestCase(AmmoPowerupType.RapidFire)]
+        [TestCase(AmmoPowerupType.Pierce)]
+        [TestCase(AmmoPowerupType.Laser)]
+        [TestCase(AmmoPowerupType.Homing)]
+        [TestCase(AmmoPowerupType.Burst)]
+        [TestCase(AmmoPowerupType.Wave)]
+        [TestCase(AmmoPowerupType.Plasma)]
+        [TestCase(AmmoPowerupType.Guard)]
+        public void AmmoPackSprite_LoadsAiBadgeResourceForPlayablePowerups(AmmoPowerupType type)
+        {
+            Sprite sprite = RuntimeSpriteFactory.GetAmmoPackSprite(type);
+            Texture2D resource = Resources.Load<Texture2D>(RuntimeSpriteFactory.GetAmmoPackResourcePath(type));
+
+            Assert.That(resource, Is.Not.Null);
+            Assert.That(sprite.texture, Is.SameAs(resource));
+        }
     }
 }

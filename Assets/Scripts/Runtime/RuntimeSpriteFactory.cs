@@ -18,8 +18,20 @@ namespace Wanwan.Runtime
         public const string BulletHomingArcadeResourcePath = "RaidenArt/Effects/bullet_homing_arcade";
         public const string BulletBurstArcadeResourcePath = "RaidenArt/Effects/bullet_burst_arcade";
         public const string ExplosionArcadeResourcePath = "RaidenArt/Effects/explosion_arcade";
+        public const string AmmoPackScatterResourcePath = "RaidenArt/Pickups/ammo_pack_scatter_ai";
+        public const string AmmoPackRapidFireResourcePath = "RaidenArt/Pickups/ammo_pack_rapid_fire_ai";
+        public const string AmmoPackPierceResourcePath = "RaidenArt/Pickups/ammo_pack_pierce_ai";
+        public const string AmmoPackLaserResourcePath = "RaidenArt/Pickups/ammo_pack_laser_ai";
+        public const string AmmoPackHomingResourcePath = "RaidenArt/Pickups/ammo_pack_homing_ai";
+        public const string AmmoPackBurstResourcePath = "RaidenArt/Pickups/ammo_pack_burst_ai";
+        public const string AmmoPackWaveResourcePath = "RaidenArt/Pickups/ammo_pack_wave_ai";
+        public const string AmmoPackPlasmaResourcePath = "RaidenArt/Pickups/ammo_pack_plasma_ai";
+        public const string AmmoPackGuardResourcePath = "RaidenArt/Pickups/ammo_pack_guard_ai";
         public const int LaunchTakeoffFrameCount = 8;
+        public const int GroundDetailTileCountPerStage = 3;
+        public const int ArcadeExplosionFrameCount = 12;
         private const string LaunchTakeoffFrameResourcePrefix = "RaidenArt/Cinematics/Takeoff/launch_takeoff_frame_";
+        private const string ArcadeExplosionFrameResourcePrefix = "RaidenArt/Effects/Explosions/explosion_frame_";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -31,6 +43,18 @@ namespace Wanwan.Runtime
             "RaidenArt/Backgrounds/stage_06_floating_continent",
             "RaidenArt/Backgrounds/stage_07_space_station",
             "RaidenArt/Backgrounds/stage_08_alien_base"
+        };
+
+        public static readonly string[] HudDecorResourcePaths =
+        {
+            "RaidenArt/HUD/hud_top_frame",
+            "RaidenArt/HUD/hud_bottom_frame",
+            "RaidenArt/HUD/hud_hp_frame",
+            "RaidenArt/HUD/hud_power_slot",
+            "RaidenArt/HUD/hud_power_slot_active",
+            "RaidenArt/HUD/hud_boss_warning",
+            "RaidenArt/HUD/hud_warning_edge",
+            "RaidenArt/HUD/hud_meter_glow"
         };
 
         private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
@@ -72,7 +96,7 @@ namespace Wanwan.Runtime
 
         public static Sprite GetAmmoPackSprite(AmmoPowerupType type)
         {
-            return GetOrCreate("ammo-pack-" + type, () => BuildAmmoPackTexture(type));
+            return GetResourceSpriteOrFallback("ammo-pack-" + type, GetAmmoPackResourcePath(type), () => GetGeneratedAmmoPackSprite(type));
         }
 
         public static Sprite GetAmmoPackSprite(WeaponType type)
@@ -162,6 +186,55 @@ namespace Wanwan.Runtime
             return GetResourceSpriteOrFallback("raiden-stage-background-" + stageNumber, resourcePath, GetBattlefieldBackgroundSprite);
         }
 
+        public static string[] GetGroundDetailResourcePaths(int stageNumber)
+        {
+            int safeStage = Mathf.Clamp(stageNumber, 1, RaidenStageBackgroundResourcePaths.Length);
+            string[] paths = new string[GroundDetailTileCountPerStage];
+            for (int i = 0; i < paths.Length; i++)
+            {
+                paths[i] = $"RaidenArt/GroundDetails/stage_{safeStage:00}_detail_{i:00}";
+            }
+
+            return paths;
+        }
+
+        public static Sprite[] GetGroundDetailSprites(int stageNumber)
+        {
+            string[] paths = GetGroundDetailResourcePaths(stageNumber);
+            Sprite[] sprites = new Sprite[paths.Length];
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                int index = i;
+                sprites[i] = GetResourceSpriteOrFallback("ground-detail-" + stageNumber + "-" + index, paths[index], GetGroundTankSprite);
+            }
+
+            return sprites;
+        }
+
+        public static string GetArcadeExplosionFrameResourcePath(int frameIndex)
+        {
+            int safeIndex = Mathf.Clamp(frameIndex, 0, ArcadeExplosionFrameCount - 1);
+            return ArcadeExplosionFrameResourcePrefix + safeIndex.ToString("00");
+        }
+
+        public static Sprite[] GetArcadeExplosionFrameSprites()
+        {
+            Sprite[] frames = new Sprite[ArcadeExplosionFrameCount];
+            for (int i = 0; i < frames.Length; i++)
+            {
+                int frameIndex = i;
+                frames[i] = GetResourceSpriteOrFallback("arcade-explosion-frame-" + frameIndex, GetArcadeExplosionFrameResourcePath(frameIndex), GetExplosionSprite);
+            }
+
+            return frames;
+        }
+
+        public static Sprite GetHudDecorSprite(int index)
+        {
+            int safeIndex = Mathf.Clamp(index, 0, HudDecorResourcePaths.Length - 1);
+            return GetResourceSpriteOrFallback("hud-decor-" + safeIndex, HudDecorResourcePaths[safeIndex], GetRoundedSquareSprite);
+        }
+
         public static Sprite GetSkyBackgroundSprite()
         {
             return GetOrCreate("sky-background", BuildSkyBackgroundTexture);
@@ -235,6 +308,11 @@ namespace Wanwan.Runtime
             return GetOrCreate("generated-bullet-" + type, () => BuildBulletTexture(type));
         }
 
+        private static Sprite GetGeneratedAmmoPackSprite(AmmoPowerupType type)
+        {
+            return GetOrCreate("generated-ammo-pack-" + type, () => BuildAmmoPackTexture(type));
+        }
+
         private static Sprite GetGeneratedExplosionSprite()
         {
             return GetOrCreate("explosion-fireball", BuildExplosionTexture);
@@ -259,6 +337,33 @@ namespace Wanwan.Runtime
                 case AmmoPowerupType.Normal:
                 default:
                     return BulletSpreadArcadeResourcePath;
+            }
+        }
+
+        public static string GetAmmoPackResourcePath(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.RapidFire:
+                    return AmmoPackRapidFireResourcePath;
+                case AmmoPowerupType.Pierce:
+                    return AmmoPackPierceResourcePath;
+                case AmmoPowerupType.Laser:
+                    return AmmoPackLaserResourcePath;
+                case AmmoPowerupType.Homing:
+                    return AmmoPackHomingResourcePath;
+                case AmmoPowerupType.Burst:
+                    return AmmoPackBurstResourcePath;
+                case AmmoPowerupType.Wave:
+                    return AmmoPackWaveResourcePath;
+                case AmmoPowerupType.Plasma:
+                    return AmmoPackPlasmaResourcePath;
+                case AmmoPowerupType.Guard:
+                    return AmmoPackGuardResourcePath;
+                case AmmoPowerupType.Scatter:
+                case AmmoPowerupType.Normal:
+                default:
+                    return AmmoPackScatterResourcePath;
             }
         }
 

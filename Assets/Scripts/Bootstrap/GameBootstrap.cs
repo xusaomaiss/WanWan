@@ -79,7 +79,38 @@ namespace Wanwan.Runtime
             layers.Add(CreateBackgroundLayer("CloudLayerB", RuntimeSpriteFactory.GetCloudLayerSprite(), -55, 0.9f * speed, targetWidth, targetHeight, targetHeight, cloudTint));
             layers.Add(CreateBackgroundLayer("CloudStreakA", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, 0f, Color.Lerp(Color.white, stage.AccentColor, 0.24f)));
             layers.Add(CreateBackgroundLayer("CloudStreakB", RuntimeSpriteFactory.GetCloudStreakSprite(), -54, 1.8f * speed, targetWidth, targetHeight, targetHeight, Color.Lerp(Color.white, stage.AccentColor, 0.24f)));
+            CreateGroundDetailLayers(layers, orthographicSize, horizontalExtent, stage, targetHeight, speed);
             return layers.ToArray();
+        }
+
+        private static void CreateGroundDetailLayers(List<ScrollingBackgroundLayer> layers, float orthographicSize, float horizontalExtent, StageDefinition stage, float wrapHeight, float speed)
+        {
+            Sprite[] detailSprites = RuntimeSpriteFactory.GetGroundDetailSprites(stage.Number);
+            VisualEffectsQuality quality = SessionState.VisualEffectsQuality;
+            int tileLimit = VisualEffectsBudget.GetGroundDetailTileLimit(quality);
+            int rows = quality == VisualEffectsQuality.BatterySaver ? 2 : 3;
+            int columns = Mathf.Max(1, Mathf.CeilToInt(tileLimit / (float)(rows * 2)));
+            float left = -horizontalExtent - 0.55f;
+            float width = (horizontalExtent * 2f) + 1.1f;
+            Color tint = Color.Lerp(Color.white, stage.AccentColor, quality == VisualEffectsQuality.BatterySaver ? 0.1f : 0.22f);
+
+            int created = 0;
+            for (int loop = 0; loop < 2; loop++)
+            {
+                for (int row = 0; row < rows; row++)
+                {
+                    for (int column = 0; column < columns && created < tileLimit; column++)
+                    {
+                        Sprite sprite = detailSprites[(row + column + stage.Number) % detailSprites.Length];
+                        float xT = columns == 1 ? 0.5f : column / (float)(columns - 1);
+                        float x = left + (width * xT) + (((row + stage.Number) % 2 == 0) ? 0.16f : -0.16f);
+                        float y = (-orthographicSize + 1.65f) + (row * (wrapHeight / rows)) + (loop * wrapHeight);
+                        float scale = Mathf.Lerp(0.72f, 1.08f, ((row + column + stage.Number) % 4) / 3f);
+                        layers.Add(CreateDetailLayer("GroundDetail" + created + (loop == 0 ? "A" : "B"), sprite, -53, 2.24f * speed, x, y, scale, wrapHeight, tint));
+                        created++;
+                    }
+                }
+            }
         }
 
         private static ScrollingBackgroundLayer CreateBackgroundLayer(string name, Sprite sprite, int sortingOrder, float speed, float targetWidth, float targetHeight, float yOffset)
@@ -101,6 +132,22 @@ namespace Wanwan.Runtime
             backgroundObject.transform.localScale = new Vector3(targetWidth / spriteSize.x, targetHeight / spriteSize.y, 1f);
             ScrollingBackgroundLayer scrollingLayer = backgroundObject.AddComponent<ScrollingBackgroundLayer>();
             scrollingLayer.Initialize(speed, targetHeight);
+            return scrollingLayer;
+        }
+
+        private static ScrollingBackgroundLayer CreateDetailLayer(string name, Sprite sprite, int sortingOrder, float speed, float x, float y, float scale, float wrapHeight, Color color)
+        {
+            GameObject detailObject = new GameObject(name);
+            detailObject.transform.position = new Vector3(x, y, 6f);
+
+            SpriteRenderer renderer = detailObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.color = color;
+            renderer.sortingOrder = sortingOrder;
+
+            detailObject.transform.localScale = Vector3.one * scale;
+            ScrollingBackgroundLayer scrollingLayer = detailObject.AddComponent<ScrollingBackgroundLayer>();
+            scrollingLayer.Initialize(speed, wrapHeight);
             return scrollingLayer;
         }
 

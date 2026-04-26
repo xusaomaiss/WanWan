@@ -7,8 +7,8 @@ namespace Wanwan.Tests.EditMode
     {
         [TestCase(WeaponType.Spread, "武器 扇形弹 1级")]
         [TestCase(WeaponType.Laser, "武器 激光弹 1级")]
-        [TestCase(WeaponType.Homing, "武器 追踪弹 1级")]
         [TestCase(WeaponType.Burst, "武器 爆裂弹 1级")]
+        [TestCase(WeaponType.Plasma, "武器 等离子弹 1级")]
         public void GetCurrentWeaponDisplayText_ReturnsLocalizedWeaponAndLevel(WeaponType type, string expected)
         {
             PlayerWeaponState state = new PlayerWeaponState();
