@@ -169,12 +169,12 @@ namespace Wanwan.Runtime
             saveStatusText = UiFactory.CreateArcadeLabel(background.transform, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.27f), new Vector2(0.88f, 0.32f), Vector2.zero);
             saveStatusText.gameObject.SetActive(false);
 
-            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.72f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.25f), new Vector2(8f, 8f));
-            Button save = UiFactory.CreateArcadeCircleButton(menu.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(142f, 142f), new Vector2(-258f, 0f));
+            Image menu = UiFactory.CreatePixelPanel(background.transform, "TitleMenu", new Color(0.04f, 0.05f, 0.1f, 0.66f), ArcadeTheme.ElectricBlue, new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.265f), new Vector2(8f, 8f));
+            Button save = UiFactory.CreateArcadeCircleButton(menu.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(142f, 142f), new Vector2(-312f, 0f));
             save.onClick.AddListener(ShowAutoSaveStatus);
-            Button start = UiFactory.CreateArcadeCircleButton(menu.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(162f, 162f), Vector2.zero);
+            Button start = UiFactory.CreateArcadeCircleButton(menu.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(190f, 190f), Vector2.zero);
             start.onClick.AddListener(SceneNavigator.LoadGame);
-            Button exit = UiFactory.CreateArcadeCircleButton(menu.transform, "退出", ArcadeTheme.WarningRed, new Vector2(142f, 142f), new Vector2(258f, 0f));
+            Button exit = UiFactory.CreateArcadeCircleButton(menu.transform, "退出", ArcadeTheme.WarningRed, new Vector2(142f, 142f), new Vector2(312f, 0f));
             exit.onClick.AddListener(Application.Quit);
 
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";

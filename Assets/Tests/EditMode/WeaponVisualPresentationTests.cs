@@ -10,11 +10,13 @@ namespace Wanwan.Tests.EditMode
         public void LaserBulletSprite_HasWideBlueWhiteBeamWithSoftGlow()
         {
             Sprite sprite = RuntimeSpriteFactory.GetBulletSprite(AmmoPowerupType.Laser);
+            Texture2D resource = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletLaserArcadeResourcePath);
             Texture2D texture = sprite.texture;
             int centerY = texture.height / 2;
             int visiblePixels = 0;
             int softGlowPixels = 0;
 
+            Assert.That(texture, Is.SameAs(resource));
             for (int x = 0; x < texture.width; x++)
             {
                 Color pixel = texture.GetPixel(x, centerY);

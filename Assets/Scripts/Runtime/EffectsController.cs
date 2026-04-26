@@ -82,8 +82,8 @@ namespace Wanwan.Runtime
         public void PlayBurst(Vector3 position, Color color)
         {
             EmitExplosionImage(position);
-            EmitParticles(position, color, 12, 0.24f, 0.55f);
-            EmitDebris(position, color, 10);
+            EmitParticles(position, color, 16, 0.28f, 0.68f);
+            EmitDebris(position, color, 14);
             sfxSource.PlayOneShot(explosionSmallClip, 0.86f);
             StartCoroutine(Shake(0.07f, 0.08f));
         }
@@ -91,8 +91,11 @@ namespace Wanwan.Runtime
         public void PlayBossDefeat(Vector3 position, Color color)
         {
             sfxSource.PlayOneShot(explosionLargeClip, 1f);
-            EmitParticles(position, color, 36, 0.46f, 1.15f);
-            EmitDebris(position, color, 22);
+            EmitExplosionImage(position);
+            EmitExplosionImage(position + new Vector3(-0.34f, 0.22f, 0f));
+            EmitExplosionImage(position + new Vector3(0.38f, -0.18f, 0f));
+            EmitParticles(position, color, 44, 0.52f, 1.32f);
+            EmitDebris(position, color, 28);
             StartCoroutine(Shake(0.28f, 0.24f));
         }
 
@@ -166,7 +169,7 @@ namespace Wanwan.Runtime
             renderer.color = Color.white;
             renderer.sortingOrder = 24;
             explosion.transform.position = position;
-            explosion.transform.localScale = Vector3.one * Random.Range(0.62f, 0.86f);
+            explosion.transform.localScale = Vector3.one * Random.Range(0.78f, 1.08f);
             StartCoroutine(AnimateExplosionImage(explosion, renderer));
         }
 
@@ -190,10 +193,10 @@ namespace Wanwan.Runtime
 
         private IEnumerator AnimateExplosionImage(GameObject explosion, SpriteRenderer renderer)
         {
-            float duration = 0.36f;
+            float duration = 0.42f;
             float elapsed = 0f;
             Vector3 startScale = explosion.transform.localScale;
-            Vector3 endScale = startScale * 1.85f;
+            Vector3 endScale = startScale * 2.12f;
 
             while (elapsed < duration)
             {

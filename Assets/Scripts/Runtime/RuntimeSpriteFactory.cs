@@ -13,6 +13,11 @@ namespace Wanwan.Runtime
         public const string CoinResourcePath = "RaidenArt/Pickups/coin_ai";
         public const string LaunchWeatherIntroResourcePath = "RaidenArt/Cinematics/launch_weather_intro_ai";
         public const string MenuStormTitleResourcePath = "RaidenArt/Cinematics/menu_storm_title_ai";
+        public const string BulletSpreadArcadeResourcePath = "RaidenArt/Effects/bullet_spread_arcade";
+        public const string BulletLaserArcadeResourcePath = "RaidenArt/Effects/bullet_laser_arcade";
+        public const string BulletHomingArcadeResourcePath = "RaidenArt/Effects/bullet_homing_arcade";
+        public const string BulletBurstArcadeResourcePath = "RaidenArt/Effects/bullet_burst_arcade";
+        public const string ExplosionArcadeResourcePath = "RaidenArt/Effects/explosion_arcade";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -45,7 +50,7 @@ namespace Wanwan.Runtime
 
         public static Sprite GetBulletSprite(AmmoPowerupType type)
         {
-            return GetOrCreate("bullet-" + type, () => BuildBulletTexture(type));
+            return GetResourceSpriteOrFallback("bullet-" + type, GetBulletResourcePath(type), () => GetGeneratedBulletSprite(type));
         }
 
         public static Sprite GetBulletSprite(WeaponType type)
@@ -167,7 +172,7 @@ namespace Wanwan.Runtime
 
         public static Sprite GetExplosionSprite()
         {
-            return GetOrCreate("explosion-fireball", BuildExplosionTexture);
+            return GetResourceSpriteOrFallback("explosion-arcade", ExplosionArcadeResourcePath, GetGeneratedExplosionSprite);
         }
 
         public static Sprite GetCoinSprite()
@@ -183,6 +188,38 @@ namespace Wanwan.Runtime
         private static Sprite GetGeneratedCoinSprite()
         {
             return GetOrCreate("coin", BuildCoinTexture);
+        }
+
+        private static Sprite GetGeneratedBulletSprite(AmmoPowerupType type)
+        {
+            return GetOrCreate("generated-bullet-" + type, () => BuildBulletTexture(type));
+        }
+
+        private static Sprite GetGeneratedExplosionSprite()
+        {
+            return GetOrCreate("explosion-fireball", BuildExplosionTexture);
+        }
+
+        public static string GetBulletResourcePath(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.Laser:
+                case AmmoPowerupType.Pierce:
+                    return BulletLaserArcadeResourcePath;
+                case AmmoPowerupType.Homing:
+                case AmmoPowerupType.Wave:
+                    return BulletHomingArcadeResourcePath;
+                case AmmoPowerupType.Burst:
+                case AmmoPowerupType.Plasma:
+                    return BulletBurstArcadeResourcePath;
+                case AmmoPowerupType.Scatter:
+                case AmmoPowerupType.RapidFire:
+                case AmmoPowerupType.Guard:
+                case AmmoPowerupType.Normal:
+                default:
+                    return BulletSpreadArcadeResourcePath;
+            }
         }
 
         private static Sprite GetOrCreate(string key, System.Func<Texture2D> textureFactory)

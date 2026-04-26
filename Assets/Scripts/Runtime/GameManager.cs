@@ -105,8 +105,7 @@ namespace Wanwan.Runtime
             }
 
             CurrentState = GameFlowState.Intro;
-            stageLabel = "航母起飞";
-            ShowStageBanner("航母起飞");
+            stageLabel = "起飞准备";
             if (uiController != null)
             {
                 uiController.ShowIntroPrompt();

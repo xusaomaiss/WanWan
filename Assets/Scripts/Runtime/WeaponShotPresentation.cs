@@ -119,7 +119,7 @@ namespace Wanwan.Runtime
             switch (type)
             {
                 case AmmoPowerupType.Laser:
-                    return canPierce ? 0.86f : 0.74f;
+                    return canPierce ? 0.98f : 0.84f;
                 case AmmoPowerupType.RapidFire:
                     return 0.48f;
                 case AmmoPowerupType.Plasma:

@@ -208,6 +208,9 @@ namespace Wanwan.Runtime
             shine.sprite = RuntimeSpriteFactory.GetCircleSprite();
             shine.raycastTarget = false;
 
+            ArcadeButtonPressFeedback feedback = button.gameObject.AddComponent<ArcadeButtonPressFeedback>();
+            feedback.Configure(face, shine, outer, accentColor);
+
             Text text = button.GetComponentInChildren<Text>();
             text.transform.SetAsLastSibling();
             text.fontStyle = FontStyle.Bold;

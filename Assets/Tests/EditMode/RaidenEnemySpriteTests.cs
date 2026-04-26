@@ -56,5 +56,28 @@ namespace Wanwan.Tests.EditMode
             Assert.That(RuntimeSpriteFactory.GetLaunchWeatherIntroSprite().texture, Is.SameAs(introResource));
             Assert.That(RuntimeSpriteFactory.GetMenuStormTitleSprite().texture, Is.SameAs(menuResource));
         }
+
+        [Test]
+        public void ArcadeEffectSprites_UseRaidenEffectResources()
+        {
+            Texture2D spread = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletSpreadArcadeResourcePath);
+            Texture2D laser = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletLaserArcadeResourcePath);
+            Texture2D homing = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletHomingArcadeResourcePath);
+            Texture2D burst = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletBurstArcadeResourcePath);
+            Texture2D explosion = Resources.Load<Texture2D>(RuntimeSpriteFactory.ExplosionArcadeResourcePath);
+
+            Assert.That(spread, Is.Not.Null);
+            Assert.That(laser, Is.Not.Null);
+            Assert.That(homing, Is.Not.Null);
+            Assert.That(burst, Is.Not.Null);
+            Assert.That(explosion, Is.Not.Null);
+            Assert.That(laser.height, Is.GreaterThan(laser.width));
+            Assert.That(explosion.width, Is.EqualTo(explosion.height));
+            Assert.That(RuntimeSpriteFactory.GetBulletSprite(AmmoPowerupType.Normal).texture, Is.SameAs(spread));
+            Assert.That(RuntimeSpriteFactory.GetBulletSprite(AmmoPowerupType.Laser).texture, Is.SameAs(laser));
+            Assert.That(RuntimeSpriteFactory.GetBulletSprite(AmmoPowerupType.Homing).texture, Is.SameAs(homing));
+            Assert.That(RuntimeSpriteFactory.GetBulletSprite(AmmoPowerupType.Burst).texture, Is.SameAs(burst));
+            Assert.That(RuntimeSpriteFactory.GetExplosionSprite().texture, Is.SameAs(explosion));
+        }
     }
 }
