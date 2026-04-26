@@ -35,7 +35,15 @@ namespace Wanwan.Runtime
         {
             Canvas canvas = UiFactory.CreateCanvas("GameOverCanvas");
             bool victory = SessionState.LastRunWasVictory;
-            Image background = UiFactory.CreatePanel(canvas.transform, "Background", victory ? new Color(0.03f, 0.06f, 0.14f) : new Color(0.09f, 0.03f, 0.12f), Vector2.zero, Vector2.one);
+            Image background = UiFactory.CreatePanel(canvas.transform, "Background", victory ? new Color(0.03f, 0.06f, 0.14f) : Color.white, Vector2.zero, Vector2.one);
+            if (!victory)
+            {
+                background.sprite = RuntimeSpriteFactory.GetRaidenStageBackgroundSprite(SessionState.CurrentStageNumber);
+                background.preserveAspect = false;
+                BuildFailureGameOver(background.transform);
+                return;
+            }
+
             UiFactory.CreatePanel(background.transform, "GlowLayer", victory ? new Color(0.16f, 0.45f, 0.94f, 0.22f) : new Color(0.9f, 0.12f, 0.28f, 0.18f), new Vector2(0f, 0.5f), new Vector2(1f, 1f));
 
             Color edgeColor = victory
@@ -73,6 +81,33 @@ namespace Wanwan.Runtime
             });
 
             Button menuButton = UiFactory.CreatePixelButton(background.transform, "返回主页", ArcadeTheme.EnergyYellow, new Vector2(420f, 116f), new Vector2(0f, -326f));
+            menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
+        }
+
+        private static void BuildFailureGameOver(Transform background)
+        {
+            UiFactory.CreatePanel(background, "FailureDim", new Color(0.01f, 0.01f, 0.03f, 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
+            UiFactory.CreatePanel(background, "FailureTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
+            UiFactory.CreatePanel(background, "FailureBottomShade", new Color(0f, 0f, 0f, 0.4f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
+
+            Text shadow = UiFactory.CreateArcadeLabel(background, "任务失败", 92, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.86f), FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), new Vector2(6f, -8f));
+            shadow.raycastTarget = false;
+            Text title = UiFactory.CreateArcadeLabel(background, "任务失败", 92, TextAnchor.MiddleCenter, ArcadeTheme.WarningRed, FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), Vector2.zero);
+            title.raycastTarget = false;
+            Outline titleOutline = title.gameObject.AddComponent<Outline>();
+            titleOutline.effectColor = new Color(1f, 0.84f, 0.28f, 0.9f);
+            titleOutline.effectDistance = new Vector2(3f, -3f);
+
+            string stageLine = $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}  得分 {SessionState.LastScore:0000000}";
+            Text stage = UiFactory.CreateArcadeLabel(background, stageLine, 34, TextAnchor.MiddleCenter, new Color(1f, 0.9f, 0.66f), FontStyle.Bold, new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.59f), Vector2.zero);
+            stage.raycastTarget = false;
+            Outline stageOutline = stage.gameObject.AddComponent<Outline>();
+            stageOutline.effectColor = new Color(0f, 0f, 0f, 0.78f);
+            stageOutline.effectDistance = new Vector2(2f, -2f);
+
+            Button retryButton = UiFactory.CreatePixelButton(background, "重新挑战", ArcadeTheme.WarningRed, new Vector2(390f, 118f), new Vector2(-226f, -610f));
+            retryButton.onClick.AddListener(SceneNavigator.LoadGame);
+            Button menuButton = UiFactory.CreatePixelButton(background, "返回主页", ArcadeTheme.EnergyYellow, new Vector2(390f, 118f), new Vector2(226f, -610f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
         }
 
