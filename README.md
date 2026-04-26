@@ -1,17 +1,23 @@
 # Wanwan Drop Blaster
 
-一个面向 Android 的 Unity 2D 竖屏小游戏：玩家拖动底部炮台左右移动，自动发射子弹，击碎从顶部落下的可爱方块，守住底部基地并尽量拿高分。
+一个面向 Android 的 Unity 2D 竖屏雷电风格射击游戏：玩家驾驶战机在竖屏空域内自由移动，自动开火击落敌机，收集金币、升级火力、吃取炸弹道具清屏，并挑战多阶段 Boss。
 
 ## 已实现内容
 
 - `Menu / Game / GameOver` 三个场景
-- 竖屏运行与单指拖动横向移动
-- 自动连发子弹
-- 普通方块与强化方块
+- 竖屏运行与单指拖动全屏自由移动
+- 自动连发子弹，支持 `fireLevel 1~4` 火力等级
+- 普通敌机、强化敌机、精英敌机、敌方导弹与多阶段 Boss
+- 敌机击毁后掉落金币，金币会自动吸附玩家并转化为分数
+- 每 100 金币生成一个场上炸弹道具，玩家触碰后立即清屏
+- 火力包循环显示不同武器，拾取后升级火力并改变弹幕形态
+- 航母起飞开场、关卡阶段推进、Boss 警报、胜利/失败结算
 - 命中、爆炸、基地受击反馈
-- 基于存活时间的难度提升
+- 基于存活时间、关卡和循环数的难度提升
 - 分数、生命、结算、最高分记录
-- Unity EditMode 测试样例
+- Unity EditMode 测试覆盖核心纯逻辑
+
+详细玩法说明见 [docs/gameplay-features.md](docs/gameplay-features.md)。
 
 ## 项目结构
 
@@ -27,6 +33,8 @@
   - 运行时 UI 构建辅助
 - `Assets/Tests/EditMode`
   - 纯逻辑层测试
+- `docs/gameplay-features.md`
+  - 当前玩法系统、数值配置与验证说明
 
 ## 在 Unity 中打开
 
@@ -64,20 +72,18 @@ export UNITY_BIN="/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/Ma
 ## 建议的 Unity 内验证
 
 - EditMode 测试：
-  - `DifficultyProgressionTests`
-  - `SessionStateTests`
+  - `GameplayRewardStateTests`
+  - `FireLevelStateTests`
+  - `EnemySpawnBudgetTests`
+  - `StageClearTargetTests`
 - PlayMode 手测：
-  - 炮台不会移出屏幕
-  - 方块会随机掉落并逐步加速
-  - 强化方块需要更多命中
-  - 方块落到底部会扣生命
-  - 生命归零后跳转到结算场景
+  - 战机可以在屏幕内任意移动但不会越界
+  - 击毁敌机会掉落 4 个金币，金币靠近玩家后自动吸附
+  - 金币收集后顶部金币和分数会更新
+  - 每 100 金币生成炸弹图标，吃到后立即清屏
+  - 火力包会让子弹从单发逐步升级到多排扩散
+  - Boss 警报、Boss 血条、胜利结算和失败结算正常
 
 ## 当前环境限制
 
-当前这台机器已经检测到一台已连接 Android 手机：
-
-- 设备型号：`2211133C`
-- Android 版本：`15`
-
-当前环境仍然没有安装 Unity Editor、`dotnet` 或 Mono，所以我在这里还不能直接完成 Unity 编译与真机打包；但 `adb` 已可用，等 Unity 安装后就可以直接执行上面的构建与真机冒烟脚本。
+当前仓库的自动化脚本会优先查找 Unity `6000.3.7f1`、`6000.0.0f1`、`2022.3.62f1` 等常见安装路径。如果 Unity 不在默认路径，请设置 `UNITY_BIN` 后再运行测试或构建命令。
