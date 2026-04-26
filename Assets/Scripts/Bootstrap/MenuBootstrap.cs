@@ -81,7 +81,10 @@ namespace Wanwan.Runtime
             Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
             UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
-            UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f)).raycastTarget = false;
+            if (state != MenuUiState.Title)
+            {
+                UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f)).raycastTarget = false;
+            }
             CreateScanlines(background.transform);
             return background;
         }

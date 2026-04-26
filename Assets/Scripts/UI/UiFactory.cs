@@ -185,12 +185,13 @@ namespace Wanwan.Runtime
             Button button = CreateButton(parent, label, ArcadeTheme.PanelBase, ArcadeTheme.White, size, anchoredPosition);
             Image image = button.GetComponent<Image>();
             image.sprite = RuntimeSpriteFactory.GetCircleSprite();
-            image.color = ArcadeTheme.InkBlack;
+            image.color = Color.clear;
 
+            Color faceColor = Color.Lerp(accentColor, Color.white, 0.08f);
             ColorBlock colors = button.colors;
-            colors.normalColor = ArcadeTheme.PanelBase;
-            colors.highlightedColor = Color.Lerp(ArcadeTheme.PanelBase, accentColor, 0.42f);
-            colors.pressedColor = Color.Lerp(ArcadeTheme.WarningRed, accentColor, 0.22f);
+            colors.normalColor = faceColor;
+            colors.highlightedColor = Color.Lerp(faceColor, Color.white, 0.18f);
+            colors.pressedColor = Color.Lerp(faceColor, ArcadeTheme.InkBlack, 0.28f);
             colors.selectedColor = accentColor;
             colors.disabledColor = ArcadeTheme.DimGray;
             button.colors = colors;
@@ -199,7 +200,7 @@ namespace Wanwan.Runtime
             outer.sprite = RuntimeSpriteFactory.GetCircleSprite();
             outer.raycastTarget = false;
 
-            Image face = CreatePanel(button.transform, "ButtonFace", ArcadeTheme.PanelBase, new Vector2(0.13f, 0.13f), new Vector2(0.87f, 0.87f));
+            Image face = CreatePanel(button.transform, "ButtonFace", faceColor, new Vector2(0.13f, 0.13f), new Vector2(0.87f, 0.87f));
             face.sprite = RuntimeSpriteFactory.GetCircleSprite();
             face.raycastTarget = false;
             button.targetGraphic = face;
@@ -217,7 +218,7 @@ namespace Wanwan.Runtime
             text.fontSize = 30;
             text.resizeTextMinSize = 18;
             text.resizeTextMaxSize = 30;
-            text.color = ArcadeTheme.White;
+            text.color = accentColor == ArcadeTheme.EnergyYellow ? ArcadeTheme.InkBlack : ArcadeTheme.White;
             return button;
         }
 
