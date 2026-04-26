@@ -77,7 +77,7 @@ namespace Wanwan.Runtime
         {
             ClearCanvas();
             Image background = UiFactory.CreatePanel(canvas.transform, name, Color.white, Vector2.zero, Vector2.one);
-            background.sprite = RuntimeSpriteFactory.GetLaunchWeatherIntroSprite();
+            background.sprite = RuntimeSpriteFactory.GetSkyBackgroundSprite();
             background.preserveAspect = false;
             background.raycastTarget = false;
             cinematicBackground = background;
