@@ -15,8 +15,11 @@ namespace Wanwan.Runtime
         private readonly GameplayRewardConfig rewardConfig = GameplayRewardConfig.Default;
         private readonly GameplayRewardState rewardState = new GameplayRewardState(GameplayRewardConfig.Default);
         private readonly PlayerWeaponState weaponState = new PlayerWeaponState();
+        private readonly PowerMeterState powerMeter = new PowerMeterState();
         private readonly ComboState comboState = new ComboState();
         private readonly PlayerHealthState playerHealth = new PlayerHealthState();
+        private readonly PlayerInvulnerabilityState invulnerabilityState = new PlayerInvulnerabilityState();
+        private readonly WaveDirector waveDirector = new WaveDirector();
         private bool gameEnded;
         private bool paused;
         private bool stageClear;
@@ -31,6 +34,8 @@ namespace Wanwan.Runtime
         private int bossMaxHitPoints;
         private int enemiesDestroyed;
         private int bombsUsed;
+        private int speedUpLevel;
+        private int shieldCharges;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
         public GameFlowState CurrentState { get; private set; } = GameFlowState.Intro;
@@ -62,6 +67,10 @@ namespace Wanwan.Runtime
         public int BombCount => Mathf.Max(0, rewardState.BombPickupsEarned - bombsUsed);
         public int BombsUsed => bombsUsed;
         public bool HasBomb => BombCount > 0;
+        public int ShieldCharges => shieldCharges;
+        public float PlayerSpeedMultiplier => 1f + (Mathf.Clamp(speedUpLevel, 0, 3) * 0.18f);
+        public bool CanActivatePowerMeter => powerMeter.CanActivate;
+        public string PowerMeterHudText => powerMeter.BuildHudText();
         public StagePhase CurrentStagePhase => currentStagePhase;
         public string StageLabel => stageLabel;
         public float StageProgress => stageProgress;
@@ -74,6 +83,8 @@ namespace Wanwan.Runtime
         public int EnemiesDestroyed => enemiesDestroyed;
         public int RequiredKillsToClear => StageClearTarget.GetRequiredKills(Difficulty, SessionState.CurrentStageIndex, SessionState.CurrentLoopIndex);
         public bool AudioEnabled => SessionState.AudioEnabled;
+        public bool IsPlayerInvulnerable => invulnerabilityState.IsInvulnerable;
+        public float PlayerInvulnerabilityFlashAlpha => invulnerabilityState.GetFlashAlpha();
         public int StageNumber => SessionState.CurrentStageNumber;
         public int LoopNumber => SessionState.CurrentLoopNumber;
         public string StageName => SessionState.CurrentStage.Name;
@@ -82,6 +93,8 @@ namespace Wanwan.Runtime
         public StageCombatStyle StageCombatStyle => SessionState.CurrentStage.CombatStyle;
         public BossPatternStyle BossPatternStyle => SessionState.CurrentStage.BossPattern;
         public float StageDifficultyMultiplier => SessionState.CurrentStageDifficultyMultiplier;
+        public WavePhase CurrentWavePhase => waveDirector.GetCurrentPhase();
+        public float WavePhaseProgress => waveDirector.GetPhaseProgress();
 
         public void Initialize(UIController ui, EffectsController effects, BlockSpawner spawner, PlayerController player, float leftBound, float rightBound, float topBound, float bottomBound)
         {
@@ -94,6 +107,7 @@ namespace Wanwan.Runtime
             TopBound = topBound;
             BottomBound = bottomBound;
 
+            waveDirector.PhaseChanged += HandleWavePhaseChanged;
             uiController.Bind(this);
         }
 
@@ -138,7 +152,12 @@ namespace Wanwan.Runtime
                 {
                     elapsedTime += Time.deltaTime;
                     activePowerup.Tick(Time.deltaTime);
+                    invulnerabilityState.Tick(Time.deltaTime);
                     stageBannerTimer = Mathf.Max(0f, stageBannerTimer - Time.deltaTime);
+                    if (IsPlaying)
+                    {
+                        waveDirector.UpdatePhase(Time.deltaTime);
+                    }
                 }
 
                 uiController.RefreshHud();
@@ -278,6 +297,20 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            if (invulnerabilityState.IsInvulnerable)
+            {
+                return;
+            }
+
+            if (shieldCharges > 0)
+            {
+                shieldCharges--;
+                invulnerabilityState.Trigger(0.45f);
+                ShowStageBanner("护盾吸收");
+                uiController.RefreshHud();
+                return;
+            }
+
             int damageApplied = playerHealth.ApplyDamage(amount);
             if (damageApplied <= 0)
             {
@@ -285,6 +318,7 @@ namespace Wanwan.Runtime
             }
 
             comboState.BreakCombo();
+            invulnerabilityState.Trigger();
             PlayerDamageFeedback.TriggerVibration(damageApplied);
             effectsController.PlayBaseHit();
             uiController.NotifyPlayerDamaged();
@@ -345,6 +379,9 @@ namespace Wanwan.Runtime
             bossCurrentHitPoints = 0;
             bossMaxHitPoints = 0;
             gameOverTitle = "任务完成";
+            int clearBonus = ScoreRewardConfig.GetStageClearBonus(BombCount, shieldCharges, comboState.MaxMultiplier);
+            Score += clearBonus;
+            effectsController.PlayScorePopup(PlayerPosition, clearBonus);
             ShowStageBanner("任务完成");
             StartCoroutine(EndVictoryRun());
         }
@@ -356,7 +393,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            ApplyWeaponPickup(PowerupCycle.ToWeaponType(type));
+            CollectPowerCapsule();
         }
 
         public void ApplyWeaponPickup(WeaponType type)
@@ -371,6 +408,32 @@ namespace Wanwan.Runtime
             uiController.RefreshHud();
         }
 
+        public void CollectPowerCapsule()
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            powerMeter.CollectCapsule();
+            ShowStageBanner("能量胶囊 " + GetPowerMeterUpgradeLabel(powerMeter.HighlightedUpgrade));
+            uiController.RefreshHud();
+        }
+
+        public bool TryActivatePowerMeter()
+        {
+            if (gameEnded || paused || !powerMeter.CanActivate)
+            {
+                uiController.RefreshHud();
+                return false;
+            }
+
+            PowerMeterUpgrade upgrade = powerMeter.ActivateHighlightedUpgrade();
+            ApplyPowerMeterUpgrade(upgrade);
+            uiController.RefreshHud();
+            return true;
+        }
+
         public string GetCurrentWeaponDisplayText()
         {
             return weaponState.GetCurrentWeaponDisplayText();
@@ -383,7 +446,7 @@ namespace Wanwan.Runtime
 
         public bool TryActivateBomb()
         {
-            return false;
+            return TryActivatePowerMeter();
         }
 
         public bool ActivateBombFromPickup(Vector3 origin)
@@ -402,6 +465,11 @@ namespace Wanwan.Runtime
             foreach (BlockController block in FindObjectsByType<BlockController>(FindObjectsSortMode.None))
             {
                 block.ClearByBomb();
+            }
+
+            foreach (GroundTargetController groundTarget in FindObjectsByType<GroundTargetController>(FindObjectsSortMode.None))
+            {
+                groundTarget.ClearByBomb();
             }
 
             foreach (BossController boss in FindObjectsByType<BossController>(FindObjectsSortMode.None))
@@ -495,6 +563,73 @@ namespace Wanwan.Runtime
         {
             stageBannerText = content;
             stageBannerTimer = 1.9f;
+        }
+
+        private void ApplyPowerMeterUpgrade(PowerMeterUpgrade upgrade)
+        {
+            switch (upgrade)
+            {
+                case PowerMeterUpgrade.SpeedUp:
+                    speedUpLevel = Mathf.Min(3, speedUpLevel + 1);
+                    ShowStageBanner("速度提升 " + speedUpLevel);
+                    break;
+                case PowerMeterUpgrade.Missile:
+                    ApplyWeaponPickup(WeaponType.Burst);
+                    ShowStageBanner("导弹火力");
+                    break;
+                case PowerMeterUpgrade.Double:
+                    weaponState.SetWeapon(WeaponType.Spread);
+                    weaponState.UpgradeFireLevel();
+                    ShowStageBanner("双发火力 " + weaponState.FireLevel + "级");
+                    break;
+                case PowerMeterUpgrade.Laser:
+                    ApplyWeaponPickup(WeaponType.Laser);
+                    ShowStageBanner("激光贯穿");
+                    break;
+                case PowerMeterUpgrade.Option:
+                    weaponState.UpgradeFireLevel();
+                    ShowStageBanner("子机火力 " + weaponState.FireLevel + "级");
+                    break;
+                case PowerMeterUpgrade.Shield:
+                    shieldCharges = Mathf.Min(3, shieldCharges + 1);
+                    ShowStageBanner("护盾就绪");
+                    break;
+            }
+        }
+
+        private static string GetPowerMeterUpgradeLabel(PowerMeterUpgrade upgrade)
+        {
+            switch (upgrade)
+            {
+                case PowerMeterUpgrade.SpeedUp:
+                    return "速度";
+                case PowerMeterUpgrade.Missile:
+                    return "导弹";
+                case PowerMeterUpgrade.Double:
+                    return "双发";
+                case PowerMeterUpgrade.Laser:
+                    return "激光";
+                case PowerMeterUpgrade.Option:
+                    return "子机";
+                case PowerMeterUpgrade.Shield:
+                    return "护盾";
+                default:
+                    return "待充能";
+            }
+        }
+
+        private void HandleWavePhaseChanged(WavePhase phase)
+        {
+            if (phase == WavePhase.Burst)
+            {
+                ShowStageBanner("危险突袭");
+            }
+            else if (phase == WavePhase.Reward)
+            {
+                ShowStageBanner("奖励航线");
+            }
+
+            uiController.RefreshHud();
         }
 
         private string BuildRunRating()

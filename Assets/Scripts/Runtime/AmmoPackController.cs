@@ -80,8 +80,8 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            gameManager.ApplyWeaponPickup(weaponType);
-            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, GetDisplayName(weaponType));
+            gameManager.CollectPowerCapsule();
+            effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, "能量胶囊");
             Destroy(gameObject);
         }
 
@@ -118,19 +118,5 @@ namespace Wanwan.Runtime
             }
         }
 
-        private static string GetDisplayName(WeaponType type)
-        {
-            switch (type)
-            {
-                case WeaponType.Laser:
-                    return "激光";
-                case WeaponType.Homing:
-                    return "追踪";
-                case WeaponType.Burst:
-                    return "爆裂";
-                default:
-                    return "扇形";
-            }
-        }
     }
 }

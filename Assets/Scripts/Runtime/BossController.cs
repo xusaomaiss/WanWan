@@ -291,7 +291,7 @@ namespace Wanwan.Runtime
                 effectsController.PlayBurst(burstPosition, spriteRenderer.color);
             }
 
-            gameManager.RegisterBossDefeatedScore(900, transform.position);
+            gameManager.RegisterBossDefeatedScore(ScoreRewardConfig.BossDefeatBaseScore, transform.position);
             gameManager.MarkStageClear();
             blockSpawner.NotifyBossResolved();
             Destroy(gameObject);

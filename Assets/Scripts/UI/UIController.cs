@@ -14,6 +14,7 @@ namespace Wanwan.Runtime
         private Text stageProgressText;
         private Text comboText;
         private Text powerupText;
+        private Text powerMeterText;
         private Text pauseHintText;
         private Text stageBannerText;
         private Image playerHealthRoot;
@@ -22,6 +23,8 @@ namespace Wanwan.Runtime
         private Text playerHealthLabel;
         private Button pauseButton;
         private Text pauseButtonText;
+        private Button upgradeButton;
+        private Text upgradeButtonText;
         private Image pauseOverlay;
         private Text pauseOverlayTitle;
         private Text pauseOverlayHighScore;
@@ -73,6 +76,15 @@ namespace Wanwan.Runtime
                 fillRect.offsetMax = Vector2.zero;
             }
             powerupText.text = BuildPowerupHudText();
+            if (powerMeterText != null)
+            {
+                powerMeterText.text = gameManager.PowerMeterHudText;
+            }
+            if (upgradeButton != null)
+            {
+                upgradeButton.interactable = gameManager.CanActivatePowerMeter;
+                upgradeButtonText.text = gameManager.CanActivatePowerMeter ? "升级" : "充能";
+            }
             pauseHintText.text = gameManager.IsPaused ? "已暂停" : string.Empty;
             string banner = gameManager.StageBannerText ?? string.Empty;
             stageBannerText.text = banner;
@@ -168,12 +180,19 @@ namespace Wanwan.Runtime
             pauseButtonText.fontStyle = FontStyle.Bold;
             pauseButtonText.fontSize = 30;
 
-            Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.08f, 0.08f, 0.16f, SessionState.VirtualButtonOpacity + 0.25f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, 0.065f), new Vector2(6f, 6f));
-            Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.04f, 0.18f), new Vector2(0.36f, 0.82f), new Vector2(4f, 4f));
-            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 22, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
-            Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.39f, 0.36f), new Vector2(0.67f, 0.64f));
+            Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.08f, 0.08f, 0.16f, SessionState.VirtualButtonOpacity + 0.25f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, 0.085f), new Vector2(6f, 6f));
+            Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.16f), new Vector2(0.25f, 0.84f), new Vector2(4f, 4f));
+            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
+            Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.18f), new Vector2(0.73f, 0.82f), new Vector2(4f, 4f));
+            powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, "SPEED MISSILE DOUBLE LASER OPTION SHIELD", 18, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.02f, 0f), new Vector2(0.98f, 1f), Vector2.zero);
+            upgradeButton = UiFactory.CreateButton(bottomBar.transform, "充能", ArcadeTheme.WarningRed, Color.white, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
+            upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
+            upgradeButtonText.fontStyle = FontStyle.Bold;
+            upgradeButtonText.fontSize = 24;
+            Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.75f, 0.36f), new Vector2(0.84f, 0.64f));
             stageProgressFill = UiFactory.CreatePanel(progressTrack.transform, "ProgressFill", ArcadeTheme.EnergyYellow, Vector2.zero, Vector2.one);
-            UiFactory.CreateArcadeLabel(bottomBar.transform, "吃炸弹图标清屏", 24, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.7f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(bottomBar.transform, "胶囊推进能量槽", 18, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.84f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
 
             bossBarRoot = UiFactory.CreatePixelPanel(canvas.transform, "BossBarRoot", new Color(0.14f, 0.03f, 0.08f, 0.92f), ArcadeTheme.WarningRed, new Vector2(0.05f, 0.86f), new Vector2(0.95f, 0.9f), new Vector2(6f, 6f));
             bossBarRoot.gameObject.SetActive(false);
@@ -242,7 +261,7 @@ namespace Wanwan.Runtime
 
         private string BuildPowerupHudText()
         {
-            return $"{gameManager.GetCurrentWeaponDisplayText()}\n{BuildBombIcons()}";
+            return $"{gameManager.GetCurrentWeaponDisplayText()}\n护盾 {BuildShieldIcons()}";
         }
 
         private string BuildBombIcons()
@@ -255,6 +274,18 @@ namespace Wanwan.Runtime
             }
 
             return $"炸弹 {new string(icons)}";
+        }
+
+        private string BuildShieldIcons()
+        {
+            int active = Mathf.Clamp(gameManager.ShieldCharges, 0, 3);
+            char[] icons = { '◇', '◇', '◇' };
+            for (int i = 0; i < active; i++)
+            {
+                icons[i] = '◆';
+            }
+
+            return new string(icons);
         }
 
         private void RefreshPlayerHealthBar()

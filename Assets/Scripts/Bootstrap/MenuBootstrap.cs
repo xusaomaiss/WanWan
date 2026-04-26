@@ -6,6 +6,10 @@ namespace Wanwan.Runtime
 {
     public class MenuBootstrap : MonoBehaviour
     {
+        public static readonly bool ShowStartupLogo = false;
+        public const int TitleCircleButtonFontSize = 30;
+        public const int TitleHighScoreFontSize = TitleCircleButtonFontSize;
+
         private static readonly Vector2 ShipPreviewSize = new Vector2(128f, 128f);
 
         private Canvas canvas;
@@ -24,8 +28,15 @@ namespace Wanwan.Runtime
             selectedShip = SessionState.SelectedShip;
             EnsureCamera(ArcadeTheme.BackgroundBlack);
             canvas = UiFactory.CreateCanvas("MenuCanvas");
-            ShowLogo();
-            StartCoroutine(LogoToTitle());
+            if (ShowStartupLogo)
+            {
+                ShowLogo();
+                StartCoroutine(LogoToTitle());
+            }
+            else
+            {
+                ShowTitle();
+            }
         }
 
         private void Update()
@@ -131,7 +142,7 @@ namespace Wanwan.Runtime
             exit.onClick.AddListener(Application.Quit);
 
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";
-            UiFactory.CreateArcadeLabel(background.transform, hiScore, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(background.transform, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
         }
 
         private void ShowShipSelect()

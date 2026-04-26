@@ -12,6 +12,8 @@ namespace Wanwan.Runtime
         private CarrierLaunchIntroConfig config;
         private ScrollingBackgroundLayer[] backgroundLayers;
         private SpriteRenderer introBackdrop;
+        private SpriteRenderer takeoffAnimationRenderer;
+        private Sprite[] takeoffFrames;
         private SpriteRenderer whiteFlash;
         private SpriteRenderer[] speedLines;
         private Camera sceneCamera;
@@ -47,7 +49,9 @@ namespace Wanwan.Runtime
             backgroundLayers = scrollingLayers ?? new ScrollingBackgroundLayer[0];
             introBackdrop = cinematicBackdrop;
             sceneCamera = cameraComponent;
+            takeoffFrames = RuntimeSpriteFactory.GetLaunchTakeoffFrameSprites();
             skipInputEnabledAt = Time.unscaledTime + config.SkipInputGraceSeconds;
+            CreateTakeoffAnimationRenderer();
             CreateExhaustParticles();
             CreateSpeedLines();
             CreateWhiteFlash();
@@ -108,6 +112,7 @@ namespace Wanwan.Runtime
             ApplyBackgroundBoost(0.35f);
             SetExhaustIntensity(0.16f);
             SetIntroBackdropAlpha(1f);
+            AnimateTakeoffFrame(0f);
             SetWhiteFlashAlpha(0f);
             yield return new WaitForSeconds(config.HoldSeconds);
 
@@ -124,6 +129,7 @@ namespace Wanwan.Runtime
                 playerTransform.position = Vector3.LerpUnclamped(start, end, eased);
                 ApplyBackgroundBoost(Mathf.Lerp(0.65f, config.BackgroundBoost, speedBlend));
                 SetExhaustIntensity(Mathf.Lerp(0.45f, config.ExhaustIntensity, speedBlend));
+                AnimateTakeoffFrame(normalized);
                 AnimateIntroBackdrop(normalized);
                 AnimateSpeedLines(normalized);
                 AnimateWhiteFlash(normalized);
@@ -213,6 +219,43 @@ namespace Wanwan.Runtime
             renderer.material = new Material(Shader.Find("Sprites/Default"));
 
             exhaustParticles.Play();
+        }
+
+        private void CreateTakeoffAnimationRenderer()
+        {
+            if (playerTransform == null || takeoffFrames == null || takeoffFrames.Length == 0)
+            {
+                return;
+            }
+
+            GameObject animationObject = new GameObject("AiTakeoffSequence");
+            animationObject.transform.position = playerTransform.position;
+
+            takeoffAnimationRenderer = animationObject.AddComponent<SpriteRenderer>();
+            takeoffAnimationRenderer.sortingOrder = 21;
+            takeoffAnimationRenderer.color = Color.white;
+            AnimateTakeoffFrame(0f);
+        }
+
+        private void AnimateTakeoffFrame(float normalized)
+        {
+            if (takeoffAnimationRenderer == null || takeoffFrames == null || takeoffFrames.Length == 0 || playerTransform == null)
+            {
+                return;
+            }
+
+            int frameIndex = Mathf.Clamp(Mathf.FloorToInt(Mathf.Clamp01(normalized) * takeoffFrames.Length), 0, takeoffFrames.Length - 1);
+            Sprite frame = takeoffFrames[frameIndex];
+            if (frame == null)
+            {
+                return;
+            }
+
+            takeoffAnimationRenderer.sprite = frame;
+            takeoffAnimationRenderer.transform.position = playerTransform.position;
+            Vector2 spriteSize = frame.bounds.size;
+            float scale = 1.18f / Mathf.Max(0.01f, Mathf.Max(spriteSize.x, spriteSize.y));
+            takeoffAnimationRenderer.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
         private void SetExhaustIntensity(float intensity)
@@ -346,13 +389,19 @@ namespace Wanwan.Runtime
         {
             if (introBackdrop != null)
             {
-                Destroy(introBackdrop.gameObject);
+                DestroyIntroObject(introBackdrop.gameObject);
                 introBackdrop = null;
+            }
+
+            if (takeoffAnimationRenderer != null)
+            {
+                DestroyIntroObject(takeoffAnimationRenderer.gameObject);
+                takeoffAnimationRenderer = null;
             }
 
             if (whiteFlash != null)
             {
-                Destroy(whiteFlash.gameObject);
+                DestroyIntroObject(whiteFlash.gameObject);
                 whiteFlash = null;
             }
 
@@ -362,11 +411,28 @@ namespace Wanwan.Runtime
                 {
                     if (speedLines[i] != null)
                     {
-                        Destroy(speedLines[i].gameObject);
+                        DestroyIntroObject(speedLines[i].gameObject);
                     }
                 }
 
                 speedLines = null;
+            }
+        }
+
+        private static void DestroyIntroObject(GameObject target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
             }
         }
     }

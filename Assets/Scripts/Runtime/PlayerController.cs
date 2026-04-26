@@ -12,6 +12,7 @@ namespace Wanwan.Runtime
         private GameManager gameManager;
         private EffectsController effectsController;
         private Camera worldCamera;
+        private SpriteRenderer spriteRenderer;
         private float leftBound;
         private float rightBound;
         private float topBound;
@@ -31,10 +32,13 @@ namespace Wanwan.Runtime
             bottomBound = minY;
             topBound = maxY;
             targetPosition = transform.position;
+            spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
         private void Update()
         {
+            UpdateInvulnerabilityPresentation();
+
             if (!combatEnabled || !gameManager.IsPlaying)
             {
                 return;
@@ -43,7 +47,7 @@ namespace Wanwan.Runtime
             UpdateTargetPosition();
             Vector2 clampedTarget = ClampToBounds(targetPosition);
             Vector2 current = transform.position;
-            transform.position = Vector2.SmoothDamp(current, clampedTarget, ref moveVelocity, MoveSmoothTime, MaxHorizontalSpeed, Time.deltaTime);
+            transform.position = Vector2.SmoothDamp(current, clampedTarget, ref moveVelocity, MoveSmoothTime, MaxHorizontalSpeed * gameManager.PlayerSpeedMultiplier, Time.deltaTime);
 
             fireTimer -= Time.deltaTime;
             if (fireTimer <= 0f)
@@ -56,6 +60,12 @@ namespace Wanwan.Runtime
         public void StopCombat()
         {
             combatEnabled = false;
+            if (spriteRenderer != null)
+            {
+                Color color = spriteRenderer.color;
+                color.a = 1f;
+                spriteRenderer.color = color;
+            }
         }
 
         public void ResetForGameplayPosition(Vector3 position)
@@ -88,7 +98,7 @@ namespace Wanwan.Runtime
 
         private Vector2 ClampToBounds(Vector2 position)
         {
-            const float shipInset = 0.5f;
+            const float shipInset = 0.12f;
             return new Vector2(
                 Mathf.Clamp(position.x, leftBound + shipInset, rightBound - shipInset),
                 Mathf.Clamp(position.y, bottomBound + shipInset, topBound - shipInset));
@@ -220,6 +230,18 @@ namespace Wanwan.Runtime
             BulletController bullet = bulletObject.AddComponent<BulletController>();
             float speed = WeaponConfig.Get(shot.WeaponType).BulletSpeed;
             bullet.Initialize(speed > 0f ? speed : BulletSpeed, shot.Damage, shot.Direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, shot.CanPierce, shot.PierceHits, shot.MotionType, shot.HomingStrength, 0f, 0f, shot.ExplosionRadius);
+        }
+
+        private void UpdateInvulnerabilityPresentation()
+        {
+            if (spriteRenderer == null || gameManager == null)
+            {
+                return;
+            }
+
+            Color color = spriteRenderer.color;
+            color.a = gameManager.PlayerInvulnerabilityFlashAlpha;
+            spriteRenderer.color = color;
         }
     }
 }

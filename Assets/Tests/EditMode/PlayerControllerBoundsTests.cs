@@ -7,7 +7,7 @@ namespace Wanwan.Tests.EditMode
     public class PlayerControllerBoundsTests
     {
         [Test]
-        public void ClampToPlayableBounds_AllowsShipToReachScreenEdgeInset()
+        public void ClampToPlayableBounds_AllowsShipToCoverEdgeEnemyLanes()
         {
             GameObject playerObject = new GameObject("Player");
             PlayerController controller = playerObject.AddComponent<PlayerController>();
@@ -16,8 +16,8 @@ namespace Wanwan.Tests.EditMode
             Vector2 left = controller.ClampToPlayableBoundsForTests(new Vector2(-99f, 0f));
             Vector2 right = controller.ClampToPlayableBoundsForTests(new Vector2(99f, 0f));
 
-            Assert.That(left.x, Is.EqualTo(-2.5f));
-            Assert.That(right.x, Is.EqualTo(2.5f));
+            Assert.That(left.x, Is.EqualTo(-2.88f));
+            Assert.That(right.x, Is.EqualTo(2.88f));
 
             Object.DestroyImmediate(playerObject);
         }

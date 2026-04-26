@@ -102,10 +102,7 @@ namespace Wanwan.Runtime
                 gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
                 gameManager.NotifyEnemyDestroyed();
                 blockSpawner.SpawnCoinsAtPosition(transform.position);
-                if (guaranteedDrop != AmmoPowerupType.None)
-                {
-                    blockSpawner.SpawnAmmoPackAtPosition(guaranteedDrop, transform.position);
-                }
+                blockSpawner.SpawnEnemyAmmoPackDrop(guaranteedDrop, transform.position);
                 effectsController.PlayBurst(transform.position, effectColor);
                 blockSpawner.NotifyEnemyResolved();
                 Destroy(gameObject);

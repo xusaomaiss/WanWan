@@ -18,6 +18,8 @@ namespace Wanwan.Runtime
         public const string BulletHomingArcadeResourcePath = "RaidenArt/Effects/bullet_homing_arcade";
         public const string BulletBurstArcadeResourcePath = "RaidenArt/Effects/bullet_burst_arcade";
         public const string ExplosionArcadeResourcePath = "RaidenArt/Effects/explosion_arcade";
+        public const int LaunchTakeoffFrameCount = 8;
+        private const string LaunchTakeoffFrameResourcePrefix = "RaidenArt/Cinematics/Takeoff/launch_takeoff_frame_";
 
         private static readonly string[] RaidenStageBackgroundResourcePaths =
         {
@@ -113,6 +115,16 @@ namespace Wanwan.Runtime
             return GetResourceSpriteOrFallback("boss-flagship-ai", BossFlagshipResourcePath, GetGeneratedBossFlagshipSprite);
         }
 
+        public static Sprite GetGroundTankSprite()
+        {
+            return GetOrCreate("ground-tank", BuildGroundTankTexture);
+        }
+
+        public static Sprite GetGroundTurretSprite()
+        {
+            return GetOrCreate("ground-turret", BuildGroundTurretTexture);
+        }
+
         public static Sprite GetPlaneSprite()
         {
             return GetEnemyInterceptorSprite();
@@ -178,6 +190,24 @@ namespace Wanwan.Runtime
         public static Sprite GetMenuStormTitleSprite()
         {
             return GetResourceSpriteOrFallback("menu-storm-title-ai", MenuStormTitleResourcePath, GetSkyBackgroundSprite);
+        }
+
+        public static string GetLaunchTakeoffFrameResourcePath(int frameIndex)
+        {
+            int safeIndex = Mathf.Clamp(frameIndex, 0, LaunchTakeoffFrameCount - 1);
+            return LaunchTakeoffFrameResourcePrefix + safeIndex.ToString("00");
+        }
+
+        public static Sprite[] GetLaunchTakeoffFrameSprites()
+        {
+            Sprite[] frames = new Sprite[LaunchTakeoffFrameCount];
+            for (int i = 0; i < frames.Length; i++)
+            {
+                int frameIndex = i;
+                frames[i] = GetResourceSpriteOrFallback("launch-takeoff-frame-" + frameIndex, GetLaunchTakeoffFrameResourcePath(frameIndex), GetRaidenFighterJetSprite);
+            }
+
+            return frames;
         }
 
         public static Sprite GetExplosionSprite()
@@ -437,6 +467,91 @@ namespace Wanwan.Runtime
                     }
 
                     texture.SetPixel(x, y, pixel);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildGroundTankTexture()
+        {
+            const int width = 160;
+            const int height = 112;
+            Texture2D texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(width * 0.5f, height * 0.5f);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Vector2 p = new Vector2(x, y) - center;
+                    bool track = Mathf.Abs(p.x) < 58f && Mathf.Abs(p.y) < 34f;
+                    bool body = Mathf.Abs(p.x) < 42f && Mathf.Abs(p.y) < 26f;
+                    bool turret = Vector2.Distance(new Vector2(x, y), center + new Vector2(0f, 8f)) < 22f;
+                    bool barrel = Mathf.Abs(p.x) < 7f && p.y > 12f && p.y < 50f;
+                    bool treadCut = (x % 18 < 6) && Mathf.Abs(p.x) > 42f && Mathf.Abs(p.y) < 30f;
+                    bool lit = (track && !treadCut) || body || turret || barrel;
+                    if (!lit)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Color color = track ? new Color(0.12f, 0.16f, 0.13f) : new Color(0.32f, 0.58f, 0.28f);
+                    if (turret || barrel)
+                    {
+                        color = new Color(0.48f, 0.76f, 0.36f);
+                    }
+
+                    if (x < center.x - 18f || y < center.y - 16f)
+                    {
+                        color = Color.Lerp(color, Color.black, 0.18f);
+                    }
+
+                    texture.SetPixel(x, y, color);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildGroundTurretTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 p = new Vector2(x, y) - center;
+                    float distance = p.magnitude;
+                    bool baseRing = distance > 30f && distance < 50f;
+                    bool baseFill = distance <= 34f;
+                    bool cannon = Mathf.Abs(p.x) < 8f && p.y > 0f && p.y < 54f;
+                    bool muzzle = Mathf.Abs(p.x) < 14f && p.y > 42f && p.y < 58f;
+                    bool lit = baseRing || baseFill || cannon || muzzle;
+                    if (!lit)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Color color = baseRing ? new Color(0.24f, 0.21f, 0.18f) : new Color(0.74f, 0.5f, 0.22f);
+                    if (cannon || muzzle)
+                    {
+                        color = new Color(0.92f, 0.68f, 0.28f);
+                    }
+
+                    if (p.x < -12f || p.y < -18f)
+                    {
+                        color = Color.Lerp(color, Color.black, 0.2f);
+                    }
+
+                    texture.SetPixel(x, y, color);
                 }
             }
 

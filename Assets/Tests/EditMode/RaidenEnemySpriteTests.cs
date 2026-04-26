@@ -58,6 +58,19 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void LaunchTakeoffFrames_UseAiGeneratedSequenceResources()
+        {
+            Assert.That(RuntimeSpriteFactory.LaunchTakeoffFrameCount, Is.GreaterThanOrEqualTo(6));
+            Assert.That(RuntimeSpriteFactory.GetLaunchTakeoffFrameResourcePath(0), Is.EqualTo("RaidenArt/Cinematics/Takeoff/launch_takeoff_frame_00"));
+
+            Texture2D firstFrame = Resources.Load<Texture2D>(RuntimeSpriteFactory.GetLaunchTakeoffFrameResourcePath(0));
+
+            Assert.That(firstFrame, Is.Not.Null);
+            Assert.That(firstFrame.height, Is.GreaterThanOrEqualTo(firstFrame.width));
+            Assert.That(RuntimeSpriteFactory.GetLaunchTakeoffFrameSprites()[0].texture, Is.SameAs(firstFrame));
+        }
+
+        [Test]
         public void ArcadeEffectSprites_UseRaidenEffectResources()
         {
             Texture2D spread = Resources.Load<Texture2D>(RuntimeSpriteFactory.BulletSpreadArcadeResourcePath);

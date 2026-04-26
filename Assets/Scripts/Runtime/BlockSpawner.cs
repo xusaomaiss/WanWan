@@ -12,11 +12,14 @@ namespace Wanwan.Runtime
         private bool spawningEnabled = true;
         private bool bossActive;
         private int activeEnemyCount;
+        private int groundTargetSpawnSequence;
         private float phaseTimer;
         private int currentWaveIndex = -1;
         private int nextInstructionIndex;
         private StageWaveConfig[] stageScript;
         private StageWaveConfig currentWave;
+        private WavePhase observedWavePhase = WavePhase.Calm;
+        private bool rewardGuaranteedPowerupGranted;
 
         public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float topY)
         {
@@ -36,6 +39,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            UpdateObservedWavePhase();
             phaseTimer += Time.deltaTime;
             float duration = Mathf.Max(0.01f, currentWave.DurationSeconds);
             gameManager.UpdateStageProgress(Mathf.Clamp01(phaseTimer / duration));
@@ -143,7 +147,7 @@ namespace Wanwan.Runtime
 
         public void SpawnCoinsAtPosition(Vector3 position)
         {
-            int count = gameManager.RewardConfig.CoinsPerEnemy;
+            int count = Mathf.CeilToInt(gameManager.RewardConfig.CoinsPerEnemy * GetCoinDropMultiplier());
             for (int i = 0; i < count; i++)
             {
                 GameObject coinObject = new GameObject("Coin");
@@ -160,6 +164,32 @@ namespace Wanwan.Runtime
                 Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
                 drift.y = Mathf.Abs(drift.y) * 0.65f;
                 coin.Initialize(gameManager, drift);
+            }
+        }
+
+        public void SpawnEnemyAmmoPackDrop(AmmoPowerupType guaranteedDrop, Vector3 position)
+        {
+            if (guaranteedDrop != AmmoPowerupType.None)
+            {
+                SpawnAmmoPackAtPosition(guaranteedDrop, position);
+                return;
+            }
+
+            if (gameManager.CurrentWavePhase != WavePhase.Reward)
+            {
+                return;
+            }
+
+            if (!rewardGuaranteedPowerupGranted)
+            {
+                rewardGuaranteedPowerupGranted = true;
+                SpawnAmmoPackAtPosition(GetRandomPowerupType(), position);
+                return;
+            }
+
+            if (Random.value <= 0.22f)
+            {
+                SpawnAmmoPackAtPosition(GetRandomPowerupType(), position);
             }
         }
 
@@ -548,7 +578,8 @@ namespace Wanwan.Runtime
 
         private void SpawnFormation(EnemySpawnInstruction instruction)
         {
-            switch (instruction.Formation)
+            EnemyFormationType formation = GetPacedFormation(instruction.Formation);
+            switch (formation)
             {
                 case EnemyFormationType.SideCutInLeft:
                     SpawnSideCutIn(instruction, true);
@@ -566,6 +597,8 @@ namespace Wanwan.Runtime
                     SpawnDiveLine(instruction);
                     break;
             }
+
+            SpawnGroundSupportIfNeeded(instruction, formation);
         }
 
         private void SpawnDiveLine(EnemySpawnInstruction instruction)
@@ -619,25 +652,28 @@ namespace Wanwan.Runtime
             }
         }
 
-        private static int GetSpawnCount(EnemySpawnInstruction instruction)
+        private int GetSpawnCount(EnemySpawnInstruction instruction)
         {
-            return EnemySpawnBudget.GetAdjustedCount(instruction.Count);
+            int adjustedCount = EnemySpawnBudget.GetAdjustedCount(instruction.Count);
+            float multiplier = GetSpawnCountMultiplier(gameManager.CurrentWavePhase);
+            return Mathf.Max(1, Mathf.FloorToInt(adjustedCount * multiplier));
         }
 
         private void SpawnEnemy(Vector3 position, bool elite, Vector2 moveDirection, float swayAmplitude, float swayFrequency, AmmoPowerupType guaranteedDrop)
         {
-            bool tough = elite || Random.value <= DifficultyProgression.GetToughChance(gameManager.ElapsedTime);
-            int hitPoints = elite ? GetEliteHitPoints() : DifficultyProgression.GetHitPoints(tough, gameManager.ElapsedTime);
-            hitPoints += Mathf.FloorToInt((gameManager.StageDifficultyMultiplier - 1f) * (elite ? 3f : 1.25f));
-            int scoreValue = elite ? 260 : DifficultyProgression.GetScoreValue(tough, hitPoints);
-            float speed = elite ? DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, true) * 0.82f : DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, tough);
+            bool pacedElite = ShouldSpawnElite(elite);
+            bool tough = pacedElite || ShouldSpawnTough();
+            int hitPoints = pacedElite ? GetEliteHitPoints() : DifficultyProgression.GetHitPoints(tough, gameManager.ElapsedTime);
+            hitPoints += Mathf.FloorToInt((gameManager.StageDifficultyMultiplier - 1f) * (pacedElite ? 3f : 1.25f));
+            int scoreValue = pacedElite ? 260 : DifficultyProgression.GetScoreValue(tough, hitPoints);
+            float speed = pacedElite ? DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, true) * 0.82f : DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, tough);
             speed *= Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.32f);
 
-            GameObject enemyObject = new GameObject(elite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
+            GameObject enemyObject = new GameObject(pacedElite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
             enemyObject.transform.position = position;
 
             SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
-            if (elite)
+            if (pacedElite)
             {
                 renderer.sprite = RuntimeSpriteFactory.GetEliteInterceptorSprite();
             }
@@ -653,26 +689,180 @@ namespace Wanwan.Runtime
             Color normalColor = Color.Lerp(new Color(0.88f, 0.26f, 0.46f), accent, 0.24f);
             Color toughColor = Color.Lerp(new Color(1f, 0.38f, 0.52f), accent, 0.18f);
             Color eliteColor = Color.Lerp(new Color(1f, 0.88f, 0.24f), accent, 0.22f);
-            renderer.color = elite ? eliteColor : Color.white;
-            renderer.sortingOrder = elite ? 12 : 10;
+            renderer.color = pacedElite ? eliteColor : Color.white;
+            renderer.sortingOrder = pacedElite ? 12 : 10;
 
-            float width = elite ? 0.92f : (tough ? 0.82f : 0.72f);
-            float height = elite ? 0.9f : (tough ? 0.8f : 0.7f);
+            float width = pacedElite ? 0.92f : (tough ? 0.82f : 0.72f);
+            float height = pacedElite ? 0.9f : (tough ? 0.8f : 0.7f);
             enemyObject.transform.localScale = new Vector3(width, height, 1f);
             enemyObject.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg - 90f);
 
             BoxCollider2D collider = enemyObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = elite ? new Vector2(0.5f, 0.58f) : new Vector2(0.44f, 0.52f);
+            collider.size = pacedElite ? new Vector2(0.5f, 0.58f) : new Vector2(0.44f, 0.52f);
 
             Rigidbody2D rigidbody2D = enemyObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BlockController block = enemyObject.AddComponent<BlockController>();
-            Color effectColor = elite ? eliteColor : (tough ? toughColor : normalColor);
-            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, elite, guaranteedDrop);
+            Color effectColor = pacedElite ? eliteColor : (tough ? toughColor : normalColor);
+            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, pacedElite, guaranteedDrop);
             activeEnemyCount++;
+        }
+
+        private void SpawnGroundSupportIfNeeded(EnemySpawnInstruction instruction, EnemyFormationType formation)
+        {
+            if (!ShouldSpawnGroundSupport(instruction, formation))
+            {
+                return;
+            }
+
+            int count = gameManager.StageCombatStyle == StageCombatStyle.Heavy || gameManager.StageCombatStyle == StageCombatStyle.Finale ? 2 : 1;
+            for (int i = 0; i < count; i++)
+            {
+                GroundTargetType type = (groundTargetSpawnSequence + i) % 3 == 0 ? GroundTargetType.Turret : GroundTargetType.Tank;
+                float laneT = count == 1 ? 0.5f : (i + 1f) / (count + 1f);
+                float x = Mathf.Lerp(leftBound + 0.85f, rightBound - 0.85f, laneT);
+                float y = spawnY + 0.85f + (i * 0.55f);
+                SpawnGroundTarget(type, new Vector3(x, y, 0f));
+            }
+
+            groundTargetSpawnSequence += count;
+        }
+
+        private bool ShouldSpawnGroundSupport(EnemySpawnInstruction instruction, EnemyFormationType formation)
+        {
+            if (gameManager.CurrentWavePhase == WavePhase.Calm || gameManager.CurrentWavePhase == WavePhase.Reward)
+            {
+                return false;
+            }
+
+            if (gameManager.StageCombatStyle == StageCombatStyle.Heavy || gameManager.StageCombatStyle == StageCombatStyle.Finale)
+            {
+                return instruction.Count >= 4;
+            }
+
+            return formation == EnemyFormationType.VShape && (gameManager.StageCombatStyle == StageCombatStyle.Sniper || gameManager.StageCombatStyle == StageCombatStyle.Balanced);
+        }
+
+        private void SpawnGroundTarget(GroundTargetType type, Vector3 position)
+        {
+            GroundTargetProfile profile = GroundTargetProfile.Get(type, gameManager.StageDifficultyMultiplier);
+            GameObject targetObject = new GameObject(type == GroundTargetType.Turret ? "GroundTurret" : "GroundTank");
+            targetObject.transform.position = position;
+            targetObject.transform.localScale = type == GroundTargetType.Turret ? new Vector3(0.68f, 0.68f, 1f) : new Vector3(0.82f, 0.68f, 1f);
+
+            SpriteRenderer renderer = targetObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = type == GroundTargetType.Turret ? RuntimeSpriteFactory.GetGroundTurretSprite() : RuntimeSpriteFactory.GetGroundTankSprite();
+            renderer.color = Color.Lerp(profile.AccentColor, gameManager.StageAccentColor, 0.18f);
+            renderer.sortingOrder = 8;
+
+            BoxCollider2D collider = targetObject.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+            collider.size = type == GroundTargetType.Turret ? new Vector2(0.54f, 0.54f) : new Vector2(0.62f, 0.46f);
+
+            Rigidbody2D rigidbody2D = targetObject.AddComponent<Rigidbody2D>();
+            rigidbody2D.gravityScale = 0f;
+            rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+
+            float scrollSpeed = 0.68f * gameManager.StageDifficultyMultiplier;
+            GroundTargetController target = targetObject.AddComponent<GroundTargetController>();
+            target.Initialize(gameManager, this, effectsController, profile, scrollSpeed);
+            activeEnemyCount++;
+        }
+
+        private void UpdateObservedWavePhase()
+        {
+            WavePhase phase = gameManager.CurrentWavePhase;
+            if (phase == observedWavePhase)
+            {
+                return;
+            }
+
+            observedWavePhase = phase;
+            if (phase == WavePhase.Reward)
+            {
+                rewardGuaranteedPowerupGranted = false;
+            }
+        }
+
+        private static float GetSpawnCountMultiplier(WavePhase phase)
+        {
+            switch (phase)
+            {
+                case WavePhase.Calm:
+                    return 0.75f;
+                case WavePhase.Burst:
+                    return 1.35f;
+                case WavePhase.Reward:
+                    return 0.35f;
+                default:
+                    return 1f;
+            }
+        }
+
+        private EnemyFormationType GetPacedFormation(EnemyFormationType formation)
+        {
+            WavePhase phase = gameManager.CurrentWavePhase;
+            if (phase == WavePhase.Calm || phase == WavePhase.Reward)
+            {
+                return EnemyFormationType.DiveLine;
+            }
+
+            if (phase == WavePhase.Pressure && formation != EnemyFormationType.DiveLine && formation != EnemyFormationType.SideCutInLeft && formation != EnemyFormationType.SideCutInRight)
+            {
+                return Random.value < 0.5f ? EnemyFormationType.SideCutInLeft : EnemyFormationType.SideCutInRight;
+            }
+
+            return formation;
+        }
+
+        private bool ShouldSpawnElite(bool scriptedElite)
+        {
+            WavePhase phase = gameManager.CurrentWavePhase;
+            if (phase == WavePhase.Reward)
+            {
+                return false;
+            }
+
+            if (scriptedElite)
+            {
+                return true;
+            }
+
+            if (phase == WavePhase.Burst)
+            {
+                return Random.value <= 0.12f;
+            }
+
+            return phase == WavePhase.Pressure && Random.value <= 0.04f;
+        }
+
+        private bool ShouldSpawnTough()
+        {
+            WavePhase phase = gameManager.CurrentWavePhase;
+            if (phase == WavePhase.Reward)
+            {
+                return false;
+            }
+
+            float chance = DifficultyProgression.GetToughChance(gameManager.ElapsedTime);
+            if (phase == WavePhase.Pressure)
+            {
+                chance += 0.08f;
+            }
+            else if (phase == WavePhase.Burst)
+            {
+                chance += 0.18f;
+            }
+
+            return Random.value <= Mathf.Clamp01(chance);
+        }
+
+        private float GetCoinDropMultiplier()
+        {
+            return gameManager.CurrentWavePhase == WavePhase.Reward ? 1.5f : 1f;
         }
 
         private void SpawnBoss()

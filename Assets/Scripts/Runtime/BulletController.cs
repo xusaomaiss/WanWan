@@ -113,6 +113,16 @@ namespace Wanwan.Runtime
                 }
             }
 
+            foreach (GroundTargetController groundTarget in FindObjectsByType<GroundTargetController>(FindObjectsSortMode.None))
+            {
+                float distance = Vector2.SqrMagnitude(groundTarget.transform.position - transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closest = groundTarget.transform;
+                }
+            }
+
             return closest;
         }
 
@@ -139,6 +149,19 @@ namespace Wanwan.Runtime
                 }
 
                 boss.ApplyHit(damage);
+                ResolveExplosion();
+                ResolveHit();
+                return;
+            }
+
+            if (other.TryGetComponent(out GroundTargetController groundTarget))
+            {
+                if (!hitTargets.Add(groundTarget.GetInstanceID()))
+                {
+                    return;
+                }
+
+                groundTarget.ApplyHit(damage);
                 ResolveExplosion();
                 ResolveHit();
                 return;
@@ -204,6 +227,19 @@ namespace Wanwan.Runtime
                 if (Vector2.SqrMagnitude(boss.transform.position - center) <= radiusSqr)
                 {
                     boss.ApplyHit(damage);
+                }
+            }
+
+            foreach (GroundTargetController groundTarget in FindObjectsByType<GroundTargetController>(FindObjectsSortMode.None))
+            {
+                if (!hitTargets.Add(groundTarget.GetInstanceID()))
+                {
+                    continue;
+                }
+
+                if (Vector2.SqrMagnitude(groundTarget.transform.position - center) <= radiusSqr)
+                {
+                    groundTarget.ApplyHit(damage);
                 }
             }
 

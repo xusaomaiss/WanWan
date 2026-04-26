@@ -88,6 +88,15 @@ namespace Wanwan.Runtime
             StartCoroutine(Shake(0.07f, 0.08f));
         }
 
+        public void PlayGroundTargetDestroyed(Vector3 position, Color color)
+        {
+            EmitExplosionImage(position);
+            EmitParticles(position, Color.Lerp(color, new Color(1f, 0.75f, 0.22f), 0.45f), 22, 0.36f, 0.82f);
+            EmitDebris(position, color, 22);
+            sfxSource.PlayOneShot(explosionSmallClip, 1f);
+            StartCoroutine(Shake(0.1f, 0.1f));
+        }
+
         public void PlayBossDefeat(Vector3 position, Color color)
         {
             sfxSource.PlayOneShot(explosionLargeClip, 1f);
@@ -97,6 +106,7 @@ namespace Wanwan.Runtime
             EmitParticles(position, color, 44, 0.52f, 1.32f);
             EmitDebris(position, color, 28);
             StartCoroutine(Shake(0.28f, 0.24f));
+            StartCoroutine(PlayBossDefeatCascade(position, color));
         }
 
         public void PlayScorePopup(Vector3 position, int scoreValue)
@@ -253,6 +263,19 @@ namespace Wanwan.Runtime
             }
 
             Destroy(debris);
+        }
+
+        private IEnumerator PlayBossDefeatCascade(Vector3 position, Color color)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                yield return new WaitForSeconds(0.11f);
+                Vector3 burstPosition = position + (Vector3)(Random.insideUnitCircle * Mathf.Lerp(0.55f, 1.35f, i / 4f));
+                EmitExplosionImage(burstPosition);
+                EmitParticles(burstPosition, Color.Lerp(color, new Color(1f, 0.78f, 0.28f), 0.42f), 18, 0.32f, 0.78f);
+                EmitDebris(burstPosition, color, 12);
+                sfxSource.PlayOneShot(explosionSmallClip, 0.7f);
+            }
         }
 
         private IEnumerator Shake(float duration, float magnitude)
