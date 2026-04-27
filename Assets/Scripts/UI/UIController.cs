@@ -311,7 +311,8 @@ namespace Wanwan.Runtime
 
         private string BuildPowerupHudText()
         {
-            return $"{gameManager.GetCurrentWeaponDisplayText()}\n护盾 {BuildShieldIcons()}";
+            string mount = gameManager.HasActiveMount ? $"  挂载 {gameManager.CurrentMountDisplayName}" : string.Empty;
+            return $"{gameManager.GetCurrentWeaponDisplayText()}\n护盾 {BuildShieldIcons()}{mount}";
         }
 
         private void CreatePowerMeterVisuals(Transform meterSlot)

@@ -17,6 +17,8 @@ namespace Wanwan.Runtime
         private const string VisualEffectsQualityKey = "wanwan.visual_effects_quality";
         private const string LeaderboardKey = "wanwan.leaderboard";
         private const string LeaderboardNameKey = "wanwan.leaderboard_name";
+        private const string SpendableScoreKey = "wanwan.spendable_score";
+        private const string PendingMountKey = "wanwan.pending_mount";
 
         public static int LastScore { get; private set; }
         public static int HighScore => PlayerPrefs.GetInt(HighScoreKey, 0);
@@ -31,6 +33,8 @@ namespace Wanwan.Runtime
         public static float VirtualButtonOpacity => PlayerPrefs.GetFloat(VirtualButtonOpacityKey, 0.4f);
         public static VisualEffectsQuality VisualEffectsQuality => (VisualEffectsQuality)PlayerPrefs.GetInt(VisualEffectsQualityKey, (int)VisualEffectsQuality.Full);
         public static string LeaderboardName => SanitizeName(PlayerPrefs.GetString(LeaderboardNameKey, "AAA"));
+        public static int SpendableScore => PlayerPrefs.GetInt(SpendableScoreKey, 0);
+        public static MountType PendingMount => (MountType)PlayerPrefs.GetInt(PendingMountKey, (int)MountType.None);
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "乙";
         public static string LastRunSummary { get; private set; } = string.Empty;
@@ -100,6 +104,8 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(VisualEffectsQualityKey);
             PlayerPrefs.DeleteKey(LeaderboardKey);
             PlayerPrefs.DeleteKey(LeaderboardNameKey);
+            PlayerPrefs.DeleteKey(SpendableScoreKey);
+            PlayerPrefs.DeleteKey(PendingMountKey);
             PlayerPrefs.Save();
         }
 
@@ -117,6 +123,43 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(VisualEffectsQualityKey);
             PlayerPrefs.DeleteKey(LeaderboardNameKey);
             PlayerPrefs.Save();
+        }
+
+        public static void AddSpendableScore(int amount)
+        {
+            if (amount <= 0)
+            {
+                return;
+            }
+
+            PlayerPrefs.SetInt(SpendableScoreKey, SpendableScore + amount);
+            PlayerPrefs.Save();
+        }
+
+        public static bool TryPurchaseMount(MountType type)
+        {
+            MountConfig config = MountConfig.Get(type);
+            if (type == MountType.None || config.Cost <= 0 || PendingMount != MountType.None || SpendableScore < config.Cost)
+            {
+                return false;
+            }
+
+            PlayerPrefs.SetInt(SpendableScoreKey, SpendableScore - config.Cost);
+            PlayerPrefs.SetInt(PendingMountKey, (int)type);
+            PlayerPrefs.Save();
+            return true;
+        }
+
+        public static MountType ConsumePendingMountForRun()
+        {
+            MountType mount = PendingMount;
+            if (mount != MountType.None)
+            {
+                PlayerPrefs.SetInt(PendingMountKey, (int)MountType.None);
+                PlayerPrefs.Save();
+            }
+
+            return mount;
         }
 
         public static void SetAudioEnabled(bool enabled)
@@ -189,6 +232,11 @@ namespace Wanwan.Runtime
             LastRunMaxMultiplier = Mathf.Max(1, maxMultiplier);
             LastRunDifficulty = SelectedDifficulty;
             RecordLeaderboardScore(LeaderboardName, score, SelectedDifficulty, CurrentStageIndex, CurrentLoopIndex);
+            if (victory)
+            {
+                AddSpendableScore(score);
+            }
+
             if (score > HighScore)
             {
                 PlayerPrefs.SetInt(HighScoreKey, score);

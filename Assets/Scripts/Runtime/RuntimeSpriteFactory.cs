@@ -768,12 +768,14 @@ namespace Wanwan.Runtime
                 {
                     Vector2 point = new Vector2(x, y);
                     float distance = Vector2.Distance(point, center);
-                    bool body = distance <= 38f;
-                    bool cap = x >= 76 && x <= 100 && y >= 86 && y <= 104;
-                    bool fuse = Mathf.Abs((y - 98f) - ((x - 92f) * 0.5f)) < 4f && x >= 92 && x <= 118;
-                    bool spark = Vector2.Distance(point, new Vector2(116f, 110f)) <= 9f;
+                    bool body = distance <= 46f;
+                    bool rim = distance <= 51f && distance >= 43f;
+                    bool cap = x >= 78 && x <= 104 && y >= 86 && y <= 106;
+                    bool fuse = Mathf.Abs((y - 98f) - ((x - 92f) * 0.5f)) < 5f && x >= 92 && x <= 120;
+                    bool spark = Vector2.Distance(point, new Vector2(116f, 110f)) <= 12f;
+                    bool highlight = Vector2.Distance(point, new Vector2(50f, 80f)) <= 12f;
 
-                    if (!(body || cap || fuse || spark))
+                    if (!(body || rim || cap || fuse || spark))
                     {
                         texture.SetPixel(x, y, Color.clear);
                         continue;
@@ -782,7 +784,17 @@ namespace Wanwan.Runtime
                     Color pixel = new Color(0.05f, 0.09f, 0.14f, 1f);
                     if (body)
                     {
-                        pixel = Color.Lerp(new Color(0.06f, 0.12f, 0.2f), new Color(0.28f, 0.74f, 1f), Mathf.InverseLerp(40f, 0f, distance) * 0.55f);
+                        pixel = Color.Lerp(new Color(0.05f, 0.12f, 0.2f), new Color(0.34f, 0.82f, 1f), Mathf.InverseLerp(48f, 0f, distance) * 0.66f);
+                    }
+
+                    if (rim)
+                    {
+                        pixel = new Color(0.7f, 0.94f, 1f, 1f);
+                    }
+
+                    if (highlight)
+                    {
+                        pixel = Color.Lerp(pixel, Color.white, 0.72f);
                     }
 
                     if (cap)
@@ -795,7 +807,7 @@ namespace Wanwan.Runtime
                     }
                     else if (spark)
                     {
-                        pixel = new Color(1f, 0.42f, 0.2f, 1f);
+                        pixel = Color.Lerp(new Color(1f, 0.42f, 0.2f, 1f), Color.white, 0.35f);
                     }
 
                     texture.SetPixel(x, y, pixel);

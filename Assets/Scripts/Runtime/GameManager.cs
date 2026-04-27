@@ -37,6 +37,7 @@ namespace Wanwan.Runtime
         private int bombsUsed;
         private int speedUpLevel;
         private int shieldCharges;
+        private MountType currentMount = MountType.None;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
         public GameFlowState CurrentState { get; private set; } = GameFlowState.Intro;
@@ -70,6 +71,9 @@ namespace Wanwan.Runtime
         public int BombsUsed => bombsUsed;
         public bool HasBomb => BombCount > 0;
         public int ShieldCharges => shieldCharges;
+        public MountType CurrentMount => currentMount;
+        public bool HasActiveMount => currentMount != MountType.None;
+        public string CurrentMountDisplayName => MountConfig.Get(currentMount).DisplayName;
         public float PlayerSpeedMultiplier => 1f + (Mathf.Clamp(speedUpLevel, 0, 3) * 0.18f);
         public bool CanActivatePowerMeter => powerMeter.CanActivate;
         public int PowerMeterCollectedCapsules => powerMeter.CollectedCapsules;
@@ -110,6 +114,11 @@ namespace Wanwan.Runtime
             RightBound = rightBound;
             TopBound = topBound;
             BottomBound = bottomBound;
+            currentMount = SessionState.ConsumePendingMountForRun();
+            if (currentMount == MountType.ShieldEmitter)
+            {
+                shieldCharges = Mathf.Min(3, shieldCharges + 1);
+            }
 
             waveDirector.PhaseChanged += HandleWavePhaseChanged;
             uiController.Bind(this);
@@ -140,7 +149,7 @@ namespace Wanwan.Runtime
 
             CurrentState = GameFlowState.Playing;
             stageLabel = "敌机来袭";
-            ShowStageBanner("开始出击");
+            ShowStageBanner(currentMount == MountType.None ? "开始出击" : MountConfig.Get(currentMount).DisplayName + " 装备");
             if (uiController != null)
             {
                 uiController.HideIntroPrompt();
@@ -730,7 +739,8 @@ namespace Wanwan.Runtime
         {
             if (stageClear)
             {
-                return $"第{StageNumber}关 {StageName} 已肃清。{SessionState.CurrentStage.VictorySummary}";
+                string mountText = currentMount == MountType.None ? "未装备挂载" : "挂载 " + CurrentMountDisplayName;
+                return $"第{StageNumber}关 {StageName} 已肃清。{mountText}。{SessionState.CurrentStage.VictorySummary}";
             }
 
             return $"第{StageNumber}关 {StageName} 作战中断，{BossDisplayName}仍在压制空域。保持走位和火力节奏再试一次。";

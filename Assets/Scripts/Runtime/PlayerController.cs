@@ -13,6 +13,7 @@ namespace Wanwan.Runtime
         private EffectsController effectsController;
         private Camera worldCamera;
         private SpriteRenderer spriteRenderer;
+        private readonly SpriteRenderer[] mountRenderers = new SpriteRenderer[2];
         private float leftBound;
         private float rightBound;
         private float topBound;
@@ -20,6 +21,7 @@ namespace Wanwan.Runtime
         private Vector2 targetPosition;
         private Vector2 moveVelocity;
         private float fireTimer;
+        private float mountFireTimer;
         private bool combatEnabled = true;
 
         public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float minY, float maxY)
@@ -33,6 +35,8 @@ namespace Wanwan.Runtime
             topBound = maxY;
             targetPosition = transform.position;
             spriteRenderer = GetComponent<SpriteRenderer>();
+            mountFireTimer = 0f;
+            RefreshMountPresentation();
         }
 
         private void Update()
@@ -55,6 +59,13 @@ namespace Wanwan.Runtime
                 Fire();
                 fireTimer = GetCurrentFireCooldown();
             }
+
+            mountFireTimer -= Time.deltaTime;
+            if (mountFireTimer <= 0f)
+            {
+                FireMountSupport();
+                mountFireTimer = MountConfig.Get(gameManager.CurrentMount).FireInterval;
+            }
         }
 
         public void StopCombat()
@@ -74,6 +85,7 @@ namespace Wanwan.Runtime
             targetPosition = ClampToBounds(position);
             moveVelocity = Vector2.zero;
             fireTimer = 0f;
+            mountFireTimer = 0f;
         }
 
         private void UpdateTargetPosition()
@@ -115,6 +127,21 @@ namespace Wanwan.Runtime
             effectsController.PlayPlayerShot(type);
 
             PlayerShotSpec[] shots = WeaponShotPattern.GetShots(type, gameManager.FireLevel, gameManager.CurrentWeaponModules);
+            for (int i = 0; i < shots.Length; i++)
+            {
+                FireOffsetShot(shots[i]);
+            }
+        }
+
+        private void FireMountSupport()
+        {
+            MountType mount = gameManager.CurrentMount;
+            if (mount == MountType.None || mount == MountType.ShieldEmitter)
+            {
+                return;
+            }
+
+            PlayerShotSpec[] shots = MountShotPattern.GetShots(mount);
             for (int i = 0; i < shots.Length; i++)
             {
                 FireOffsetShot(shots[i]);
@@ -257,6 +284,71 @@ namespace Wanwan.Runtime
             Color color = spriteRenderer.color;
             color.a = gameManager.PlayerInvulnerabilityFlashAlpha;
             spriteRenderer.color = color;
+            for (int i = 0; i < mountRenderers.Length; i++)
+            {
+                if (mountRenderers[i] != null)
+                {
+                    Color mountColor = mountRenderers[i].color;
+                    mountColor.a = color.a;
+                    mountRenderers[i].color = mountColor;
+                }
+            }
+        }
+
+        private void RefreshMountPresentation()
+        {
+            ClearMountPresentation();
+            if (gameManager == null || gameManager.CurrentMount == MountType.None || gameManager.CurrentMount == MountType.ShieldEmitter)
+            {
+                return;
+            }
+
+            Sprite sprite = gameManager.CurrentMount == MountType.MissilePod
+                ? RuntimeSpriteFactory.GetMissileSprite()
+                : RuntimeSpriteFactory.GetRaidenFighterJetSprite();
+            Color color = MountConfig.Get(gameManager.CurrentMount).AccentColor;
+            CreateMountVisual(0, "LeftMount", new Vector3(-0.72f, -0.08f, 0f), sprite, color);
+            CreateMountVisual(1, "RightMount", new Vector3(0.72f, -0.08f, 0f), sprite, color);
+        }
+
+        private void CreateMountVisual(int index, string name, Vector3 localPosition, Sprite sprite, Color color)
+        {
+            GameObject mountObject = new GameObject(name);
+            mountObject.transform.SetParent(transform, false);
+            mountObject.transform.localPosition = localPosition;
+            mountObject.transform.localRotation = Quaternion.identity;
+
+            SpriteRenderer renderer = mountObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.color = Color.Lerp(Color.white, color, 0.64f);
+            renderer.sortingOrder = 11;
+            Vector2 size = renderer.sprite.bounds.size;
+            float targetWidth = gameManager.CurrentMount == MountType.MissilePod ? 0.24f : 0.42f;
+            float targetHeight = gameManager.CurrentMount == MountType.MissilePod ? 0.54f : 0.42f;
+            mountObject.transform.localScale = new Vector3(targetWidth / size.x, targetHeight / size.y, 1f);
+            mountRenderers[index] = renderer;
+        }
+
+        private void ClearMountPresentation()
+        {
+            for (int i = 0; i < mountRenderers.Length; i++)
+            {
+                if (mountRenderers[i] == null)
+                {
+                    continue;
+                }
+
+                GameObject mountObject = mountRenderers[i].gameObject;
+                mountRenderers[i] = null;
+                if (Application.isPlaying)
+                {
+                    Destroy(mountObject);
+                }
+                else
+                {
+                    DestroyImmediate(mountObject);
+                }
+            }
         }
     }
 }

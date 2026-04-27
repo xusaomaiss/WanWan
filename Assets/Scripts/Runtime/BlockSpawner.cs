@@ -4,9 +4,6 @@ namespace Wanwan.Runtime
 {
     public class BlockSpawner : MonoBehaviour
     {
-        private const float BombPickupVisualScale = 0.78f;
-        private const float BombPickupColliderRadius = 0.72f;
-
         private GameManager gameManager;
         private EffectsController effectsController;
         private StageGameplayProfile gameplayProfile;
@@ -130,7 +127,7 @@ namespace Wanwan.Runtime
 
             GameObject packObject = new GameObject(type + "Pack");
             packObject.transform.position = position;
-            packObject.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
+            packObject.transform.localScale = Vector3.one * PickupPresentation.AmmoPackVisualScale;
 
             SpriteRenderer renderer = packObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(type);
@@ -139,6 +136,7 @@ namespace Wanwan.Runtime
 
             CircleCollider2D collider = packObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
+            collider.radius = PickupPresentation.AmmoPackColliderRadius;
 
             Rigidbody2D rigidbody2D = packObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -243,7 +241,7 @@ namespace Wanwan.Runtime
         {
             GameObject bombObject = new GameObject("BombPickup");
             bombObject.transform.position = position;
-            bombObject.transform.localScale = Vector3.one * BombPickupVisualScale;
+            bombObject.transform.localScale = Vector3.one * PickupPresentation.BombVisualScale;
 
             SpriteRenderer renderer = bombObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBombPickupSprite();
@@ -251,7 +249,7 @@ namespace Wanwan.Runtime
 
             CircleCollider2D collider = bombObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
-            collider.radius = BombPickupColliderRadius;
+            collider.radius = PickupPresentation.BombColliderRadius;
 
             Rigidbody2D rigidbody2D = bombObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -266,7 +264,7 @@ namespace Wanwan.Runtime
         {
             GameObject healthObject = new GameObject("HealthPickup");
             healthObject.transform.position = position + new Vector3(-0.28f, 0.22f, 0f);
-            healthObject.transform.localScale = Vector3.one * 0.78f;
+            healthObject.transform.localScale = Vector3.one * PickupPresentation.HealthPickupVisualScale;
 
             SpriteRenderer renderer = healthObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetHealthPickupSprite();
@@ -274,7 +272,7 @@ namespace Wanwan.Runtime
 
             CircleCollider2D collider = healthObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
-            collider.radius = 0.5f;
+            collider.radius = PickupPresentation.HealthPickupColliderRadius;
 
             Rigidbody2D rigidbody2D = healthObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -289,7 +287,7 @@ namespace Wanwan.Runtime
         {
             GameObject capsuleObject = new GameObject("PowerCapsule");
             capsuleObject.transform.position = position + new Vector3(0.28f, 0.22f, 0f);
-            capsuleObject.transform.localScale = Vector3.one * 0.72f;
+            capsuleObject.transform.localScale = Vector3.one * PickupPresentation.PowerCapsuleVisualScale;
 
             SpriteRenderer renderer = capsuleObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetCapsuleSprite();
@@ -298,7 +296,7 @@ namespace Wanwan.Runtime
 
             CircleCollider2D collider = capsuleObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
-            collider.radius = 0.48f;
+            collider.radius = PickupPresentation.PowerCapsuleColliderRadius;
 
             Rigidbody2D rigidbody2D = capsuleObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;

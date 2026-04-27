@@ -55,6 +55,20 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void GetMountShots_AddsMissileAndDefenseDroneSupportFire()
+        {
+            PlayerShotSpec[] missileShots = MountShotPattern.GetShots(MountType.MissilePod);
+            PlayerShotSpec[] droneShots = MountShotPattern.GetShots(MountType.DefenseDrone);
+            PlayerShotSpec[] shieldShots = MountShotPattern.GetShots(MountType.ShieldEmitter);
+
+            Assert.That(missileShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.WeaponType == WeaponType.Burst && shot.MotionType == BulletMotionType.Homing));
+            Assert.That(droneShots.Length, Is.EqualTo(2));
+            Assert.That(droneShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.Offset.x < -0.45f));
+            Assert.That(droneShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.Offset.x > 0.45f));
+            Assert.That(shieldShots, Is.Empty);
+        }
+
+        [Test]
         public void BurstExplosion_DoesNotReserveOutOfRangeTargetsForFuturePierceHits()
         {
             GameObject bulletObject = new GameObject("TestBurstBullet");
