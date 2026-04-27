@@ -94,6 +94,7 @@ namespace Wanwan.Runtime
             labelObject.transform.SetParent(transform, false);
             labelObject.transform.localPosition = Vector3.zero;
             labelText = labelObject.AddComponent<TextMesh>();
+            ArcadeFontProvider.ApplyTo(labelText);
             labelText.text = label;
             labelText.anchor = TextAnchor.MiddleCenter;
             labelText.alignment = TextAlignment.Center;

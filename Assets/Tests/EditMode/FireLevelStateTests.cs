@@ -26,7 +26,7 @@ namespace Wanwan.Tests.EditMode
             Assert.That(state.Level, Is.EqualTo(4));
         }
 
-        [TestCase(1, 1)]
+        [TestCase(1, 2)]
         [TestCase(2, 2)]
         [TestCase(3, 3)]
         [TestCase(4, 4)]

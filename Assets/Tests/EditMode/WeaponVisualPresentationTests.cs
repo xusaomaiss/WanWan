@@ -42,10 +42,11 @@ namespace Wanwan.Tests.EditMode
             Vector3 normalScale = WeaponShotPresentation.GetPlayerScale(AmmoPowerupType.Normal, false);
             Vector3 laserScale = WeaponShotPresentation.GetPlayerScale(AmmoPowerupType.Laser, true);
 
-            Assert.That(normalScale.x, Is.GreaterThanOrEqualTo(0.26f));
-            Assert.That(normalScale.y, Is.GreaterThanOrEqualTo(0.46f));
-            Assert.That(laserScale.x, Is.GreaterThanOrEqualTo(0.2f));
-            Assert.That(laserScale.y, Is.GreaterThanOrEqualTo(0.78f));
+            Assert.That(normalScale.x, Is.GreaterThanOrEqualTo(0.52f));
+            Assert.That(normalScale.y, Is.GreaterThanOrEqualTo(0.92f));
+            Assert.That(laserScale.x, Is.GreaterThanOrEqualTo(0.4f));
+            Assert.That(laserScale.y, Is.GreaterThanOrEqualTo(1.56f));
+            Assert.That(WeaponShotPresentation.GetPlayerColliderSize(AmmoPowerupType.Normal, false).y, Is.GreaterThanOrEqualTo(1.4f));
             Assert.That(WeaponShotPresentation.GetLaserSideOffset(), Is.GreaterThanOrEqualTo(0.34f));
         }
 

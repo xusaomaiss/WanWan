@@ -321,6 +321,7 @@ namespace Wanwan.Runtime
         {
             GameObject labelObject = new GameObject("PowerupLabel");
             TextMesh textMesh = labelObject.AddComponent<TextMesh>();
+            ArcadeFontProvider.ApplyTo(textMesh);
             textMesh.text = label + "!";
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;
@@ -352,6 +353,7 @@ namespace Wanwan.Runtime
         {
             GameObject labelObject = new GameObject("ScorePopup");
             TextMesh textMesh = labelObject.AddComponent<TextMesh>();
+            ArcadeFontProvider.ApplyTo(textMesh);
             textMesh.text = "+" + scoreValue;
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;

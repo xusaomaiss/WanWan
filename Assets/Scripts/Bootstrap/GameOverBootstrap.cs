@@ -59,14 +59,17 @@ namespace Wanwan.Runtime
             UiFactory.CreatePanel(background, "ResultBottomShade", new Color(0f, 0f, 0f, 0.34f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
 
             Text shadow = UiFactory.CreateArcadeLabel(background, titleText, 92, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.86f), FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), new Vector2(6f, -8f));
+            UiFactory.ConfigureSingleLine(shadow);
             shadow.raycastTarget = false;
             Text title = UiFactory.CreateArcadeLabel(background, titleText, 92, TextAnchor.MiddleCenter, titleColor, FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), Vector2.zero);
+            UiFactory.ConfigureSingleLine(title);
             title.raycastTarget = false;
             Outline titleOutline = title.gameObject.AddComponent<Outline>();
             titleOutline.effectColor = outlineColor;
             titleOutline.effectDistance = new Vector2(3f, -3f);
 
             Text stage = UiFactory.CreateArcadeLabel(background, stageLine, 34, TextAnchor.MiddleCenter, detailColor, FontStyle.Bold, new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.59f), Vector2.zero);
+            UiFactory.ConfigureSingleLine(stage);
             stage.raycastTarget = false;
             Outline stageOutline = stage.gameObject.AddComponent<Outline>();
             stageOutline.effectColor = new Color(0f, 0f, 0f, 0.78f);

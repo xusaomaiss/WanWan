@@ -4,6 +4,8 @@ namespace Wanwan.Runtime
 {
     public class BombPickupController : MonoBehaviour
     {
+        private const float BaseVisualScale = 0.78f;
+
         private GameManager gameManager;
         private SpriteRenderer spriteRenderer;
         private float age;
@@ -24,7 +26,7 @@ namespace Wanwan.Runtime
 
             age += Time.deltaTime;
             float pulse = 1f + (Mathf.Sin(age * 5.5f) * 0.1f);
-            transform.localScale = Vector3.one * (0.56f * pulse);
+            transform.localScale = Vector3.one * (BaseVisualScale * pulse);
             transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Sin(age * 2.4f) * 8f);
 
             if (spriteRenderer != null)

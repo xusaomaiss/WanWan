@@ -17,6 +17,7 @@ namespace Wanwan.Editor
         private const string BundleVersion = "1.0.1";
         private const int AndroidBundleVersionCode = 2;
         private const string OutputDirectory = "Builds/Android";
+        private const string IOSOutputDirectory = "Builds/iOS/WanwanDropBlaster";
         private const string ApkPath = OutputDirectory + "/WanwanDropBlaster.apk";
         private const string ReleaseApkPath = OutputDirectory + "/WanwanDropBlaster-release.apk";
         private const string EditModeResultsPath = "Builds/editmode-results.xml";
@@ -69,6 +70,33 @@ namespace Wanwan.Editor
             Debug.Log("Android signed release build created at " + ReleaseApkPath);
         }
 
+        public static void BuildIOSXcodeProject()
+        {
+            if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.iOS, BuildTarget.iOS))
+            {
+                throw new BuildFailedException("iOS Build Support is not installed for this Unity editor. Install the iOS module in Unity Hub, then run scripts/build_ios.sh again.");
+            }
+
+            ConfigureIOSPlayerSettings();
+            Directory.CreateDirectory(IOSOutputDirectory);
+
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray(),
+                locationPathName = IOSOutputDirectory,
+                target = BuildTarget.iOS,
+                options = BuildOptions.None
+            };
+
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            if (report.summary.result != BuildResult.Succeeded)
+            {
+                throw new BuildFailedException("iOS Xcode project build failed: " + report.summary.result);
+            }
+
+            Debug.Log("iOS Xcode project created at " + IOSOutputDirectory);
+        }
+
         public static void RunEditModeTests()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(EditModeResultsPath));
@@ -111,6 +139,27 @@ namespace Wanwan.Editor
 
             ConfigureLaunchPresentation();
             ConfigureAndroidIcons();
+        }
+
+        private static void ConfigureIOSPlayerSettings()
+        {
+            PlayerSettings.productName = ProductName;
+            PlayerSettings.companyName = "Mark";
+            PlayerSettings.bundleVersion = BundleVersion;
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, PackageName);
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.stripEngineCode = true;
+            PlayerSettings.iOS.targetOSVersionString = "15.0";
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = true;
+
+            string developerTeamId = System.Environment.GetEnvironmentVariable("WANWAN_IOS_DEVELOPMENT_TEAM");
+            if (!string.IsNullOrEmpty(developerTeamId))
+            {
+                PlayerSettings.iOS.appleDeveloperTeamID = developerTeamId;
+            }
+
+            ConfigureLaunchPresentation();
         }
 
         private static void ConfigureAndroidSigning()

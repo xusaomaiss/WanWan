@@ -8,7 +8,9 @@ namespace Wanwan.Runtime
     {
         public const float TopHudAnchorHeight = 0.11f;
         public const float BottomHudAnchorHeight = 0.105f;
-        public const int PowerMeterSlotCount = 6;
+        public const float RightStageProgressAnchorWidth = 0.045f;
+        public const int PowerMeterSlotCount = 4;
+        private const float PowerMeterPulseDuration = 0.38f;
 
         private GameManager gameManager;
         private Text scoreText;
@@ -16,6 +18,7 @@ namespace Wanwan.Runtime
         private Text highScoreText;
         private Text difficultyText;
         private Text stageProgressText;
+        private Text stageProgressPercentText;
         private Text comboText;
         private Text powerupText;
         private Text powerMeterText;
@@ -35,6 +38,12 @@ namespace Wanwan.Runtime
         private Text pauseOverlayMission;
         private Text pauseOverlayAudioText;
         private Image stageProgressFill;
+        private Image stageProgressGlow;
+        private readonly Image[] powerMeterSlotFills = new Image[PowerMeterSlotCount];
+        private readonly Image[] powerMeterSlotGlows = new Image[PowerMeterSlotCount];
+        private int displayedPowerMeterCapsules = -1;
+        private int pulsingPowerMeterSlot = -1;
+        private float powerMeterPulseTimer;
         private Image introOverlay;
         private Text introTitle;
         private Text introCountdown;
@@ -75,15 +84,32 @@ namespace Wanwan.Runtime
             if (stageProgressFill != null)
             {
                 RectTransform fillRect = stageProgressFill.rectTransform;
-                fillRect.anchorMax = new Vector2(gameManager.StageProgress, 1f);
+                fillRect.anchorMin = Vector2.zero;
+                fillRect.anchorMax = new Vector2(1f, gameManager.StageProgress);
                 fillRect.offsetMin = Vector2.zero;
                 fillRect.offsetMax = Vector2.zero;
+            }
+            if (stageProgressGlow != null)
+            {
+                RectTransform glowRect = stageProgressGlow.rectTransform;
+                glowRect.anchorMin = Vector2.zero;
+                glowRect.anchorMax = new Vector2(1f, gameManager.StageProgress);
+                glowRect.offsetMin = Vector2.zero;
+                glowRect.offsetMax = Vector2.zero;
+                Color glow = stageProgressGlow.color;
+                glow.a = Mathf.Lerp(0.18f, 0.62f, gameManager.StageProgress);
+                stageProgressGlow.color = glow;
+            }
+            if (stageProgressPercentText != null)
+            {
+                stageProgressPercentText.text = $"{(gameManager.StageProgress * 100f):0}%";
             }
             powerupText.text = BuildPowerupHudText();
             if (powerMeterText != null)
             {
                 powerMeterText.text = gameManager.PowerMeterHudText;
             }
+            RefreshPowerMeterVisuals();
             if (upgradeButton != null)
             {
                 upgradeButton.interactable = gameManager.CanActivatePowerMeter;
@@ -111,6 +137,17 @@ namespace Wanwan.Runtime
                 fillRect.offsetMin = Vector2.zero;
                 fillRect.offsetMax = Vector2.zero;
             }
+        }
+
+        private void Update()
+        {
+            if (powerMeterPulseTimer <= 0f)
+            {
+                return;
+            }
+
+            powerMeterPulseTimer = Mathf.Max(0f, powerMeterPulseTimer - Time.deltaTime);
+            RefreshPowerMeterVisuals();
         }
 
         public void NotifyPlayerDamaged()
@@ -191,20 +228,19 @@ namespace Wanwan.Runtime
             Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(4f, 4f));
             powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
             Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.2f), new Vector2(0.73f, 0.84f), new Vector2(4f, 4f));
+            CreatePowerMeterVisuals(meterSlot.transform);
             for (int i = 1; i < PowerMeterSlotCount; i++)
             {
                 float x = i / (float)PowerMeterSlotCount;
                 UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
             }
-            powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, "SPEED MISSILE DOUBLE LASER OPTION SHIELD", 18, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.02f, 0f), new Vector2(0.98f, 1f), Vector2.zero);
+            powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, "SPEED MISSILE DOUBLE LASER", 18, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.02f, 0f), new Vector2(0.98f, 1f), Vector2.zero);
             upgradeButton = UiFactory.CreateButton(bottomBar.transform, "充能", ArcadeTheme.WarningRed, Color.white, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
             upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
             upgradeButtonText.fontStyle = FontStyle.Bold;
             upgradeButtonText.fontSize = 24;
-            Image progressTrack = UiFactory.CreatePanel(bottomBar.transform, "ProgressTrack", ArcadeTheme.InkBlack, new Vector2(0.75f, 0.36f), new Vector2(0.84f, 0.64f));
-            stageProgressFill = UiFactory.CreatePanel(progressTrack.transform, "ProgressFill", ArcadeTheme.EnergyYellow, Vector2.zero, Vector2.one);
-            UiFactory.CreateArcadeLabel(bottomBar.transform, "胶囊推进能量槽", 18, TextAnchor.MiddleCenter, new Color(0.7f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.84f, 0.12f), new Vector2(0.96f, 0.88f), Vector2.zero);
+            CreateStageProgressThermometer(canvas.transform);
 
             bossBarRoot = UiFactory.CreatePixelPanel(canvas.transform, "BossBarRoot", new Color(0.14f, 0.03f, 0.08f, 0.92f), ArcadeTheme.WarningRed, new Vector2(0.05f, 0.86f), new Vector2(0.95f, 0.9f), new Vector2(6f, 6f));
             bossBarRoot.gameObject.SetActive(false);
@@ -276,6 +312,85 @@ namespace Wanwan.Runtime
         private string BuildPowerupHudText()
         {
             return $"{gameManager.GetCurrentWeaponDisplayText()}\n护盾 {BuildShieldIcons()}";
+        }
+
+        private void CreatePowerMeterVisuals(Transform meterSlot)
+        {
+            for (int i = 0; i < PowerMeterSlotCount; i++)
+            {
+                float start = i / (float)PowerMeterSlotCount;
+                float end = (i + 1) / (float)PowerMeterSlotCount;
+                Vector2 anchorMin = new Vector2(start + 0.012f, 0.18f);
+                Vector2 anchorMax = new Vector2(end - 0.012f, 0.82f);
+
+                Image glow = UiFactory.CreatePanel(meterSlot, "PowerMeterGlow" + i, new Color(1f, 0.92f, 0.18f, 0f), anchorMin, anchorMax);
+                glow.raycastTarget = false;
+                powerMeterSlotGlows[i] = glow;
+
+                Image fill = UiFactory.CreatePanel(meterSlot, "PowerMeterFill" + i, new Color(1f, 0.84f, 0.12f, 0.1f), anchorMin, anchorMax);
+                fill.raycastTarget = false;
+                powerMeterSlotFills[i] = fill;
+            }
+        }
+
+        private void CreateStageProgressThermometer(Transform canvas)
+        {
+            Image rail = UiFactory.CreatePixelPanel(canvas, "StageProgressThermometer", new Color(0.02f, 0.025f, 0.045f, 0.82f), new Color(0.22f, 0.86f, 1f, 0.9f), new Vector2(1f - RightStageProgressAnchorWidth, 0.18f), new Vector2(0.985f, 0.78f), new Vector2(4f, 8f));
+            rail.raycastTarget = false;
+
+            Image track = UiFactory.CreatePanel(rail.transform, "StageProgressTube", new Color(0.01f, 0.015f, 0.03f, 0.9f), new Vector2(0.28f, 0.055f), new Vector2(0.72f, 0.945f));
+            track.raycastTarget = false;
+            stageProgressFill = UiFactory.CreatePanel(track.transform, "StageProgressMercury", new Color(1f, 0.86f, 0.2f, 0.96f), Vector2.zero, Vector2.one);
+            stageProgressFill.raycastTarget = false;
+            stageProgressGlow = UiFactory.CreatePanel(track.transform, "StageProgressGlow", new Color(1f, 0.95f, 0.45f, 0.2f), Vector2.zero, Vector2.one);
+            stageProgressGlow.raycastTarget = false;
+
+            UiFactory.CreateDivider(rail.transform, "StageProgressTopCap", new Color(0.75f, 0.96f, 1f, 0.86f), new Vector2(0.2f, 0.94f), new Vector2(0.8f, 0.96f));
+            UiFactory.CreateDivider(rail.transform, "StageProgressBottomCap", new Color(0.75f, 0.96f, 1f, 0.86f), new Vector2(0.2f, 0.04f), new Vector2(0.8f, 0.06f));
+            stageProgressPercentText = UiFactory.CreateArcadeLabel(rail.transform, "0%", 16, TextAnchor.MiddleCenter, new Color(0.9f, 0.98f, 1f), FontStyle.Bold, new Vector2(0f, 0.955f), new Vector2(1f, 1.04f), Vector2.zero);
+        }
+
+        private void RefreshPowerMeterVisuals()
+        {
+            if (gameManager == null)
+            {
+                return;
+            }
+
+            int collected = Mathf.Clamp(gameManager.PowerMeterCollectedCapsules, 0, PowerMeterSlotCount);
+            if (displayedPowerMeterCapsules != collected)
+            {
+                pulsingPowerMeterSlot = collected > displayedPowerMeterCapsules && collected > 0 ? collected - 1 : -1;
+                powerMeterPulseTimer = pulsingPowerMeterSlot >= 0 ? PowerMeterPulseDuration : 0f;
+                displayedPowerMeterCapsules = collected;
+            }
+
+            float pulse = powerMeterPulseTimer > 0f ? Mathf.Clamp01(powerMeterPulseTimer / PowerMeterPulseDuration) : 0f;
+            for (int i = 0; i < PowerMeterSlotCount; i++)
+            {
+                bool filled = i < collected;
+                bool pulsing = i == pulsingPowerMeterSlot && pulse > 0f;
+                float pulseWave = pulsing ? Mathf.Sin((1f - pulse) * Mathf.PI) : 0f;
+
+                if (powerMeterSlotFills[i] != null)
+                {
+                    Color fill = gameManager.CanActivatePowerMeter
+                        ? new Color(1f, 0.34f, 0.18f, 0.98f)
+                        : new Color(1f, 0.84f, 0.12f, 0.92f);
+                    fill.a = filled ? Mathf.Clamp01(fill.a + pulseWave * 0.08f) : 0.08f;
+                    powerMeterSlotFills[i].color = fill;
+                    powerMeterSlotFills[i].rectTransform.localScale = Vector3.one * (pulsing ? 1f + (pulseWave * 0.08f) : 1f);
+                }
+
+                if (powerMeterSlotGlows[i] != null)
+                {
+                    Color glow = gameManager.CanActivatePowerMeter
+                        ? new Color(1f, 0.12f, 0.08f, 0.5f)
+                        : new Color(1f, 0.92f, 0.18f, 0.32f);
+                    glow.a = filled ? (gameManager.CanActivatePowerMeter ? 0.38f : 0.18f) + (pulseWave * 0.5f) : 0f;
+                    powerMeterSlotGlows[i].color = glow;
+                }
+            }
         }
 
         private string BuildBombIcons()

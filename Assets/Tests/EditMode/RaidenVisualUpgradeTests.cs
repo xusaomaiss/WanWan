@@ -72,7 +72,9 @@ namespace Wanwan.Tests.EditMode
         {
             Assert.That(UIController.TopHudAnchorHeight, Is.GreaterThanOrEqualTo(0.1f));
             Assert.That(UIController.BottomHudAnchorHeight, Is.GreaterThanOrEqualTo(0.1f));
-            Assert.That(UIController.PowerMeterSlotCount, Is.EqualTo(6));
+            Assert.That(UIController.RightStageProgressAnchorWidth, Is.InRange(0.035f, 0.06f));
+            Assert.That(UIController.PowerMeterSlotCount, Is.EqualTo(4));
+            Assert.That(GameBootstrap.PlayerShipWorldSize, Is.EqualTo(2f));
         }
     }
 }

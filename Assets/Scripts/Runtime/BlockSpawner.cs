@@ -4,8 +4,12 @@ namespace Wanwan.Runtime
 {
     public class BlockSpawner : MonoBehaviour
     {
+        private const float BombPickupVisualScale = 0.78f;
+        private const float BombPickupColliderRadius = 0.72f;
+
         private GameManager gameManager;
         private EffectsController effectsController;
+        private StageGameplayProfile gameplayProfile;
         private float leftBound;
         private float rightBound;
         private float spawnY;
@@ -20,6 +24,9 @@ namespace Wanwan.Runtime
         private StageWaveConfig currentWave;
         private WavePhase observedWavePhase = WavePhase.Calm;
         private bool rewardGuaranteedPowerupGranted;
+        private int powerCapsulesSpawned;
+        private int guaranteedAmmoPackIndex;
+        private int medicalPacksSpawned;
 
         public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float topY)
         {
@@ -28,6 +35,7 @@ namespace Wanwan.Runtime
             leftBound = minX;
             rightBound = maxX;
             spawnY = topY;
+            gameplayProfile = StageCatalog.GetGameplayProfile(manager.StageNumber - 1);
             stageScript = BuildStageScript();
             AdvanceToNextWave();
         }
@@ -169,6 +177,12 @@ namespace Wanwan.Runtime
 
         public void SpawnEnemyAmmoPackDrop(AmmoPowerupType guaranteedDrop, Vector3 position)
         {
+            TrySpawnPowerCapsule(position);
+            if (TrySpawnGuaranteedStagePickup(position))
+            {
+                return;
+            }
+
             if (guaranteedDrop != AmmoPowerupType.None)
             {
                 SpawnAmmoPackAtPosition(guaranteedDrop, position);
@@ -204,18 +218,32 @@ namespace Wanwan.Runtime
 
         public void SpawnBombPickupAtRandomReachablePosition()
         {
+            SpawnArea area = GetBombPickupSpawnArea(leftBound, rightBound, gameManager.BottomBound, gameManager.TopBound);
             Vector3 position = new Vector3(
-                Random.Range(leftBound + 0.7f, rightBound - 0.7f),
-                Random.Range(gameManager.BottomBound + 2.1f, gameManager.TopBound - 2.6f),
+                Random.Range(area.MinX, area.MaxX),
+                Random.Range(area.MinY, area.MaxY),
                 0f);
             SpawnBombPickupAtPosition(position);
+        }
+
+        public static SpawnArea GetBombPickupSpawnArea(float minX, float maxX, float bottomY, float topY)
+        {
+            float horizontalPadding = 0.7f;
+            float minY = bottomY + 2f;
+            float maxY = Mathf.Lerp(bottomY, topY, 0.4f);
+            if (maxY < minY)
+            {
+                maxY = minY;
+            }
+
+            return new SpawnArea(minX + horizontalPadding, maxX - horizontalPadding, minY, maxY);
         }
 
         public void SpawnBombPickupAtPosition(Vector3 position)
         {
             GameObject bombObject = new GameObject("BombPickup");
             bombObject.transform.position = position;
-            bombObject.transform.localScale = Vector3.one * 0.56f;
+            bombObject.transform.localScale = Vector3.one * BombPickupVisualScale;
 
             SpriteRenderer renderer = bombObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBombPickupSprite();
@@ -223,7 +251,7 @@ namespace Wanwan.Runtime
 
             CircleCollider2D collider = bombObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
-            collider.radius = 0.52f;
+            collider.radius = BombPickupColliderRadius;
 
             Rigidbody2D rigidbody2D = bombObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -232,6 +260,104 @@ namespace Wanwan.Runtime
             BombPickupController pickup = bombObject.AddComponent<BombPickupController>();
             pickup.Initialize(gameManager);
             effectsController.PlayPowerupSpawn(position, new Color(0.45f, 0.86f, 1f));
+        }
+
+        public void SpawnHealthPickupAtPosition(Vector3 position)
+        {
+            GameObject healthObject = new GameObject("HealthPickup");
+            healthObject.transform.position = position + new Vector3(-0.28f, 0.22f, 0f);
+            healthObject.transform.localScale = Vector3.one * 0.78f;
+
+            SpriteRenderer renderer = healthObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetHealthPickupSprite();
+            renderer.sortingOrder = 19;
+
+            CircleCollider2D collider = healthObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            collider.radius = 0.5f;
+
+            Rigidbody2D rigidbody2D = healthObject.AddComponent<Rigidbody2D>();
+            rigidbody2D.gravityScale = 0f;
+            rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+
+            HealthPickupController pickup = healthObject.AddComponent<HealthPickupController>();
+            pickup.Initialize(gameManager);
+            effectsController.PlayPowerupSpawn(position, new Color(0.35f, 1f, 0.62f));
+        }
+
+        private void SpawnPowerCapsuleAtPosition(Vector3 position)
+        {
+            GameObject capsuleObject = new GameObject("PowerCapsule");
+            capsuleObject.transform.position = position + new Vector3(0.28f, 0.22f, 0f);
+            capsuleObject.transform.localScale = Vector3.one * 0.72f;
+
+            SpriteRenderer renderer = capsuleObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = RuntimeSpriteFactory.GetCapsuleSprite();
+            renderer.color = new Color(0.42f, 0.9f, 1f);
+            renderer.sortingOrder = 19;
+
+            CircleCollider2D collider = capsuleObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            collider.radius = 0.48f;
+
+            Rigidbody2D rigidbody2D = capsuleObject.AddComponent<Rigidbody2D>();
+            rigidbody2D.gravityScale = 0f;
+            rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+
+            PowerCapsuleController capsule = capsuleObject.AddComponent<PowerCapsuleController>();
+            capsule.Initialize(gameManager, effectsController, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime) * 0.86f, gameManager.BottomBound - 1.25f);
+        }
+
+        private void TrySpawnPowerCapsule(Vector3 position)
+        {
+            if (gameplayProfile == null || powerCapsulesSpawned >= gameplayProfile.PowerMeterCapsuleBudget)
+            {
+                return;
+            }
+
+            if (gameManager.CurrentStagePhase == StagePhase.Preparation || gameManager.CurrentStagePhase == StagePhase.Boss)
+            {
+                return;
+            }
+
+            if (gameManager.StageProgress < gameplayProfile.GetPowerCapsuleUnlockProgress(powerCapsulesSpawned))
+            {
+                return;
+            }
+
+            powerCapsulesSpawned++;
+            SpawnPowerCapsuleAtPosition(position);
+        }
+
+        private bool TrySpawnGuaranteedStagePickup(Vector3 position)
+        {
+            if (gameplayProfile == null || gameManager.CurrentStagePhase == StagePhase.Preparation || gameManager.CurrentStagePhase == StagePhase.Boss)
+            {
+                return false;
+            }
+
+            int nextGuaranteedPickupIndex = medicalPacksSpawned + guaranteedAmmoPackIndex;
+            if (gameManager.StageProgress < gameplayProfile.GetGuaranteedPickupUnlockProgress(nextGuaranteedPickupIndex))
+            {
+                return false;
+            }
+
+            if (medicalPacksSpawned < gameplayProfile.GuaranteedMedicalPacks)
+            {
+                medicalPacksSpawned++;
+                SpawnHealthPickupAtPosition(position);
+                return true;
+            }
+
+            AmmoPowerupType[] guaranteedPacks = gameplayProfile.GuaranteedAmmoPacks;
+            if (guaranteedPacks != null && guaranteedAmmoPackIndex < guaranteedPacks.Length)
+            {
+                SpawnAmmoPackAtPosition(guaranteedPacks[guaranteedAmmoPackIndex], position);
+                guaranteedAmmoPackIndex++;
+                return true;
+            }
+
+            return false;
         }
 
         private void AdvanceToNextWave()
@@ -257,42 +383,82 @@ namespace Wanwan.Runtime
         private StageWaveConfig[] BuildStageScript()
         {
             StageCombatStyle style = gameManager.StageCombatStyle;
+            StageWaveConfig[] script;
             if (style == StageCombatStyle.Flanking)
             {
-                return BuildFlankingStageScript();
+                script = BuildFlankingStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Swarm)
             {
-                return BuildSwarmStageScript();
+                script = BuildSwarmStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Sniper)
             {
-                return BuildSniperStageScript();
+                script = BuildSniperStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Heavy)
             {
-                return BuildHeavyStageScript();
+                script = BuildHeavyStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Agile)
             {
-                return BuildAgileStageScript();
+                script = BuildAgileStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Spiral)
             {
-                return BuildSpiralStageScript();
+                script = BuildSpiralStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
             if (style == StageCombatStyle.Finale)
             {
-                return BuildFinaleStageScript();
+                script = BuildFinaleStageScript();
+                return ApplyStageDurationMultiplier(script);
             }
 
-            return BuildBalancedStageScript();
+            script = BuildBalancedStageScript();
+            return ApplyStageDurationMultiplier(script);
+        }
+
+        private StageWaveConfig[] ApplyStageDurationMultiplier(StageWaveConfig[] script)
+        {
+            float multiplier = StageCatalog.GetStageDurationMultiplier(gameManager.StageNumber - 1);
+            if (Mathf.Approximately(multiplier, 1f))
+            {
+                return script;
+            }
+
+            StageWaveConfig[] adjusted = new StageWaveConfig[script.Length];
+            for (int i = 0; i < script.Length; i++)
+            {
+                StageWaveConfig wave = script[i];
+                if (wave.Phase == StagePhase.Boss)
+                {
+                    adjusted[i] = wave;
+                    continue;
+                }
+
+                EnemySpawnInstruction[] instructions = new EnemySpawnInstruction[wave.Instructions.Length];
+                for (int j = 0; j < instructions.Length; j++)
+                {
+                    EnemySpawnInstruction instruction = wave.Instructions[j];
+                    instructions[j] = new EnemySpawnInstruction(instruction.Time * multiplier, instruction.Formation, instruction.Count, instruction.Elite, instruction.GuaranteedDrop);
+                }
+
+                adjusted[i] = new StageWaveConfig(wave.Phase, wave.Banner, wave.DurationSeconds * multiplier, wave.WaitForClear, instructions);
+            }
+
+            return adjusted;
         }
 
         private StageWaveConfig[] BuildBalancedStageScript()
@@ -701,14 +867,12 @@ namespace Wanwan.Runtime
             renderer.color = pacedElite ? eliteColor : Color.white;
             renderer.sortingOrder = pacedElite ? 12 : 10;
 
-            float width = pacedElite ? 0.92f : (tough ? 0.82f : 0.72f);
-            float height = pacedElite ? 0.9f : (tough ? 0.8f : 0.7f);
-            enemyObject.transform.localScale = new Vector3(width, height, 1f);
+            enemyObject.transform.localScale = GetEnemyVisualScale(tough, pacedElite);
             enemyObject.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg - 90f);
 
             BoxCollider2D collider = enemyObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = pacedElite ? new Vector2(0.5f, 0.58f) : new Vector2(0.44f, 0.52f);
+            collider.size = GetEnemyColliderSize(tough, pacedElite);
 
             Rigidbody2D rigidbody2D = enemyObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
@@ -718,6 +882,36 @@ namespace Wanwan.Runtime
             Color effectColor = pacedElite ? eliteColor : (tough ? toughColor : normalColor);
             block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, pacedElite, guaranteedDrop);
             activeEnemyCount++;
+        }
+
+        public static Vector3 GetEnemyVisualScale(bool tough, bool elite)
+        {
+            if (elite)
+            {
+                return new Vector3(0.74f, 0.72f, 1f);
+            }
+
+            if (tough)
+            {
+                return new Vector3(0.68f, 0.66f, 1f);
+            }
+
+            return new Vector3(0.72f, 0.7f, 1f);
+        }
+
+        public static Vector2 GetEnemyColliderSize(bool tough, bool elite)
+        {
+            if (elite)
+            {
+                return new Vector2(0.4f, 0.46f);
+            }
+
+            if (tough)
+            {
+                return new Vector2(0.38f, 0.45f);
+            }
+
+            return new Vector2(0.44f, 0.52f);
         }
 
         private void SpawnGroundSupportIfNeeded(EnemySpawnInstruction instruction, EnemyFormationType formation)
@@ -747,9 +941,15 @@ namespace Wanwan.Runtime
                 return false;
             }
 
+            float groundBias = gameplayProfile != null ? gameplayProfile.GroundThreatBias : 1f;
             if (gameManager.StageCombatStyle == StageCombatStyle.Heavy || gameManager.StageCombatStyle == StageCombatStyle.Finale)
             {
-                return instruction.Count >= 4;
+                return instruction.Count >= (groundBias > 1.3f ? 3 : 4);
+            }
+
+            if (groundBias > 1.25f && instruction.Count >= 4)
+            {
+                return true;
             }
 
             return formation == EnemyFormationType.VShape && (gameManager.StageCombatStyle == StageCombatStyle.Sniper || gameManager.StageCombatStyle == StageCombatStyle.Balanced);
@@ -1072,6 +1272,15 @@ namespace Wanwan.Runtime
 
         private AmmoPowerupType GetRandomPowerupType()
         {
+            if (gameplayProfile != null)
+            {
+                bool rewardPhase = gameManager.CurrentWavePhase == WavePhase.Reward;
+                if (rewardPhase || Random.value <= gameplayProfile.RewardBias)
+                {
+                    return gameplayProfile.ChooseThemedPowerup(Random.Range(0, 1024), rewardPhase);
+                }
+            }
+
             AmmoPowerupType[] earlyPool =
             {
                 AmmoPowerupType.Scatter,

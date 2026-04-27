@@ -18,10 +18,28 @@ namespace Wanwan.Runtime
             new StageDefinition(8, "外星基地", "Cranassian核心", new Color(0.045f, 0.01f, 0.06f), new Color(1f, 0.2f, 0.84f), 1.72f, 1.48f, StageCombatStyle.Finale, BossPatternStyle.Core, "Cranassian核心坍缩，整条战线迎来决定性胜利。")
         };
 
+        private static readonly StageGameplayProfile[] GameplayProfiles =
+        {
+            new StageGameplayProfile(StageCombatStyle.Balanced, new[] { AmmoPowerupType.Scatter, AmmoPowerupType.RapidFire }, 6, 0.58f, 1f),
+            new StageGameplayProfile(StageCombatStyle.Flanking, new[] { AmmoPowerupType.Wave, AmmoPowerupType.RapidFire }, 8, 0.62f, 1f),
+            new StageGameplayProfile(StageCombatStyle.Swarm, new[] { AmmoPowerupType.Scatter, AmmoPowerupType.Homing }, 10, 0.66f, 0.85f),
+            new StageGameplayProfile(StageCombatStyle.Sniper, new[] { AmmoPowerupType.Pierce, AmmoPowerupType.Laser }, 12, 0.58f, 1.32f),
+            new StageGameplayProfile(StageCombatStyle.Heavy, new[] { AmmoPowerupType.Burst, AmmoPowerupType.Plasma }, 14, 0.6f, 1.45f),
+            new StageGameplayProfile(StageCombatStyle.Agile, new[] { AmmoPowerupType.Wave, AmmoPowerupType.Homing }, 16, 0.64f, 0.95f),
+            new StageGameplayProfile(StageCombatStyle.Spiral, new[] { AmmoPowerupType.Guard, AmmoPowerupType.Wave }, 18, 0.62f, 1.12f),
+            new StageGameplayProfile(StageCombatStyle.Finale, new[] { AmmoPowerupType.Plasma, AmmoPowerupType.Laser, AmmoPowerupType.Guard }, 20, 0.72f, 1.5f)
+        };
+
         public static StageDefinition GetStage(int stageIndex)
         {
             int safeIndex = Mathf.Clamp(stageIndex, 0, StageCount - 1);
             return Stages[safeIndex];
+        }
+
+        public static StageGameplayProfile GetGameplayProfile(int stageIndex)
+        {
+            int safeIndex = Mathf.Clamp(stageIndex, 0, StageCount - 1);
+            return GameplayProfiles[safeIndex];
         }
 
         public static float GetLoopMultiplier(int loopIndex)
@@ -32,6 +50,11 @@ namespace Wanwan.Runtime
         public static float GetDifficultyMultiplier(int stageIndex, int loopIndex)
         {
             return GetStage(stageIndex).DifficultyMultiplier * GetLoopMultiplier(loopIndex);
+        }
+
+        public static float GetStageDurationMultiplier(int stageIndex)
+        {
+            return 1f + (Mathf.Clamp(stageIndex, 0, StageCount - 1) * 0.1f);
         }
 
         public static int GetNextStageIndex(int stageIndex)

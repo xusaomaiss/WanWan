@@ -298,6 +298,11 @@ namespace Wanwan.Runtime
             return GetOrCreate("bomb-pickup", BuildBombPickupTexture);
         }
 
+        public static Sprite GetHealthPickupSprite()
+        {
+            return GetOrCreate("health-pickup", BuildHealthPickupTexture);
+        }
+
         private static Sprite GetGeneratedCoinSprite()
         {
             return GetOrCreate("coin", BuildCoinTexture);
@@ -791,6 +796,48 @@ namespace Wanwan.Runtime
                     else if (spark)
                     {
                         pixel = new Color(1f, 0.42f, 0.2f, 1f);
+                    }
+
+                    texture.SetPixel(x, y, pixel);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildHealthPickupTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 point = new Vector2(x, y);
+                    float distance = Vector2.Distance(point, center);
+                    bool body = distance <= 48f;
+                    bool frame = distance <= 54f && distance >= 46f;
+                    bool crossVertical = Mathf.Abs(x - center.x) <= 9f && Mathf.Abs(y - center.y) <= 31f;
+                    bool crossHorizontal = Mathf.Abs(y - center.y) <= 9f && Mathf.Abs(x - center.x) <= 31f;
+
+                    if (!(body || frame || crossVertical || crossHorizontal))
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Color pixel = Color.Lerp(new Color(0.08f, 0.22f, 0.15f), new Color(0.34f, 1f, 0.62f), Mathf.InverseLerp(54f, 0f, distance));
+                    if (frame)
+                    {
+                        pixel = new Color(0.66f, 1f, 0.78f, 1f);
+                    }
+
+                    if (crossVertical || crossHorizontal)
+                    {
+                        pixel = Color.white;
                     }
 
                     texture.SetPixel(x, y, pixel);

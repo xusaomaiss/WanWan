@@ -71,6 +71,8 @@ namespace Wanwan.Runtime
         public int ShieldCharges => shieldCharges;
         public float PlayerSpeedMultiplier => 1f + (Mathf.Clamp(speedUpLevel, 0, 3) * 0.18f);
         public bool CanActivatePowerMeter => powerMeter.CanActivate;
+        public int PowerMeterCollectedCapsules => powerMeter.CollectedCapsules;
+        public float PowerMeterFillNormalized => powerMeter.CollectedCapsules / (float)PowerMeterState.SlotCount;
         public string PowerMeterHudText => powerMeter.BuildHudText();
         public StagePhase CurrentStagePhase => currentStagePhase;
         public string StageLabel => stageLabel;
@@ -459,7 +461,7 @@ namespace Wanwan.Runtime
             }
 
             powerMeter.CollectCapsule();
-            ShowStageBanner("能量胶囊 " + GetPowerMeterUpgradeLabel(powerMeter.HighlightedUpgrade));
+            ShowStageBanner("能量胶囊 " + powerMeter.CollectedCapsules + "/" + PowerMeterState.SlotCount);
             uiController.RefreshHud();
         }
 
@@ -523,6 +525,27 @@ namespace Wanwan.Runtime
             effectsController.PlayBombDetonation(origin);
             bombsUsed++;
             ShowStageBanner("炸弹清屏");
+            uiController.RefreshHud();
+            return true;
+        }
+
+        public bool HealPlayerFromPickup(Vector3 origin, int amount)
+        {
+            if (gameEnded || paused || !IsPlaying)
+            {
+                uiController.RefreshHud();
+                return false;
+            }
+
+            int healed = playerHealth.Heal(amount);
+            if (healed <= 0)
+            {
+                uiController.RefreshHud();
+                return false;
+            }
+
+            effectsController.PlayPowerupPickup(origin, new Color(0.35f, 1f, 0.62f), "医疗 +" + healed);
+            ShowStageBanner("装甲修复 +" + healed);
             uiController.RefreshHud();
             return true;
         }

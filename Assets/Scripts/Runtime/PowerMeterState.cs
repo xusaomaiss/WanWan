@@ -2,16 +2,14 @@ namespace Wanwan.Runtime
 {
     public class PowerMeterState
     {
-        public const int SlotCount = 6;
+        public const int SlotCount = 4;
 
         private static readonly PowerMeterUpgrade[] Slots =
         {
             PowerMeterUpgrade.SpeedUp,
             PowerMeterUpgrade.Missile,
             PowerMeterUpgrade.Double,
-            PowerMeterUpgrade.Laser,
-            PowerMeterUpgrade.Option,
-            PowerMeterUpgrade.Shield
+            PowerMeterUpgrade.Laser
         };
 
         private static readonly string[] Labels =
@@ -19,26 +17,33 @@ namespace Wanwan.Runtime
             "SPEED",
             "MISSILE",
             "DOUBLE",
-            "LASER",
-            "OPTION",
-            "SHIELD"
+            "LASER"
         };
 
+        public int CollectedCapsules { get; private set; }
         public int HighlightedIndex { get; private set; } = -1;
         public PowerMeterUpgrade HighlightedUpgrade => HighlightedIndex < 0 ? PowerMeterUpgrade.None : Slots[HighlightedIndex];
-        public bool CanActivate => HighlightedUpgrade != PowerMeterUpgrade.None;
+        public bool IsFull => CollectedCapsules >= SlotCount;
+        public bool CanActivate => IsFull;
 
         public void CollectCapsule()
         {
-            if (HighlightedIndex < SlotCount - 1)
+            if (CollectedCapsules < SlotCount)
             {
-                HighlightedIndex++;
+                CollectedCapsules++;
+                HighlightedIndex = CollectedCapsules - 1;
             }
         }
 
         public PowerMeterUpgrade ActivateHighlightedUpgrade()
         {
+            if (!CanActivate)
+            {
+                return PowerMeterUpgrade.None;
+            }
+
             PowerMeterUpgrade upgrade = HighlightedUpgrade;
+            CollectedCapsules = 0;
             HighlightedIndex = -1;
             return upgrade;
         }
@@ -53,7 +58,14 @@ namespace Wanwan.Runtime
                     text += " ";
                 }
 
-                text += i == HighlightedIndex ? $">{Labels[i]}<" : Labels[i];
+                if (i < CollectedCapsules)
+                {
+                    text += i == HighlightedIndex ? $"[>{Labels[i]}<]" : $"[{Labels[i]}]";
+                }
+                else
+                {
+                    text += Labels[i];
+                }
             }
 
             return text;

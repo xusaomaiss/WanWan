@@ -18,22 +18,22 @@ namespace Wanwan.Runtime
         {
             float widthMultiplier = GetPlayerWidthMultiplier(type);
             float height = GetPlayerHeight(type, canPierce);
-            return new Vector3(Mathf.Max(width * widthMultiplier, GetPlayerMinimumWidth(type)), height, 1f);
+            return new Vector3(Mathf.Max(width * widthMultiplier, GetPlayerMinimumWidth(type)) * 2f, height * 2f, 1f);
         }
 
         public static Vector2 GetPlayerColliderSize(AmmoPowerupType type, bool canPierce)
         {
             if (type == AmmoPowerupType.Laser)
             {
-                return new Vector2(0.24f, 0.86f);
+                return new Vector2(0.48f, 1.72f);
             }
 
             if (type == AmmoPowerupType.Burst || type == AmmoPowerupType.Plasma)
             {
-                return new Vector2(0.32f, 0.64f);
+                return new Vector2(0.64f, 1.28f);
             }
 
-            return new Vector2(0.24f, canPierce ? 0.78f : 0.7f);
+            return new Vector2(0.48f, canPierce ? 1.56f : 1.4f);
         }
 
         public static Vector2 GetPlayerColliderSize(WeaponType type, bool canPierce)

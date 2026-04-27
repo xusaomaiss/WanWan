@@ -153,6 +153,7 @@ namespace Wanwan.Runtime
             label.transform.SetParent(transform, false);
             label.transform.localPosition = new Vector3(0f, -0.08f, 0f);
             hitPointText = label.AddComponent<TextMesh>();
+            ArcadeFontProvider.ApplyTo(hitPointText);
             hitPointText.anchor = TextAnchor.MiddleCenter;
             hitPointText.alignment = TextAlignment.Center;
             hitPointText.characterSize = 0.11f;

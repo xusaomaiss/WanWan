@@ -64,7 +64,8 @@ namespace Wanwan.Runtime
                 default:
                     return new[]
                     {
-                        Build(WeaponType.Spread, Vector3.up * 0.45f, Vector2.up, 0.192f)
+                        Build(WeaponType.Spread, new Vector3(-0.18f, 0.45f, 0f), Vector2.up, 0.192f),
+                        Build(WeaponType.Spread, new Vector3(0.18f, 0.45f, 0f), Vector2.up, 0.192f)
                     };
             }
         }

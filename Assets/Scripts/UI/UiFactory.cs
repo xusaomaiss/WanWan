@@ -93,13 +93,13 @@ namespace Wanwan.Runtime
 
             Text text = textObject.GetComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            ArcadeFontProvider.ApplyTo(text);
             text.fontSize = fontSize;
             text.alignment = alignment;
             text.color = color;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.resizeTextForBestFit = true;
+            text.resizeTextForBestFit = false;
             text.resizeTextMinSize = Mathf.Max(10, fontSize - 10);
             text.resizeTextMaxSize = fontSize;
             return text;
@@ -119,6 +119,17 @@ namespace Wanwan.Runtime
             Text text = CreateText(parent, content, fontSize, alignment, color, anchorMin, anchorMax, anchoredPosition);
             text.fontStyle = fontStyle;
             return text;
+        }
+
+        public static void ConfigureSingleLine(Text text)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
         public static Button CreateButton(Transform parent, string label, Color buttonColor, Color textColor, Vector2 size, Vector2 anchoredPosition)
@@ -150,7 +161,8 @@ namespace Wanwan.Runtime
             button.colors = colors;
 
             Text text = CreateText(buttonObject.transform, label, 44, TextAnchor.MiddleCenter, textColor, Vector2.zero, Vector2.one, Vector2.zero);
-            text.resizeTextForBestFit = true;
+            ConfigureSingleLine(text);
+            text.resizeTextForBestFit = false;
             text.resizeTextMinSize = 20;
             text.resizeTextMaxSize = 44;
 

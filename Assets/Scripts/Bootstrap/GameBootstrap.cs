@@ -5,7 +5,7 @@ namespace Wanwan.Runtime
 {
     public class GameBootstrap : MonoBehaviour
     {
-        private const float PlayerShipWorldSize = 1f;
+        public const float PlayerShipWorldSize = 2f;
 
         private void Awake()
         {

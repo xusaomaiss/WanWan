@@ -84,7 +84,8 @@ namespace Wanwan.Runtime
                 default:
                     return new[]
                     {
-                        new PlayerShotSpec(Vector3.up * 0.45f, Vector2.up, 0.192f)
+                        new PlayerShotSpec(new Vector3(-0.18f, 0.45f, 0f), Vector2.up, 0.192f),
+                        new PlayerShotSpec(new Vector3(0.18f, 0.45f, 0f), Vector2.up, 0.192f)
                     };
             }
         }

@@ -69,6 +69,7 @@ def main() -> None:
         "scripts/install_unity_editor.sh",
         "scripts/build_android.sh",
         "scripts/build_android_release.sh",
+        "scripts/build_ios.sh",
         "scripts/run_editmode_tests.sh",
         "scripts/android_smoke_test.sh",
     ]
@@ -90,7 +91,7 @@ def main() -> None:
         check(scene in build_settings, f"build settings missing scene: {scene}")
 
     build_automation = (ROOT / "Assets/Editor/BuildAutomation.cs").read_text(encoding="utf-8")
-    for token in ("BuildAndroidDebug", "BuildAndroidRelease", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
+    for token in ("BuildAndroidDebug", "BuildAndroidRelease", "BuildIOSXcodeProject", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
 
     runtime_sprite_factory = (ROOT / "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs").read_text(encoding="utf-8")

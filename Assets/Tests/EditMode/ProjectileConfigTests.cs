@@ -5,7 +5,7 @@ namespace Wanwan.Tests.EditMode
 {
     public class ProjectileConfigTests
     {
-        [TestCase(WeaponType.Spread, 1, 1)]
+        [TestCase(WeaponType.Spread, 1, 2)]
         [TestCase(WeaponType.Spread, 2, 2)]
         [TestCase(WeaponType.Spread, 3, 3)]
         [TestCase(WeaponType.Spread, 4, 4)]

@@ -39,6 +39,38 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void Heal_RestoresHealthAndClampsAtMax()
+        {
+            PlayerHealthState state = new PlayerHealthState();
+            state.ApplyDamage(3);
+
+            int healed = state.Heal(2);
+            int overHeal = state.Heal(8);
+
+            Assert.That(healed, Is.EqualTo(2));
+            Assert.That(overHeal, Is.EqualTo(1));
+            Assert.That(state.CurrentHealth, Is.EqualTo(state.MaxHealth));
+        }
+
+        [Test]
+        public void Heal_IgnoresNonPositiveAmounts()
+        {
+            PlayerHealthState state = new PlayerHealthState();
+            state.ApplyDamage(2);
+
+            int healed = state.Heal(0);
+
+            Assert.That(healed, Is.EqualTo(0));
+            Assert.That(state.CurrentHealth, Is.EqualTo(8));
+        }
+
+        [Test]
+        public void HealthPickupController_UsesTwoPointRecovery()
+        {
+            Assert.That(HealthPickupController.HealAmount, Is.EqualTo(2));
+        }
+
+        [Test]
         public void DamageFeedback_VibratesOnlyWhenEnabledAndDamageWasApplied()
         {
             Assert.That(PlayerDamageFeedback.ShouldVibrate(true, 1), Is.True);

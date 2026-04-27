@@ -23,5 +23,13 @@ namespace Wanwan.Runtime
             CurrentHealth -= damageApplied;
             return damageApplied;
         }
+
+        public int Heal(int amount)
+        {
+            int safeAmount = Mathf.Max(0, amount);
+            int healed = Mathf.Min(MaxHealth - CurrentHealth, safeAmount);
+            CurrentHealth += healed;
+            return healed;
+        }
     }
 }
