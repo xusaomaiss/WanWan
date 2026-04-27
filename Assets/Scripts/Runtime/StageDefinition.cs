@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace Wanwan.Runtime
 {
+    public enum StageWeather { None, Rain, Spores, Sand }
+
     public class StageDefinition
     {
         public StageDefinition(
@@ -14,7 +16,8 @@ namespace Wanwan.Runtime
             float backgroundSpeedMultiplier,
             StageCombatStyle combatStyle,
             BossPatternStyle bossPattern,
-            string victorySummary)
+            string victorySummary,
+            StageWeather weather = StageWeather.None)
         {
             Number = number;
             Name = name;
@@ -26,6 +29,7 @@ namespace Wanwan.Runtime
             CombatStyle = combatStyle;
             BossPattern = bossPattern;
             VictorySummary = victorySummary;
+            Weather = weather;
         }
 
         public int Number { get; }
@@ -38,5 +42,6 @@ namespace Wanwan.Runtime
         public StageCombatStyle CombatStyle { get; }
         public BossPatternStyle BossPattern { get; }
         public string VictorySummary { get; }
+        public StageWeather Weather { get; }
     }
 }

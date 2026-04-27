@@ -30,6 +30,7 @@ namespace Wanwan.Runtime
             Pools = new PoolCollection(SessionState.VisualEffectsQuality);
 
             ScrollingBackgroundLayer[] backgroundLayers = CreateScrollingBattlefieldBackdrop(orthographicSize, horizontalExtent, stage);
+            CreateWeatherSystem(stage, leftBound, rightBound, bottomBound, topBound);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();
             effects.Initialize(cameraComponent);
 
@@ -220,6 +221,15 @@ namespace Wanwan.Runtime
             AchievementPopup popup = new GameObject("AchievementPopup").AddComponent<AchievementPopup>();
             popup.Initialize(ui.transform);
             manager.SetAchievementPopup(popup);
+        }
+
+        private void CreateWeatherSystem(StageDefinition stage, float leftBound, float rightBound, float bottomBound, float topBound)
+        {
+            if (stage.Weather == StageWeather.None)
+                return;
+
+            WeatherParticleSystem weather = new GameObject("WeatherSystem").AddComponent<WeatherParticleSystem>();
+            weather.Initialize(stage.Weather, Pools, leftBound, rightBound, bottomBound, topBound);
         }
 
     }
