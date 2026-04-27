@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
 {
     public class GameBootstrap : MonoBehaviour
     {
         public const float PlayerShipWorldSize = 2f;
+
+        public PoolCollection Pools { get; private set; }
 
         private void Awake()
         {
@@ -22,6 +25,8 @@ namespace Wanwan.Runtime
             float rightBound = horizontalExtent;
             CarrierLaunchIntroConfig introConfig = CarrierLaunchIntroConfig.Default;
             Vector3 gameplayPlayerPosition = new Vector3(0f, bottomBound + introConfig.GameplayStartYInset, 0f);
+
+            Pools = new PoolCollection(SessionState.VisualEffectsQuality);
 
             ScrollingBackgroundLayer[] backgroundLayers = CreateScrollingBattlefieldBackdrop(orthographicSize, horizontalExtent, stage);
             EffectsController effects = new GameObject("EffectsController").AddComponent<EffectsController>();

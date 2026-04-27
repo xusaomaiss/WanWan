@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
 {
@@ -21,6 +22,47 @@ namespace Wanwan.Runtime
         private float explosionRadius;
         private float age;
         private Vector3 origin;
+        private PoolCollection pool;
+
+        public void SetPool(PoolCollection p)
+        {
+            pool = p;
+        }
+
+        public void ResetForPool()
+        {
+            hitTargets.Clear();
+            speed = 0f;
+            damage = 0;
+            despawnY = 0f;
+            direction = Vector2.up;
+            leftBound = 0f;
+            rightBound = 0f;
+            piercesTargets = false;
+            remainingPierceHits = 0;
+            motionType = BulletMotionType.Straight;
+            steeringStrength = 0f;
+            waveAmplitude = 0f;
+            waveFrequency = 0f;
+            explosionRadius = 0f;
+            age = 0f;
+            origin = Vector3.zero;
+            pool = null;
+        }
+
+        private void ReturnToPool()
+        {
+            if (pool != null)
+            {
+                ResetForPool();
+                gameObject.SetActive(false);
+                pool.ReturnBullet(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
 
         public void Initialize(float travelSpeed, int bulletDamage, Vector2 travelDirection, float maxY, float minX, float maxX, bool canPierce, int pierceHits)
         {
@@ -70,7 +112,7 @@ namespace Wanwan.Runtime
 
             if (transform.position.y > despawnY || transform.position.x < leftBound || transform.position.x > rightBound)
             {
-                Destroy(gameObject);
+                ReturnToPool();
             }
         }
 
@@ -173,14 +215,14 @@ namespace Wanwan.Runtime
         {
             if (!piercesTargets)
             {
-                Destroy(gameObject);
+                ReturnToPool();
                 return;
             }
 
             remainingPierceHits--;
             if (remainingPierceHits <= 0)
             {
-                Destroy(gameObject);
+                ReturnToPool();
             }
         }
 

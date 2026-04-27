@@ -1,4 +1,5 @@
 using UnityEngine;
+using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
 {
@@ -23,6 +24,7 @@ namespace Wanwan.Runtime
         private float fireTimer;
         private float mountFireTimer;
         private bool combatEnabled = true;
+        private PoolCollection pools;
 
         public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float minY, float maxY)
         {
@@ -36,6 +38,7 @@ namespace Wanwan.Runtime
             targetPosition = transform.position;
             spriteRenderer = GetComponent<SpriteRenderer>();
             mountFireTimer = 0f;
+            pools = FindObjectOfType<GameBootstrap>()?.Pools;
             RefreshMountPresentation();
         }
 
@@ -255,7 +258,15 @@ namespace Wanwan.Runtime
 
         private void FireOffsetShot(PlayerShotSpec shot)
         {
-            GameObject bulletObject = new GameObject(shot.CanPierce ? shot.WeaponType + "PierceShot" : shot.WeaponType + "Shot");
+            GameObject bulletObject;
+            if (pools != null)
+            {
+                bulletObject = pools.RentBullet();
+            }
+            else
+            {
+                bulletObject = new GameObject(shot.CanPierce ? shot.WeaponType + "PierceShot" : shot.WeaponType + "Shot");
+            }
             bulletObject.transform.position = transform.position + shot.Offset;
 
             SpriteRenderer renderer = bulletObject.AddComponent<SpriteRenderer>();
@@ -275,6 +286,10 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BulletController bullet = bulletObject.AddComponent<BulletController>();
+            if (pools != null)
+            {
+                bullet.SetPool(pools);
+            }
             float speed = WeaponConfig.Get(shot.WeaponType).BulletSpeed;
             bullet.Initialize((speed > 0f ? speed : BulletSpeed) * shot.SpeedMultiplier, shot.Damage, shot.Direction, gameManager.TopBound + 1.5f, gameManager.LeftBound, gameManager.RightBound, shot.CanPierce, shot.PierceHits, shot.MotionType, shot.HomingStrength, shot.WaveAmplitude, shot.WaveFrequency, shot.ExplosionRadius);
         }
