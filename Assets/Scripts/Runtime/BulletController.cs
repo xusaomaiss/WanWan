@@ -167,16 +167,6 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (other.TryGetComponent(out AmmoPackController ammoPack))
-            {
-                if (!hitTargets.Add(ammoPack.GetInstanceID()))
-                {
-                    return;
-                }
-
-                ammoPack.Collect();
-                ResolveHit();
-            }
         }
 
         private void ResolveHit()
@@ -206,39 +196,39 @@ namespace Wanwan.Runtime
 
             foreach (BlockController block in FindObjectsByType<BlockController>(FindObjectsSortMode.None))
             {
-                if (!hitTargets.Add(block.GetInstanceID()))
-                {
-                    continue;
-                }
-
                 if (Vector2.SqrMagnitude(block.transform.position - center) <= radiusSqr)
                 {
+                    if (!hitTargets.Add(block.GetInstanceID()))
+                    {
+                        continue;
+                    }
+
                     block.ApplyHit(damage);
                 }
             }
 
             foreach (BossController boss in FindObjectsByType<BossController>(FindObjectsSortMode.None))
             {
-                if (!hitTargets.Add(boss.GetInstanceID()))
-                {
-                    continue;
-                }
-
                 if (Vector2.SqrMagnitude(boss.transform.position - center) <= radiusSqr)
                 {
+                    if (!hitTargets.Add(boss.GetInstanceID()))
+                    {
+                        continue;
+                    }
+
                     boss.ApplyHit(damage);
                 }
             }
 
             foreach (GroundTargetController groundTarget in FindObjectsByType<GroundTargetController>(FindObjectsSortMode.None))
             {
-                if (!hitTargets.Add(groundTarget.GetInstanceID()))
-                {
-                    continue;
-                }
-
                 if (Vector2.SqrMagnitude(groundTarget.transform.position - center) <= radiusSqr)
                 {
+                    if (!hitTargets.Add(groundTarget.GetInstanceID()))
+                    {
+                        continue;
+                    }
+
                     groundTarget.ApplyHit(damage);
                 }
             }
@@ -250,7 +240,18 @@ namespace Wanwan.Runtime
             renderer.sprite = RuntimeSpriteFactory.GetExplosionSprite();
             renderer.color = new Color(1f, 0.5f, 0.18f, 0.82f);
             renderer.sortingOrder = 16;
-            Destroy(blast, 0.18f);
+            DisposeRuntimeObject(blast, 0.18f);
+        }
+
+        private static void DisposeRuntimeObject(Object target, float delay = 0f)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(target, delay);
+                return;
+            }
+
+            DestroyImmediate(target);
         }
     }
 }

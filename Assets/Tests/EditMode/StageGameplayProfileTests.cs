@@ -77,11 +77,14 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
-        public void GetStageDurationMultiplier_IncreasesTenPercentPerStage()
+        public void GetStageDurationMultiplier_UsesCompactStagePacingTable()
         {
-            Assert.That(StageCatalog.GetStageDurationMultiplier(0), Is.EqualTo(1f).Within(0.001f));
-            Assert.That(StageCatalog.GetStageDurationMultiplier(1), Is.EqualTo(1.1f).Within(0.001f));
-            Assert.That(StageCatalog.GetStageDurationMultiplier(2), Is.EqualTo(1.2f).Within(0.001f));
+            float[] expected = { 0.9f, 0.94f, 0.98f, 1.02f, 1.06f, 1.1f, 1.15f, 1.2f };
+
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(StageCatalog.GetStageDurationMultiplier(i), Is.EqualTo(expected[i]).Within(0.001f));
+            }
         }
 
         [Test]

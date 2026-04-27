@@ -54,7 +54,8 @@ namespace Wanwan.Runtime
 
         public static float GetStageDurationMultiplier(int stageIndex)
         {
-            return 1f + (Mathf.Clamp(stageIndex, 0, StageCount - 1) * 0.1f);
+            float[] multipliers = { 0.9f, 0.94f, 0.98f, 1.02f, 1.06f, 1.1f, 1.15f, 1.2f };
+            return multipliers[Mathf.Clamp(stageIndex, 0, StageCount - 1)];
         }
 
         public static int GetNextStageIndex(int stageIndex)

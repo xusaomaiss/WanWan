@@ -3,10 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 UNITY_BIN="${UNITY_BIN:-}"
-KEYSTORE_PATH="${WANWAN_ANDROID_KEYSTORE:-$ROOT_DIR/Builds/Android/wanwan-release.keystore}"
-KEYSTORE_PASS="${WANWAN_ANDROID_KEYSTORE_PASS:-wanwan-release-2026}"
-KEY_ALIAS="${WANWAN_ANDROID_KEYALIAS:-wanwan-release}"
-KEY_ALIAS_PASS="${WANWAN_ANDROID_KEYALIAS_PASS:-$KEYSTORE_PASS}"
+KEYSTORE_PATH="${WANWAN_ANDROID_KEYSTORE:-}"
+KEYSTORE_PASS="${WANWAN_ANDROID_KEYSTORE_PASS:-}"
+KEY_ALIAS="${WANWAN_ANDROID_KEYALIAS:-}"
+KEY_ALIAS_PASS="${WANWAN_ANDROID_KEYALIAS_PASS:-}"
 
 if [[ -z "${UNITY_BIN}" ]]; then
   CANDIDATES=(
@@ -77,25 +77,6 @@ repair_android_sdk_layout() {
   fi
 }
 
-find_keytool() {
-  local unity_contents unity_jdk_keytool
-  unity_contents="$(cd "$(dirname "$UNITY_BIN")/.." && pwd)"
-  unity_jdk_keytool="$unity_contents/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool"
-
-  if [[ -x "$unity_jdk_keytool" ]]; then
-    echo "$unity_jdk_keytool"
-    return
-  fi
-
-  if command -v keytool >/dev/null 2>&1; then
-    command -v keytool
-    return
-  fi
-
-  echo "keytool not found. Install a JDK or Unity Android OpenJDK module." >&2
-  exit 1
-}
-
 clean_corrupt_gradle_artifacts() {
   local gradle_module_root
   gradle_module_root="$HOME/.gradle/caches/modules-2/files-2.1/com.android.tools.external.com-intellij"
@@ -104,24 +85,36 @@ clean_corrupt_gradle_artifacts() {
   rm -rf "$gradle_module_root/kotlin-compiler/31.10.0"
 }
 
+require_signing_env() {
+  if [[ -z "$KEYSTORE_PATH" ]]; then
+    echo "WANWAN_ANDROID_KEYSTORE is required for release builds." >&2
+    exit 1
+  fi
+
+  if [[ -z "$KEYSTORE_PASS" ]]; then
+    echo "WANWAN_ANDROID_KEYSTORE_PASS is required for release builds." >&2
+    exit 1
+  fi
+
+  if [[ -z "$KEY_ALIAS" ]]; then
+    echo "WANWAN_ANDROID_KEYALIAS is required for release builds." >&2
+    exit 1
+  fi
+
+  if [[ -z "$KEY_ALIAS_PASS" ]]; then
+    echo "WANWAN_ANDROID_KEYALIAS_PASS is required for release builds." >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$KEYSTORE_PATH" ]]; then
+    echo "WANWAN_ANDROID_KEYSTORE must point to an existing keystore: $KEYSTORE_PATH" >&2
+    exit 1
+  fi
+}
+
+require_signing_env
 repair_android_sdk_layout
 clean_corrupt_gradle_artifacts
-mkdir -p "$(dirname "$KEYSTORE_PATH")"
-
-if [[ ! -f "$KEYSTORE_PATH" ]]; then
-  KEYTOOL_BIN="$(find_keytool)"
-  "$KEYTOOL_BIN" \
-    -genkeypair \
-    -v \
-    -keystore "$KEYSTORE_PATH" \
-    -storepass "$KEYSTORE_PASS" \
-    -alias "$KEY_ALIAS" \
-    -keypass "$KEY_ALIAS_PASS" \
-    -keyalg RSA \
-    -keysize 2048 \
-    -validity 10000 \
-    -dname "CN=Wanwan Drop Blaster, OU=Release, O=Mark, L=Shanghai, S=Shanghai, C=CN"
-fi
 
 export WANWAN_ANDROID_KEYSTORE="$KEYSTORE_PATH"
 export WANWAN_ANDROID_KEYSTORE_PASS="$KEYSTORE_PASS"

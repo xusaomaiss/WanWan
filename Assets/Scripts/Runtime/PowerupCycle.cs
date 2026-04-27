@@ -25,12 +25,32 @@ namespace Wanwan.Runtime
             AmmoPowerupType.Guard
         };
 
+        private static readonly AmmoPowerupType[] PrimaryCyclePool =
+        {
+            AmmoPowerupType.Scatter,
+            AmmoPowerupType.Laser,
+            AmmoPowerupType.Plasma
+        };
+
         public static AmmoPowerupType GetTypeAt(AmmoPowerupType startingType, int index)
         {
             int startIndex = GetPowerupIndex(startingType);
             int safeIndex = Mathf.Abs(startIndex + index) % CyclePool.Length;
             AmmoPowerupType[] pool = CyclePool;
             return pool[safeIndex];
+        }
+
+        public static AmmoPowerupType GetPrimaryTypeAt(AmmoPowerupType startingType, int index)
+        {
+            AmmoPowerupType primaryStart = IsPrimaryWeaponPowerup(startingType) ? startingType : AmmoPowerupType.Scatter;
+            if (primaryStart == AmmoPowerupType.Burst)
+            {
+                primaryStart = AmmoPowerupType.Scatter;
+            }
+
+            int startIndex = GetPrimaryPowerupIndex(primaryStart);
+            int safeIndex = Mathf.Abs(startIndex + index) % PrimaryCyclePool.Length;
+            return PrimaryCyclePool[safeIndex];
         }
 
         public static WeaponType GetWeaponTypeAt(WeaponType startingType, int index)
@@ -63,6 +83,58 @@ namespace Wanwan.Runtime
                     return WeaponType.Plasma;
                 default:
                     return WeaponType.Spread;
+            }
+        }
+
+        public static bool IsPrimaryWeaponPowerup(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.Scatter:
+                case AmmoPowerupType.Laser:
+                case AmmoPowerupType.Burst:
+                case AmmoPowerupType.Plasma:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static PowerupColorCategory GetColorCategory(WeaponType type)
+        {
+            switch (type)
+            {
+                case WeaponType.Spread:
+                case WeaponType.Burst:
+                    return PowerupColorCategory.Red;
+                case WeaponType.Laser:
+                case WeaponType.Homing:
+                    return PowerupColorCategory.Blue;
+                case WeaponType.Plasma:
+                    return PowerupColorCategory.Purple;
+                default:
+                    return PowerupColorCategory.None;
+            }
+        }
+
+        public static PowerupColorCategory GetColorCategory(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.Scatter:
+                case AmmoPowerupType.RapidFire:
+                case AmmoPowerupType.Burst:
+                    return PowerupColorCategory.Red;
+                case AmmoPowerupType.Laser:
+                case AmmoPowerupType.Homing:
+                case AmmoPowerupType.Pierce:
+                    return PowerupColorCategory.Blue;
+                case AmmoPowerupType.Plasma:
+                case AmmoPowerupType.Wave:
+                case AmmoPowerupType.Guard:
+                    return PowerupColorCategory.Purple;
+                default:
+                    return PowerupColorCategory.None;
             }
         }
 
@@ -146,6 +218,31 @@ namespace Wanwan.Runtime
             }
         }
 
+        public static string GetPickupLabel(AmmoPowerupType type)
+        {
+            switch (type)
+            {
+                case AmmoPowerupType.Scatter:
+                case AmmoPowerupType.Burst:
+                    return "V";
+                case AmmoPowerupType.Laser:
+                    return "L";
+                case AmmoPowerupType.Plasma:
+                    return "P";
+                case AmmoPowerupType.Homing:
+                    return "H";
+                case AmmoPowerupType.Guard:
+                    return "B";
+                case AmmoPowerupType.RapidFire:
+                case AmmoPowerupType.Pierce:
+                    return "M";
+                case AmmoPowerupType.Wave:
+                    return "W";
+                default:
+                    return GetLabel(type);
+            }
+        }
+
         public static string GetModuleLabel(WeaponModuleType type)
         {
             return GetLabel(ToAmmoPowerupType(type));
@@ -176,6 +273,19 @@ namespace Wanwan.Runtime
             for (int i = 0; i < CyclePool.Length; i++)
             {
                 if (CyclePool[i] == type)
+                {
+                    return i;
+                }
+            }
+
+            return 0;
+        }
+
+        private static int GetPrimaryPowerupIndex(AmmoPowerupType type)
+        {
+            for (int i = 0; i < PrimaryCyclePool.Length; i++)
+            {
+                if (PrimaryCyclePool[i] == type)
                 {
                     return i;
                 }

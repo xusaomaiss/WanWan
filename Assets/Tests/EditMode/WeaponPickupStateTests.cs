@@ -75,24 +75,38 @@ namespace Wanwan.Tests.EditMode
         {
             PlayerWeaponState state = new PlayerWeaponState();
 
-            state.ApplyPowerup(AmmoPowerupType.RapidFire);
+            AmmoPickupOutcome firstOutcome = state.ApplyPowerup(AmmoPowerupType.RapidFire);
             state.ApplyPowerup(AmmoPowerupType.Pierce);
             state.ApplyPowerup(AmmoPowerupType.Homing);
 
+            Assert.That(firstOutcome, Is.EqualTo(AmmoPickupOutcome.ModuleEquipped));
             Assert.That(state.GetEquippedModules(), Is.EqualTo(new[] { WeaponModuleType.Pierce, WeaponModuleType.Homing }));
             Assert.That(state.GetCurrentWeaponDisplayText(), Is.EqualTo("武器 扇形弹 1级 | 穿 | 追"));
         }
 
         [Test]
-        public void ApplyPowerup_PrimaryPickupSwitchesWeaponAndSamePrimaryUpgrades()
+        public void ApplyPowerup_SameColorPrimaryPickupUpgradesWithoutSwitchingWeapon()
         {
             PlayerWeaponState state = new PlayerWeaponState();
 
-            state.ApplyPowerup(AmmoPowerupType.Plasma);
-            state.ApplyPowerup(AmmoPowerupType.Plasma);
+            AmmoPickupOutcome outcome = state.ApplyPowerup(AmmoPowerupType.Burst);
 
-            Assert.That(state.CurrentWeaponType, Is.EqualTo(WeaponType.Plasma));
+            Assert.That(outcome, Is.EqualTo(AmmoPickupOutcome.FireLevelUp));
+            Assert.That(state.CurrentWeaponType, Is.EqualTo(WeaponType.Spread));
             Assert.That(state.FireLevel, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ApplyPowerup_OffColorPrimaryPickupDoesNotChangeWeaponOrFireLevel()
+        {
+            PlayerWeaponState state = new PlayerWeaponState();
+
+            state.ApplyWeaponPickup(WeaponType.Laser);
+            AmmoPickupOutcome outcome = state.ApplyPowerup(AmmoPowerupType.Plasma);
+
+            Assert.That(outcome, Is.EqualTo(AmmoPickupOutcome.OffColorShield));
+            Assert.That(state.CurrentWeaponType, Is.EqualTo(WeaponType.Laser));
+            Assert.That(state.FireLevel, Is.EqualTo(1));
         }
     }
 }

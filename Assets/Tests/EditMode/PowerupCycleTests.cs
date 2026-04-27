@@ -23,5 +23,24 @@ namespace Wanwan.Tests.EditMode
         {
             Assert.That(PowerupCycle.GetLabel(type), Is.EqualTo(expectedLabel));
         }
+
+        [Test]
+        public void GetColorCategory_GroupsPrimaryWeaponsByRaidenStyleColor()
+        {
+            Assert.That(PowerupCycle.GetColorCategory(WeaponType.Spread), Is.EqualTo(PowerupColorCategory.Red));
+            Assert.That(PowerupCycle.GetColorCategory(AmmoPowerupType.Burst), Is.EqualTo(PowerupColorCategory.Red));
+            Assert.That(PowerupCycle.GetColorCategory(WeaponType.Laser), Is.EqualTo(PowerupColorCategory.Blue));
+            Assert.That(PowerupCycle.GetColorCategory(AmmoPowerupType.Plasma), Is.EqualTo(PowerupColorCategory.Purple));
+        }
+
+        [TestCase(AmmoPowerupType.Scatter, true)]
+        [TestCase(AmmoPowerupType.Laser, true)]
+        [TestCase(AmmoPowerupType.Plasma, true)]
+        [TestCase(AmmoPowerupType.RapidFire, false)]
+        [TestCase(AmmoPowerupType.Homing, false)]
+        public void IsPrimaryWeaponPowerup_SeparatesCyclingCrystalsFromLetteredModules(AmmoPowerupType type, bool expected)
+        {
+            Assert.That(PowerupCycle.IsPrimaryWeaponPowerup(type), Is.EqualTo(expected));
+        }
     }
 }

@@ -75,12 +75,13 @@ class AutomationFilesTests(unittest.TestCase):
         self.assertIn("lintVital", script)
         self.assertIn("typedefs.txt", script)
 
-    def test_release_script_builds_signed_apk_with_local_keystore(self):
+    def test_release_script_requires_explicit_signing_credentials(self):
         script = (ROOT / "scripts/build_android_release.sh").read_text(encoding="utf-8")
         self.assertIn("BuildAndroidRelease", script)
-        self.assertIn("wanwan-release.keystore", script)
         self.assertIn("WANWAN_ANDROID_KEYSTORE", script)
-        self.assertIn("keytool", script)
+        self.assertIn("WANWAN_ANDROID_KEYSTORE_PASS is required", script)
+        self.assertNotIn("wanwan-release-2026", script)
+        self.assertNotIn("genkeypair", script)
         self.assertIn("clean_corrupt_gradle_artifacts", script)
 
     def test_validation_requires_ai_ammo_pack_assets(self):

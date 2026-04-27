@@ -121,7 +121,7 @@ namespace Wanwan.Runtime
             fireball.Initialize(gameManager, effectsController, speed, direction, gameManager.BottomBound - 1.2f, gameManager.LeftBound, gameManager.RightBound, renderer.color);
         }
 
-        public void SpawnAmmoPackAtPosition(AmmoPowerupType type, Vector3 position)
+        public void SpawnAmmoPackAtPosition(AmmoPowerupType type, Vector3 position, AmmoPackPickupMode pickupMode = AmmoPackPickupMode.Normal)
         {
             if (type == AmmoPowerupType.None)
             {
@@ -145,12 +145,12 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             AmmoPackController packController = packObject.AddComponent<AmmoPackController>();
-            packController.Initialize(gameManager, effectsController, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, renderer.color, GetAmmoPackLabel(type));
+            packController.Initialize(gameManager, effectsController, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, gameManager.LeftBound, gameManager.RightBound, gameManager.TopBound, renderer.color, GetAmmoPackLabel(type), pickupMode);
         }
 
-        public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position)
+        public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position, AmmoPackPickupMode pickupMode = AmmoPackPickupMode.Normal)
         {
-            SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(type), position);
+            SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(type), position, pickupMode);
         }
 
         public void SpawnCoinsAtPosition(Vector3 position)
@@ -1267,7 +1267,7 @@ namespace Wanwan.Runtime
 
         private static string GetAmmoPackLabel(AmmoPowerupType type)
         {
-            return PowerupCycle.GetLabel(type);
+            return PowerupCycle.GetPickupLabel(type);
         }
 
         private AmmoPowerupType GetRandomPowerupType()

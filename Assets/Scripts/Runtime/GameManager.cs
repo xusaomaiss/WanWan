@@ -6,6 +6,7 @@ namespace Wanwan.Runtime
     public class GameManager : MonoBehaviour
     {
         private const float PowerupDurationSeconds = 8f;
+        private const float OffColorShieldSeconds = 0.8f;
 
         private UIController uiController;
         private EffectsController effectsController;
@@ -349,15 +350,15 @@ namespace Wanwan.Runtime
             }
 
             Vector3 origin = PlayerPosition;
-            blockSpawner.SpawnAmmoPackAtPosition(previousWeapon, origin + new Vector3(-0.42f, 0.64f, 0f));
+            blockSpawner.SpawnAmmoPackAtPosition(previousWeapon, origin + new Vector3(-0.42f, 0.64f, 0f), AmmoPackPickupMode.RecoveryRestore);
             if (previousModules.Length > 0)
             {
-                blockSpawner.SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(previousModules[previousModules.Length - 1]), origin + new Vector3(0.42f, 0.64f, 0f));
+                blockSpawner.SpawnAmmoPackAtPosition(PowerupCycle.ToAmmoPowerupType(previousModules[previousModules.Length - 1]), origin + new Vector3(0.42f, 0.64f, 0f), AmmoPackPickupMode.RecoveryRestore);
             }
             else if (previousLevel >= 3)
             {
                 WeaponType supportType = previousWeapon == WeaponType.Spread ? WeaponType.Laser : WeaponType.Spread;
-                blockSpawner.SpawnAmmoPackAtPosition(supportType, origin + new Vector3(0.42f, 0.64f, 0f));
+                blockSpawner.SpawnAmmoPackAtPosition(supportType, origin + new Vector3(0.42f, 0.64f, 0f), AmmoPackPickupMode.RecoveryRestore);
             }
 
             ShowStageBanner("火力重置");
@@ -448,8 +449,20 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            weaponState.ApplyPowerup(type);
-            ShowStageBanner(PowerupCycle.GetLabel(type) + " 火力 " + weaponState.FireLevel + "级");
+            AmmoPickupOutcome outcome = weaponState.ApplyPowerup(type);
+            if (outcome == AmmoPickupOutcome.OffColorShield)
+            {
+                invulnerabilityState.Trigger(OffColorShieldSeconds);
+                ShowStageBanner(PowerupCycle.GetLabel(type) + " 异色护盾");
+            }
+            else if (outcome == AmmoPickupOutcome.ModuleEquipped)
+            {
+                ShowStageBanner(PowerupCycle.GetLabel(type) + " 模块");
+            }
+            else if (outcome == AmmoPickupOutcome.FireLevelUp)
+            {
+                ShowStageBanner(PowerupCycle.GetLabel(type) + " 火力 " + weaponState.FireLevel + "级");
+            }
             uiController.RefreshHud();
         }
 

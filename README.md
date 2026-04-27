@@ -87,7 +87,7 @@
 ./scripts/android_smoke_test.sh
 ```
 
-`build_android_release.sh` 默认使用 `Builds/Android/wanwan-release.keystore` 生成签名包；如需指定正式 keystore，再设置 `WANWAN_ANDROID_KEYSTORE`、`WANWAN_ANDROID_KEYSTORE_PASS`、`WANWAN_ANDROID_KEYALIAS` 和 `WANWAN_ANDROID_KEYALIAS_PASS`。`android_smoke_test.sh` 默认安装 `Builds/Android/WanwanDropBlaster-release.apk`，因此会按同签名 release 包更新并保留设备数据。
+`build_android_release.sh` 不会自动生成 release keystore，也不内置任何签名密码；必须显式设置 `WANWAN_ANDROID_KEYSTORE`、`WANWAN_ANDROID_KEYSTORE_PASS`、`WANWAN_ANDROID_KEYALIAS` 和 `WANWAN_ANDROID_KEYALIAS_PASS`，且 keystore 文件必须已存在。`android_smoke_test.sh` 默认安装 `Builds/Android/WanwanDropBlaster-release.apk`，因此会按同签名 release 包更新并保留设备数据。
 
 如果 Unity 不在默认路径，先指定：
 

@@ -10,16 +10,29 @@ namespace Wanwan.Runtime
         public WeaponType CurrentWeaponType { get; private set; } = WeaponType.Spread;
         public int FireLevel { get; private set; } = FireLevelState.MinLevel;
 
-        public void ApplyPowerup(AmmoPowerupType type)
+        public AmmoPickupOutcome ApplyPowerup(AmmoPowerupType type)
         {
             WeaponModuleType module = PowerupCycle.ToWeaponModuleType(type);
             if (module != WeaponModuleType.None)
             {
                 EquipModule(module);
-                return;
+                return AmmoPickupOutcome.ModuleEquipped;
             }
 
-            ApplyWeaponPickup(PowerupCycle.ToWeaponType(type));
+            if (!PowerupCycle.IsPrimaryWeaponPowerup(type))
+            {
+                return AmmoPickupOutcome.None;
+            }
+
+            PowerupColorCategory currentCategory = PowerupCycle.GetColorCategory(CurrentWeaponType);
+            PowerupColorCategory pickupCategory = PowerupCycle.GetColorCategory(type);
+            if (currentCategory != PowerupColorCategory.None && currentCategory == pickupCategory)
+            {
+                UpgradeFireLevel();
+                return AmmoPickupOutcome.FireLevelUp;
+            }
+
+            return AmmoPickupOutcome.OffColorShield;
         }
 
         public void ApplyWeaponPickup(WeaponType pickupType)
