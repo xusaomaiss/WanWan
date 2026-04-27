@@ -8,12 +8,16 @@ namespace Wanwan.Runtime
         public int TotalGrazeCount { get; private set; }
         public float FocusMeter { get; private set; }
         public bool IsFocusActive { get; private set; }
+        public float FocusRemainingSeconds { get; private set; }
+        public float FocusNormalized => FocusMeter / FocusMeterMax;
+        public const float FocusDurationSeconds = 5f;
 
         public float GrazeRadius { get; set; } = 1.5f;
 
         private const float FocusMeterMax = 100f;
         private const float FocusMeterDecayRate = 5f;
         private const float FocusThreshold = 80f;
+        private float focusStartMeter;
 
         public bool RegisterGraze()
         {
@@ -24,6 +28,8 @@ namespace Wanwan.Runtime
             if (FocusMeter >= FocusThreshold && !IsFocusActive)
             {
                 IsFocusActive = true;
+                FocusRemainingSeconds = FocusDurationSeconds;
+                focusStartMeter = FocusMeter;
                 return true;
             }
             return false;
@@ -42,10 +48,12 @@ namespace Wanwan.Runtime
             }
             else
             {
-                FocusMeter = Mathf.Max(0f, FocusMeter - FocusMeterDecayRate * 2f * delta);
-                if (FocusMeter <= 0f)
+                FocusRemainingSeconds = Mathf.Max(0f, FocusRemainingSeconds - delta);
+                FocusMeter = Mathf.Lerp(0f, focusStartMeter, FocusRemainingSeconds / FocusDurationSeconds);
+                if (FocusRemainingSeconds <= 0f)
                 {
                     IsFocusActive = false;
+                    FocusMeter = 0f;
                 }
             }
         }

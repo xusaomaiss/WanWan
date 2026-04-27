@@ -54,9 +54,10 @@ namespace Wanwan.Runtime
         {
             if (pool != null)
             {
+                PoolCollection targetPool = pool;
                 ResetForPool();
                 gameObject.SetActive(false);
-                pool.ReturnBullet(gameObject);
+                targetPool.ReturnBullet(gameObject);
             }
             else
             {

@@ -28,6 +28,7 @@ namespace Wanwan.Runtime.Pools
         public GameObject Rent()
         {
             GameObject obj = pool.Count > 0 ? pool.Pop() : CreateObject();
+            ResetRuntimeObject(obj);
             obj.SetActive(true);
             return obj;
         }
@@ -42,6 +43,34 @@ namespace Wanwan.Runtime.Pools
         private GameObject CreateObject()
         {
             return new GameObject(poolName);
+        }
+
+        private static void ResetRuntimeObject(GameObject obj)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+
+            for (int i = obj.transform.childCount - 1; i >= 0; i--)
+            {
+                var child = obj.transform.GetChild(i).gameObject;
+                Object.DestroyImmediate(child);
+            }
+
+            Component[] components = obj.GetComponents<Component>();
+            for (int i = components.Length - 1; i >= 0; i--)
+            {
+                if (components[i] is Transform)
+                {
+                    continue;
+                }
+
+                Object.DestroyImmediate(components[i]);
+            }
+
+            obj.transform.localScale = Vector3.one;
+            obj.transform.rotation = Quaternion.identity;
         }
     }
 }

@@ -17,5 +17,13 @@ namespace Wanwan.Tests.EditMode
             Assert.That(MenuBootstrap.TitleHighScoreFontSize, Is.EqualTo(30));
             Assert.That(MenuBootstrap.TitleHighScoreFontSize, Is.EqualTo(MenuBootstrap.TitleCircleButtonFontSize));
         }
+
+        [Test]
+        public void TitleMenu_UsesIndependentHeroFighterLayer()
+        {
+            Assert.That(MenuBootstrap.TitleHeroFighterObjectName, Is.EqualTo("TitleHeroFighter"));
+            Assert.That(RuntimeSpriteFactory.RaidenFighterJetResourcePath, Is.EqualTo("RaidenArt/Ships/fighter_jet_128"));
+            Assert.That(RuntimeSpriteFactory.MenuStormTitleResourcePath, Is.EqualTo("RaidenArt/Cinematics/menu_storm_title_ai"));
+        }
     }
 }

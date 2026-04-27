@@ -2,22 +2,26 @@ namespace Wanwan.Runtime
 {
     public class PowerMeterState
     {
-        public const int SlotCount = 4;
+        public const int SlotCount = 6;
 
         private static readonly PowerMeterUpgrade[] Slots =
         {
             PowerMeterUpgrade.SpeedUp,
             PowerMeterUpgrade.Missile,
             PowerMeterUpgrade.Double,
-            PowerMeterUpgrade.Laser
+            PowerMeterUpgrade.Laser,
+            PowerMeterUpgrade.Option,
+            PowerMeterUpgrade.Shield
         };
 
-        private static readonly string[] Labels =
+        public static readonly string[] SlotLabels =
         {
             "SPEED",
             "MISSILE",
             "DOUBLE",
-            "LASER"
+            "LASER",
+            "OPTION",
+            "SHIELD"
         };
 
         public int CollectedCapsules { get; private set; }
@@ -51,7 +55,7 @@ namespace Wanwan.Runtime
         public string BuildHudText()
         {
             string text = string.Empty;
-            for (int i = 0; i < Labels.Length; i++)
+            for (int i = 0; i < SlotLabels.Length; i++)
             {
                 if (i > 0)
                 {
@@ -60,11 +64,11 @@ namespace Wanwan.Runtime
 
                 if (i < CollectedCapsules)
                 {
-                    text += i == HighlightedIndex ? $"[>{Labels[i]}<]" : $"[{Labels[i]}]";
+                    text += i == HighlightedIndex ? $"[>{SlotLabels[i]}<]" : $"[{SlotLabels[i]}]";
                 }
                 else
                 {
-                    text += Labels[i];
+                    text += SlotLabels[i];
                 }
             }
 

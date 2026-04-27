@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1777121965038,
+  "lastScanned": 1777289637581,
   "projectRoot": "/Users/mark/work/wanwan",
   "techStack": {
     "languages": [],
@@ -36,27 +36,43 @@
     "Assets": {
       "path": "Assets",
       "purpose": "Static assets",
-      "fileCount": 4,
-      "lastAccessed": 1777121965008,
+      "fileCount": 7,
+      "lastAccessed": 1777289637458,
       "keyFiles": [
+        "Art.meta",
         "Editor.meta",
-        "Scenes.meta",
-        "Scripts.meta",
-        "Tests.meta"
+        "GeneratedArt.meta",
+        "Resources.meta",
+        "Scenes.meta"
       ]
     },
     "Builds": {
       "path": "Builds",
       "purpose": null,
-      "fileCount": 0,
-      "lastAccessed": 1777121965009,
-      "keyFiles": []
+      "fileCount": 1,
+      "lastAccessed": 1777289637485,
+      "keyFiles": [
+        "editmode-results.xml"
+      ]
+    },
+    "Kimi_Agent_雷电手游UI方案": {
+      "path": "Kimi_Agent_雷电手游UI方案",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1777289637493,
+      "keyFiles": [
+        "ref_background_countryside.png",
+        "ref_fighter_jet.png",
+        "仿雷电游戏开发计划.md",
+        "雷电UI详细设计规范.md",
+        "雷电游戏改进方案_从根本解决差距.md"
+      ]
     },
     "Library": {
       "path": "Library",
       "purpose": null,
-      "fileCount": 20,
-      "lastAccessed": 1777121965015,
+      "fileCount": 23,
+      "lastAccessed": 1777289637515,
       "keyFiles": [
         "AnnotationManager",
         "ArtifactDB",
@@ -68,9 +84,11 @@
     "Logs": {
       "path": "Logs",
       "purpose": null,
-      "fileCount": 2,
-      "lastAccessed": 1777121965017,
+      "fileCount": 4,
+      "lastAccessed": 1777289637516,
       "keyFiles": [
+        "AssetImportWorker0.log",
+        "AssetImportWorker1.log",
         "Packages-Update.log",
         "shadercompiler-UnityShaderCompiler-0.log"
       ]
@@ -79,7 +97,7 @@
       "path": "Packages",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1777121965019,
+      "lastAccessed": 1777289637516,
       "keyFiles": [
         "manifest.json",
         "packages-lock.json"
@@ -89,7 +107,7 @@
       "path": "ProjectSettings",
       "purpose": null,
       "fileCount": 20,
-      "lastAccessed": 1777121965023,
+      "lastAccessed": 1777289637519,
       "keyFiles": [
         "AudioManager.asset",
         "ClusterInputManager.asset",
@@ -101,61 +119,58 @@
     "UserSettings": {
       "path": "UserSettings",
       "purpose": null,
-      "fileCount": 2,
-      "lastAccessed": 1777121965024,
+      "fileCount": 3,
+      "lastAccessed": 1777289637529,
       "keyFiles": [
         "EditorUserSettings.asset",
+        "Search.index",
         "Search.settings"
       ]
+    },
+    "artifacts": {
+      "path": "artifacts",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777289637564,
+      "keyFiles": []
     },
     "docs": {
       "path": "docs",
       "purpose": "Documentation",
-      "fileCount": 0,
-      "lastAccessed": 1777121965024,
-      "keyFiles": []
+      "fileCount": 2,
+      "lastAccessed": 1777289637567,
+      "keyFiles": [
+        "gameplay-features.md"
+      ]
     },
     "scripts": {
       "path": "scripts",
       "purpose": "Build/utility scripts",
-      "fileCount": 5,
-      "lastAccessed": 1777121965025,
+      "fileCount": 7,
+      "lastAccessed": 1777289637567,
       "keyFiles": [
         "android_smoke_test.sh",
         "build_android.sh",
-        "install_unity_editor.sh",
-        "run_editmode_tests.sh",
-        "validate_unity_project.py"
+        "build_android_release.sh",
+        "build_ios.sh",
+        "install_unity_editor.sh"
       ]
     },
     "tests": {
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 1,
-      "lastAccessed": 1777121965026,
+      "lastAccessed": 1777289637572,
       "keyFiles": [
         "test_automation_files.py"
       ]
     },
-    "Assets/Scripts": {
-      "path": "Assets/Scripts",
-      "purpose": "Build/utility scripts",
-      "fileCount": 5,
-      "lastAccessed": 1777121965028,
-      "keyFiles": [
-        "Bootstrap.meta",
-        "Runtime.meta",
-        "UI.meta"
-      ]
-    },
-    "Assets/Tests": {
-      "path": "Assets/Tests",
-      "purpose": "Test files",
-      "fileCount": 1,
-      "lastAccessed": 1777121965033,
-      "keyFiles": [
-        "EditMode.meta"
-      ]
+    "tmp": {
+      "path": "tmp",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777289637573,
+      "keyFiles": []
     }
   },
   "hotPaths": [

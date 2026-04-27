@@ -33,5 +33,18 @@ namespace Wanwan.Tests.EditMode
             Assert.Greater(ArcadeTheme.ComboOrange.r + ArcadeTheme.ComboOrange.g, 1.3f);
             Assert.Greater(ArcadeTheme.ComboRed.r, 0.8f);
         }
+
+        [Test]
+        public void PowerMeterSlotCount_MatchesSixSlotDesign()
+        {
+            Assert.That(UIController.PowerMeterSlotCount, Is.EqualTo(PowerMeterState.SlotCount));
+            Assert.That(UIController.PowerMeterSlotCount, Is.EqualTo(6));
+        }
+
+        [Test]
+        public void BottomHudText_UsesConstrainedWrapping()
+        {
+            Assert.That(UIController.BottomHudTextUsesConstrainedWrapping, Is.True);
+        }
     }
 }

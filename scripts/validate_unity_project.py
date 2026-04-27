@@ -41,6 +41,8 @@ def main() -> None:
         "Assets/Resources/RaidenArt/Backgrounds/stage_06_floating_continent.png",
         "Assets/Resources/RaidenArt/Backgrounds/stage_07_space_station.png",
         "Assets/Resources/RaidenArt/Backgrounds/stage_08_alien_base.png",
+        "Assets/Resources/RaidenArt/Cinematics/menu_storm_title_ai.png",
+        "Assets/Resources/RaidenArt/Cinematics/launch_weather_intro_ai.png",
         "Assets/Resources/RaidenArt/Ships/fighter_jet_128.png",
         "Assets/Resources/RaidenArt/Effects/bullet_spread_arcade.png",
         "Assets/Resources/RaidenArt/Effects/bullet_laser_arcade.png",
@@ -95,7 +97,7 @@ def main() -> None:
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
 
     runtime_sprite_factory = (ROOT / "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs").read_text(encoding="utf-8")
-    for token in ("GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
+    for token in ("MenuStormTitleResourcePath", "RaidenFighterJetResourcePath", "GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
         check(token in runtime_sprite_factory, f"RuntimeSpriteFactory.cs missing token: {token}")
 
     session_state = (ROOT / "Assets/Scripts/Runtime/SessionState.cs").read_text(encoding="utf-8")

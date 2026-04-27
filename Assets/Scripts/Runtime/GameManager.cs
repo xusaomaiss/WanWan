@@ -111,6 +111,10 @@ namespace Wanwan.Runtime
         public float StageDifficultyMultiplier => SessionState.CurrentStageDifficultyMultiplier;
         public WavePhase CurrentWavePhase => waveDirector.GetCurrentPhase();
         public float WavePhaseProgress => waveDirector.GetPhaseProgress();
+        public bool IsFocusActive => grazeState.IsFocusActive;
+        public float FocusMeterNormalized => grazeState.FocusNormalized;
+        public float FocusCoinMagnetMultiplier => grazeState.IsFocusActive ? 2f : 1f;
+        public float FocusFireRateMultiplier => grazeState.IsFocusActive ? 1.3f : 1f;
 
         public void Initialize(UIController ui, EffectsController effects, BlockSpawner spawner, PlayerController player, float leftBound, float rightBound, float topBound, float bottomBound)
         {
@@ -131,6 +135,13 @@ namespace Wanwan.Runtime
 
             waveDirector.PhaseChanged += HandleWavePhaseChanged;
             ApplyShipSkill(ShipDefinition.Get(SessionState.SelectedShip).Skill);
+            achievementState.Load();
+            grazeDetector = playerController.gameObject.GetComponent<GrazeDetector>();
+            if (grazeDetector == null)
+            {
+                grazeDetector = playerController.gameObject.AddComponent<GrazeDetector>();
+            }
+            grazeDetector.Initialize(grazeState, playerController, this);
             uiController.Bind(this);
         }
 
@@ -236,6 +247,21 @@ namespace Wanwan.Runtime
             achievementState.AddProgress(AchievementType.Collect200Coins, 1);
             achievementState.AddProgress(AchievementType.Collect500Coins, 1);
 
+            uiController.RefreshHud();
+        }
+
+        public void NotifyGraze(Vector3 position, bool focusActivated)
+        {
+            if (gameEnded)
+            {
+                return;
+            }
+
+            effectsController.PlayPowerupPickup(position, new Color(0.62f, 0.9f, 1f), focusActivated ? "超频" : "擦!");
+            if (focusActivated)
+            {
+                ShowStageBanner("超频模式");
+            }
             uiController.RefreshHud();
         }
 
@@ -848,19 +874,27 @@ namespace Wanwan.Runtime
 
         private void TrackBossAchievement()
         {
-            achievementState.Unlock(AchievementType.FirstBossDefeat);
+            UnlockAchievement(AchievementType.FirstBossDefeat);
         }
 
         private void TrackClearAchievements()
         {
-            achievementState.Unlock(AchievementType.FirstClear);
+            UnlockAchievement(AchievementType.FirstClear);
             if (Difficulty == GameDifficulty.High)
             {
-                achievementState.Unlock(AchievementType.HardClear);
+                UnlockAchievement(AchievementType.HardClear);
             }
             if (BombCount == 0 && bombsUsed == 0)
             {
-                achievementState.Unlock(AchievementType.NoBombClear);
+                UnlockAchievement(AchievementType.NoBombClear);
+            }
+        }
+
+        private void UnlockAchievement(AchievementType type)
+        {
+            if (achievementState.Unlock(type) && achievementPopup != null)
+            {
+                achievementPopup.ShowAchievement(type);
             }
         }
 

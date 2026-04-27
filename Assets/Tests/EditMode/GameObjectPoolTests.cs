@@ -63,5 +63,22 @@ namespace Wanwan.Tests.EditMode
             pool.Return(null);
             Assert.Pass();
         }
+
+        [Test]
+        public void Rent_AfterReturn_RemovesRuntimeComponentsAndChildren()
+        {
+            var pool = new GameObjectPool("Test", 0);
+            var obj = pool.Rent();
+            obj.AddComponent<SpriteRenderer>();
+            obj.AddComponent<BoxCollider2D>();
+            new GameObject("RuntimeChild").transform.SetParent(obj.transform, false);
+
+            pool.Return(obj);
+            var reused = pool.Rent();
+
+            Assert.AreSame(obj, reused);
+            Assert.That(reused.GetComponents<Component>().Length, Is.EqualTo(1));
+            Assert.That(reused.transform.childCount, Is.EqualTo(0));
+        }
     }
 }

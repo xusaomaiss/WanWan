@@ -9,7 +9,8 @@ namespace Wanwan.Runtime
         public const float TopHudAnchorHeight = 0.11f;
         public const float BottomHudAnchorHeight = 0.105f;
         public const float RightStageProgressAnchorWidth = 0.045f;
-        public const int PowerMeterSlotCount = 4;
+        public const int PowerMeterSlotCount = 6;
+        public static readonly bool BottomHudTextUsesConstrainedWrapping = true;
         private const float PowerMeterPulseDuration = 0.38f;
 
         private GameManager gameManager;
@@ -42,6 +43,7 @@ namespace Wanwan.Runtime
         private Image stageProgressGlow;
         private readonly Image[] powerMeterSlotFills = new Image[PowerMeterSlotCount];
         private readonly Image[] powerMeterSlotGlows = new Image[PowerMeterSlotCount];
+        private readonly Text[] powerMeterSlotLabels = new Text[PowerMeterSlotCount];
         private int displayedPowerMeterCapsules = -1;
         private int pulsingPowerMeterSlot = -1;
         private float powerMeterPulseTimer;
@@ -111,7 +113,7 @@ namespace Wanwan.Runtime
             powerupText.text = BuildPowerupHudText();
             if (powerMeterText != null)
             {
-                powerMeterText.text = gameManager.PowerMeterHudText;
+                powerMeterText.text = string.Empty;
             }
             RefreshPowerMeterVisuals();
             if (upgradeButton != null)
@@ -233,6 +235,7 @@ namespace Wanwan.Runtime
             bottomBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(1);
             Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(4f, 4f));
             powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
+            UiFactory.ConfigureConstrainedText(powerupText, 11, 18);
             Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.2f), new Vector2(0.73f, 0.84f), new Vector2(4f, 4f));
             CreatePowerMeterVisuals(meterSlot.transform);
             for (int i = 1; i < PowerMeterSlotCount; i++)
@@ -240,7 +243,7 @@ namespace Wanwan.Runtime
                 float x = i / (float)PowerMeterSlotCount;
                 UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
             }
-            powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, "SPEED MISSILE DOUBLE LASER", 18, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.02f, 0f), new Vector2(0.98f, 1f), Vector2.zero);
+            powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, string.Empty, 1, TextAnchor.MiddleCenter, Color.clear, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
             upgradeButton = UiFactory.CreateButton(bottomBar.transform, "充能", ArcadeTheme.WarningRed, Color.white, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
             upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
@@ -259,7 +262,7 @@ namespace Wanwan.Runtime
             playerHealthGlow = UiFactory.CreatePanel(playerHealthRoot.transform, "PlayerHealthDamageFlash", new Color(1f, 0.06f, 0.02f, 0f), Vector2.zero, Vector2.one);
             playerHealthGlow.raycastTarget = false;
             playerHealthLabel = UiFactory.CreateArcadeLabel(playerHealthRoot.transform, "装甲 10/10", 22, TextAnchor.MiddleCenter, new Color(0.98f, 1f, 1f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
-            playerHealthRoot.gameObject.SetActive(false);
+            playerHealthRoot.gameObject.SetActive(true);
 
             vignetteTop = UiFactory.CreatePanel(canvas.transform, "DamageVignetteTop", new Color(1f, 0f, 0f, 0f), new Vector2(0f, 0.88f), Vector2.one);
             vignetteTop.raycastTarget = false;
@@ -342,8 +345,27 @@ namespace Wanwan.Runtime
 
         private string BuildPowerupHudText()
         {
-            string mount = gameManager.HasActiveMount ? $"  挂载 {gameManager.CurrentMountHudText}" : string.Empty;
-            return $"{gameManager.GetCurrentWeaponDisplayText()}\n护盾 {BuildShieldIcons()}{mount}";
+            string weaponLine = $"武器 {WeaponConfig.Get(gameManager.CurrentWeaponType).DisplayName} {gameManager.FireLevel}级";
+            string modules = BuildModuleSummary();
+            string mount = gameManager.HasActiveMount ? $" 挂载 {gameManager.CurrentMountHudText}" : string.Empty;
+            return $"{weaponLine}\n护盾 {BuildShieldIcons()} {modules}{mount}".TrimEnd();
+        }
+
+        private string BuildModuleSummary()
+        {
+            WeaponModuleType[] modules = gameManager.CurrentWeaponModules;
+            if (modules.Length == 0)
+            {
+                return "模块 -";
+            }
+
+            string text = "模块";
+            for (int i = 0; i < modules.Length; i++)
+            {
+                text += " " + PowerupCycle.GetModuleLabel(modules[i]);
+            }
+
+            return text;
         }
 
         private void CreatePowerMeterVisuals(Transform meterSlot)
@@ -362,6 +384,10 @@ namespace Wanwan.Runtime
                 Image fill = UiFactory.CreatePanel(meterSlot, "PowerMeterFill" + i, new Color(1f, 0.84f, 0.12f, 0.1f), anchorMin, anchorMax);
                 fill.raycastTarget = false;
                 powerMeterSlotFills[i] = fill;
+
+                Text label = UiFactory.CreateArcadeLabel(meterSlot, PowerMeterState.SlotLabels[i], 13, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, anchorMin, anchorMax, Vector2.zero);
+                UiFactory.ConfigureConstrainedText(label, 8, 13);
+                powerMeterSlotLabels[i] = label;
             }
         }
 
@@ -422,6 +448,12 @@ namespace Wanwan.Runtime
                     glow.a = filled ? (gameManager.CanActivatePowerMeter ? 0.38f : 0.18f) + (pulseWave * 0.5f) : 0f;
                     powerMeterSlotGlows[i].color = glow;
                 }
+
+                if (powerMeterSlotLabels[i] != null)
+                {
+                    powerMeterSlotLabels[i].text = PowerMeterState.SlotLabels[i];
+                    powerMeterSlotLabels[i].color = filled ? ArcadeTheme.InkBlack : new Color(1f, 0.88f, 0.24f, 0.82f);
+                }
             }
         }
 
@@ -465,7 +497,7 @@ namespace Wanwan.Runtime
 
             if (playerHealthLabel != null)
             {
-                playerHealthLabel.text = $"装甲 {gameManager.PlayerHealth}/{gameManager.MaxPlayerHealth}";
+                playerHealthLabel.text = $"装甲 {gameManager.PlayerHealth}/{gameManager.MaxPlayerHealth}  专注 {(gameManager.FocusMeterNormalized * 100f):0}%";
             }
 
             if (playerDamageFlashTimer > 0f)

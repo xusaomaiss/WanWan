@@ -15,6 +15,7 @@ namespace Wanwan.Runtime
 
         private GameManager gameManager;
         private EffectsController effectsController;
+        private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
         private TextMesh labelText;
         private AmmoPowerupType startingType;
@@ -33,10 +34,11 @@ namespace Wanwan.Runtime
         private float topBound;
         private AmmoPackPickupMode pickupMode;
 
-        public void Initialize(GameManager manager, EffectsController effects, AmmoPowerupType type, float speed, float despawnY, float left, float right, float top, Color color, string label, AmmoPackPickupMode mode = AmmoPackPickupMode.Normal)
+        public void Initialize(GameManager manager, EffectsController effects, BlockSpawner spawner, AmmoPowerupType type, float speed, float despawnY, float left, float right, float top, Color color, string label, AmmoPackPickupMode mode = AmmoPackPickupMode.Normal)
         {
             gameManager = manager;
             effectsController = effects;
+            blockSpawner = spawner;
             startingType = type;
             powerupType = type;
             fallSpeed = speed;
@@ -96,7 +98,7 @@ namespace Wanwan.Runtime
             }
 
             effectsController.PlayPowerupPickup(transform.position, spriteRenderer.color, PowerupCycle.GetLabel(powerupType) + " 火力");
-            DisposeRuntimeObject(gameObject);
+            ReturnOrDispose();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -178,8 +180,19 @@ namespace Wanwan.Runtime
             if (position.y < bottomDespawnY)
             {
                 resolved = true;
-                DisposeRuntimeObject(gameObject);
+                ReturnOrDispose();
             }
+        }
+
+        private void ReturnOrDispose()
+        {
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnPickupObject(gameObject);
+                return;
+            }
+
+            DisposeRuntimeObject(gameObject);
         }
 
         private static void DisposeRuntimeObject(Object target)

@@ -6,6 +6,7 @@ namespace Wanwan.Runtime
     {
         private GameManager gameManager;
         private EffectsController effectsController;
+        private BlockSpawner blockSpawner;
         private float speed;
         private float despawnY;
         private float leftDespawnX;
@@ -14,10 +15,11 @@ namespace Wanwan.Runtime
         private Color color;
         private bool resolved;
 
-        public void Initialize(GameManager manager, EffectsController effects, float travelSpeed, Vector2 travelDirection, float minY, float minX, float maxX, Color fireColor)
+        public void Initialize(GameManager manager, EffectsController effects, BlockSpawner spawner, float travelSpeed, Vector2 travelDirection, float minY, float minX, float maxX, Color fireColor)
         {
             gameManager = manager;
             effectsController = effects;
+            blockSpawner = spawner;
             speed = travelSpeed;
             direction = travelDirection.normalized;
             despawnY = minY;
@@ -37,7 +39,7 @@ namespace Wanwan.Runtime
             if (transform.position.y < despawnY || transform.position.x < leftDespawnX || transform.position.x > rightDespawnX)
             {
                 resolved = true;
-                Destroy(gameObject);
+                ReturnOrDestroy();
             }
         }
 
@@ -49,7 +51,7 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            Destroy(gameObject);
+            ReturnOrDestroy();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -64,8 +66,19 @@ namespace Wanwan.Runtime
                 resolved = true;
                 effectsController.PlayPlayerPierced(transform.position, color);
                 gameManager.DamagePlayerByPierce();
-                Destroy(gameObject);
+                ReturnOrDestroy();
             }
+        }
+
+        private void ReturnOrDestroy()
+        {
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnFireballObject(gameObject);
+                return;
+            }
+
+            Destroy(gameObject);
         }
     }
 }

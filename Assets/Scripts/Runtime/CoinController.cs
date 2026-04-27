@@ -7,14 +7,16 @@ namespace Wanwan.Runtime
         public const float BaseVisualScale = 0.36f;
 
         private GameManager gameManager;
+        private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
         private Vector3 driftVelocity;
         private float age;
         private bool collected;
 
-        public void Initialize(GameManager manager, Vector2 initialDrift)
+        public void Initialize(GameManager manager, BlockSpawner spawner, Vector2 initialDrift)
         {
             gameManager = manager;
+            blockSpawner = spawner;
             driftVelocity = initialDrift;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
@@ -34,13 +36,13 @@ namespace Wanwan.Runtime
             {
                 collected = true;
                 gameManager.CollectCoin(transform.position);
-                Destroy(gameObject);
+                ReturnOrDestroy();
                 return;
             }
 
-            if (distance <= gameManager.RewardConfig.CoinMagnetRadiusWorld)
+            if (distance <= gameManager.RewardConfig.CoinMagnetRadiusWorld * gameManager.FocusCoinMagnetMultiplier)
             {
-                float magnetStrength = Mathf.InverseLerp(gameManager.RewardConfig.CoinMagnetRadiusWorld, gameManager.RewardConfig.CoinCollectRadiusWorld, distance);
+                float magnetStrength = Mathf.InverseLerp(gameManager.RewardConfig.CoinMagnetRadiusWorld * gameManager.FocusCoinMagnetMultiplier, gameManager.RewardConfig.CoinCollectRadiusWorld, distance);
                 transform.position = Vector3.Lerp(transform.position, playerPosition, Time.deltaTime * Mathf.Lerp(5f, 13f, magnetStrength));
             }
             else
@@ -62,8 +64,19 @@ namespace Wanwan.Runtime
 
             if (age > 10f || transform.position.y < gameManager.BottomBound - 1.2f)
             {
-                Destroy(gameObject);
+                ReturnOrDestroy();
             }
+        }
+
+        private void ReturnOrDestroy()
+        {
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnPickupObject(gameObject);
+                return;
+            }
+
+            Destroy(gameObject);
         }
     }
 }

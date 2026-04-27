@@ -8,13 +8,15 @@ namespace Wanwan.Runtime
         private const float BaseVisualScale = 0.78f;
 
         private GameManager gameManager;
+        private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
         private float age;
         private bool consumed;
 
-        public void Initialize(GameManager manager)
+        public void Initialize(GameManager manager, BlockSpawner spawner = null)
         {
             gameManager = manager;
+            blockSpawner = spawner;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
@@ -45,7 +47,14 @@ namespace Wanwan.Runtime
 
             consumed = true;
             gameManager.HealPlayerFromPickup(transform.position, HealAmount);
-            Destroy(gameObject);
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnPickupObject(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

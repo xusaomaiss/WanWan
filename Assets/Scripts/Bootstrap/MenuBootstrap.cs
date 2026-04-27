@@ -9,6 +9,7 @@ namespace Wanwan.Runtime
         public static readonly bool ShowStartupLogo = false;
         public const int TitleCircleButtonFontSize = 30;
         public const int TitleHighScoreFontSize = TitleCircleButtonFontSize;
+        public const string TitleHeroFighterObjectName = "TitleHeroFighter";
 
         private static readonly Vector2 ShipPreviewSize = new Vector2(128f, 128f);
 
@@ -88,10 +89,13 @@ namespace Wanwan.Runtime
         private Image CreateBackground(string name)
         {
             ClearCanvas();
-            Image background = UiFactory.CreatePanel(canvas.transform, name, Color.white, Vector2.zero, Vector2.one);
-            background.sprite = state == MenuUiState.Title ? RuntimeSpriteFactory.GetMenuStormTitleSprite() : RuntimeSpriteFactory.GetSkyBackgroundSprite();
-            background.preserveAspect = false;
+            Image background = UiFactory.CreatePanel(canvas.transform, name, Color.black, Vector2.zero, Vector2.one);
             background.raycastTarget = false;
+
+            Sprite backgroundSprite = state == MenuUiState.Title ? RuntimeSpriteFactory.GetMenuStormTitleSprite() : RuntimeSpriteFactory.GetSkyBackgroundSprite();
+            RawImage backgroundArt = UiFactory.CreateRawImage(background.transform, name + "Art", backgroundSprite.texture, Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            backgroundArt.raycastTarget = false;
+            ApplyAspectFill(backgroundArt.rectTransform, backgroundSprite);
 
             Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
@@ -102,6 +106,31 @@ namespace Wanwan.Runtime
             }
             CreateScanlines(background.transform);
             return background;
+        }
+
+        private static void ApplyAspectFill(RectTransform rect, Sprite sprite)
+        {
+            float screenWidth = Mathf.Max(1080f, Screen.width);
+            float screenHeight = Mathf.Max(1920f, Screen.height);
+            float targetAspect = screenWidth / screenHeight;
+            float spriteAspect = sprite != null && sprite.rect.height > 0f ? sprite.rect.width / sprite.rect.height : targetAspect;
+
+            float width = screenWidth;
+            float height = screenHeight;
+            if (spriteAspect > targetAspect)
+            {
+                width = screenHeight * spriteAspect;
+            }
+            else
+            {
+                height = screenWidth / spriteAspect;
+            }
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(width, height);
         }
 
         private static void CreateScanlines(Transform parent)
@@ -127,6 +156,7 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Title;
             Image background = CreateBackground("TitleBackground");
+            CreateTitleHeroFighter(background.transform);
 
             Button leaderboard = UiFactory.CreateArcadeSpriteIconButton(background.transform, RuntimeSpriteFactory.GetLeaderboardIconSprite(), ArcadeTheme.EnergyYellow, new Vector2(96f, 96f), new Vector2(76f, -132f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             leaderboard.onClick.AddListener(ShowLeaderboard);
@@ -148,6 +178,19 @@ namespace Wanwan.Runtime
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";
             UiFactory.CreateArcadeLabel(background.transform, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
             if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
+        }
+
+        private static void CreateTitleHeroFighter(Transform parent)
+        {
+            Image glow = UiFactory.CreatePanel(parent, TitleHeroFighterObjectName + "Glow", new Color(0.2f, 0.9f, 1f, 0.18f), new Vector2(0.28f, 0.36f), new Vector2(0.72f, 0.68f));
+            glow.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            glow.raycastTarget = false;
+
+            Image fighter = UiFactory.CreatePanel(parent, TitleHeroFighterObjectName, Color.white, new Vector2(0.35f, 0.39f), new Vector2(0.65f, 0.67f));
+            fighter.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
+            fighter.preserveAspect = true;
+            fighter.raycastTarget = false;
+            fighter.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -5f);
         }
 
         private void ShowShipSelect()

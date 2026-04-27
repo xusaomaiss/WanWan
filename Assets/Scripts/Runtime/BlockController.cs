@@ -162,7 +162,7 @@ namespace Wanwan.Runtime
                 {
                     effectsController.PlayEliteBurst(transform.position, Color.red);
                 }
-                Destroy(gameObject);
+                blockSpawner.ReturnEnemyObject(gameObject);
             }
         }
 
@@ -205,7 +205,7 @@ namespace Wanwan.Runtime
                     effectsController.PlaySmallBurst(transform.position, effectColor);
                 }
                 blockSpawner.NotifyEnemyResolved();
-                Destroy(gameObject);
+                blockSpawner.ReturnEnemyObject(gameObject);
                 return;
             }
 
@@ -237,7 +237,7 @@ namespace Wanwan.Runtime
                 effectsController.PlaySmallBurst(transform.position, effectColor);
             }
             blockSpawner.NotifyEnemyResolved();
-            Destroy(gameObject);
+            blockSpawner.ReturnEnemyObject(gameObject);
         }
 
         public void ReachBase()
@@ -255,7 +255,7 @@ namespace Wanwan.Runtime
             resolved = true;
             gameManager.NotifyEnemyEscaped(transform.position);
             blockSpawner.NotifyEnemyResolved();
-            Destroy(gameObject);
+            blockSpawner.ReturnEnemyObject(gameObject);
         }
 
         public void Heal(int amount)

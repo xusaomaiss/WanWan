@@ -89,6 +89,39 @@ namespace Wanwan.Runtime
             activeEnemyCount = Mathf.Max(0, activeEnemyCount - 1);
         }
 
+        public void ReturnEnemyObject(GameObject obj)
+        {
+            if (pools != null)
+            {
+                pools.ReturnEnemy(obj);
+                return;
+            }
+
+            Destroy(obj);
+        }
+
+        public void ReturnPickupObject(GameObject obj)
+        {
+            if (pools != null)
+            {
+                pools.ReturnPickup(obj);
+                return;
+            }
+
+            Destroy(obj);
+        }
+
+        public void ReturnFireballObject(GameObject obj)
+        {
+            if (pools != null)
+            {
+                pools.ReturnFireball(obj);
+                return;
+            }
+
+            Destroy(obj);
+        }
+
         public void SpawnEnemyMissile(Vector3 origin, Vector2 direction, Color color, bool fromBoss = false)
         {
             GameObject fireballObject = pools != null ? pools.RentFireball() : new GameObject(fromBoss ? "BossMissile" : "EnemyMissile");
@@ -118,7 +151,7 @@ namespace Wanwan.Runtime
             }
 
             EnemyFireballController fireball = fireballObject.AddComponent<EnemyFireballController>();
-            fireball.Initialize(gameManager, effectsController, speed, direction, gameManager.BottomBound - 1.2f, gameManager.LeftBound, gameManager.RightBound, renderer.color);
+            fireball.Initialize(gameManager, effectsController, this, speed, direction, gameManager.BottomBound - 1.2f, gameManager.LeftBound, gameManager.RightBound, renderer.color);
         }
 
         public void SpawnAmmoPackAtPosition(AmmoPowerupType type, Vector3 position, AmmoPackPickupMode pickupMode = AmmoPackPickupMode.Normal)
@@ -146,7 +179,7 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             AmmoPackController packController = packObject.AddComponent<AmmoPackController>();
-            packController.Initialize(gameManager, effectsController, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, gameManager.LeftBound, gameManager.RightBound, gameManager.TopBound, renderer.color, GetAmmoPackLabel(type), pickupMode);
+            packController.Initialize(gameManager, effectsController, this, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, gameManager.LeftBound, gameManager.RightBound, gameManager.TopBound, renderer.color, GetAmmoPackLabel(type), pickupMode);
         }
 
         public void SpawnAmmoPackAtPosition(WeaponType type, Vector3 position, AmmoPackPickupMode pickupMode = AmmoPackPickupMode.Normal)
@@ -168,11 +201,11 @@ namespace Wanwan.Runtime
                 renderer.color = Color.white;
                 renderer.sortingOrder = 18;
 
-                CoinController coin = coinObject.AddComponent<CoinController>();
-                float angle = ((Mathf.PI * 2f) / Mathf.Max(1, count)) * i;
-                Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
-                drift.y = Mathf.Abs(drift.y) * 0.65f;
-                coin.Initialize(gameManager, drift);
+            CoinController coin = coinObject.AddComponent<CoinController>();
+            float angle = ((Mathf.PI * 2f) / Mathf.Max(1, count)) * i;
+            Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
+            drift.y = Mathf.Abs(drift.y) * 0.65f;
+            coin.Initialize(gameManager, this, drift);
             }
         }
 
@@ -259,7 +292,7 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             BombPickupController pickup = bombObject.AddComponent<BombPickupController>();
-            pickup.Initialize(gameManager);
+            pickup.Initialize(gameManager, this);
             effectsController.PlayPowerupSpawn(position, new Color(0.45f, 0.86f, 1f));
         }
 
@@ -282,7 +315,7 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             HealthPickupController pickup = healthObject.AddComponent<HealthPickupController>();
-            pickup.Initialize(gameManager);
+            pickup.Initialize(gameManager, this);
             effectsController.PlayPowerupSpawn(position, new Color(0.35f, 1f, 0.62f));
         }
 
@@ -306,7 +339,7 @@ namespace Wanwan.Runtime
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             PowerCapsuleController capsule = capsuleObject.AddComponent<PowerCapsuleController>();
-            capsule.Initialize(gameManager, effectsController, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime) * 0.86f, gameManager.BottomBound - 1.25f);
+            capsule.Initialize(gameManager, effectsController, this, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime) * 0.86f, gameManager.BottomBound - 1.25f);
         }
 
         private void TrySpawnPowerCapsule(Vector3 position)

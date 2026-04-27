@@ -6,6 +6,7 @@ namespace Wanwan.Runtime
     {
         private GameManager gameManager;
         private EffectsController effectsController;
+        private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
         private float fallSpeed;
         private float bottomDespawnY;
@@ -13,10 +14,11 @@ namespace Wanwan.Runtime
         private bool consumed;
         private Vector3 baseScale;
 
-        public void Initialize(GameManager manager, EffectsController effects, float speed, float despawnY)
+        public void Initialize(GameManager manager, EffectsController effects, BlockSpawner spawner, float speed, float despawnY)
         {
             gameManager = manager;
             effectsController = effects;
+            blockSpawner = spawner;
             fallSpeed = Mathf.Max(0.8f, speed);
             bottomDespawnY = despawnY;
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -48,7 +50,7 @@ namespace Wanwan.Runtime
             if (transform.position.y < bottomDespawnY)
             {
                 consumed = true;
-                Destroy(gameObject);
+                ReturnOrDestroy();
             }
         }
 
@@ -64,6 +66,16 @@ namespace Wanwan.Runtime
             if (effectsController != null)
             {
                 effectsController.PlayPowerupPickup(transform.position, new Color(0.42f, 0.9f, 1f), "能量胶囊");
+            }
+            ReturnOrDestroy();
+        }
+
+        private void ReturnOrDestroy()
+        {
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnPickupObject(gameObject);
+                return;
             }
 
             Destroy(gameObject);

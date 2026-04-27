@@ -14,18 +14,23 @@ namespace Wanwan.Tests.EditMode
             state.CollectCapsule();
             state.CollectCapsule();
             state.CollectCapsule();
+            state.CollectCapsule();
+            state.CollectCapsule();
 
-            Assert.That(state.HighlightedUpgrade, Is.EqualTo(PowerMeterUpgrade.Laser));
-            Assert.That(state.HighlightedIndex, Is.EqualTo(3));
-            Assert.That(state.CollectedCapsules, Is.EqualTo(4));
+            Assert.That(PowerMeterState.SlotCount, Is.EqualTo(6));
+            Assert.That(state.HighlightedUpgrade, Is.EqualTo(PowerMeterUpgrade.Shield));
+            Assert.That(state.HighlightedIndex, Is.EqualTo(5));
+            Assert.That(state.CollectedCapsules, Is.EqualTo(6));
             Assert.That(state.IsFull, Is.True);
         }
 
         [Test]
-        public void CanActivate_OnlyAfterFourCapsules()
+        public void CanActivate_OnlyAfterSixCapsules()
         {
             PowerMeterState state = new PowerMeterState();
 
+            state.CollectCapsule();
+            state.CollectCapsule();
             state.CollectCapsule();
             state.CollectCapsule();
             state.CollectCapsule();
@@ -45,10 +50,12 @@ namespace Wanwan.Tests.EditMode
             state.CollectCapsule();
             state.CollectCapsule();
             state.CollectCapsule();
+            state.CollectCapsule();
+            state.CollectCapsule();
 
             PowerMeterUpgrade upgrade = state.ActivateHighlightedUpgrade();
 
-            Assert.That(upgrade, Is.EqualTo(PowerMeterUpgrade.Laser));
+            Assert.That(upgrade, Is.EqualTo(PowerMeterUpgrade.Shield));
             Assert.That(state.HighlightedUpgrade, Is.EqualTo(PowerMeterUpgrade.None));
             Assert.That(state.HighlightedIndex, Is.EqualTo(-1));
             Assert.That(state.CollectedCapsules, Is.EqualTo(0));
@@ -64,8 +71,8 @@ namespace Wanwan.Tests.EditMode
                 state.CollectCapsule();
             }
 
-            Assert.That(state.HighlightedUpgrade, Is.EqualTo(PowerMeterUpgrade.Laser));
-            Assert.That(state.HighlightedIndex, Is.EqualTo(3));
+            Assert.That(state.HighlightedUpgrade, Is.EqualTo(PowerMeterUpgrade.Shield));
+            Assert.That(state.HighlightedIndex, Is.EqualTo(5));
         }
 
         [Test]
@@ -75,7 +82,15 @@ namespace Wanwan.Tests.EditMode
             state.CollectCapsule();
             state.CollectCapsule();
 
-            Assert.That(state.BuildHudText(), Is.EqualTo("[SPEED] [>MISSILE<] DOUBLE LASER"));
+            Assert.That(state.BuildHudText(), Is.EqualTo("[SPEED] [>MISSILE<] DOUBLE LASER OPTION SHIELD"));
+        }
+
+        [Test]
+        public void SlotLabels_ExposeSixReadableLabels()
+        {
+            CollectionAssert.AreEqual(
+                new[] { "SPEED", "MISSILE", "DOUBLE", "LASER", "OPTION", "SHIELD" },
+                PowerMeterState.SlotLabels);
         }
 
         [Test]

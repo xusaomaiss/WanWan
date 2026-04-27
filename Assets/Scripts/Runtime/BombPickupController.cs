@@ -5,13 +5,15 @@ namespace Wanwan.Runtime
     public class BombPickupController : MonoBehaviour
     {
         private GameManager gameManager;
+        private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
         private float age;
         private bool consumed;
 
-        public void Initialize(GameManager manager)
+        public void Initialize(GameManager manager, BlockSpawner spawner = null)
         {
             gameManager = manager;
+            blockSpawner = spawner;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
@@ -42,7 +44,14 @@ namespace Wanwan.Runtime
 
             consumed = true;
             gameManager.ActivateBombFromPickup(transform.position);
-            Destroy(gameObject);
+            if (blockSpawner != null)
+            {
+                blockSpawner.ReturnPickupObject(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

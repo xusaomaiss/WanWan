@@ -38,6 +38,23 @@ namespace Wanwan.Runtime
             return image;
         }
 
+        public static RawImage CreateRawImage(Transform parent, string name, Texture texture, Color color, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            GameObject imageObject = new GameObject(name, typeof(RectTransform), typeof(RawImage));
+            imageObject.transform.SetParent(parent, false);
+
+            RectTransform rect = imageObject.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            RawImage image = imageObject.GetComponent<RawImage>();
+            image.texture = texture;
+            image.color = color;
+            return image;
+        }
+
         public static Image CreateArcadePanel(
             Transform parent,
             string name,
@@ -130,6 +147,20 @@ namespace Wanwan.Runtime
 
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+        }
+
+        public static void ConfigureConstrainedText(Text text, int minSize, int maxSize)
+        {
+            if (text == null)
+            {
+                return;
+            }
+
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = minSize;
+            text.resizeTextMaxSize = maxSize;
         }
 
         public static Button CreateButton(Transform parent, string label, Color buttonColor, Color textColor, Vector2 size, Vector2 anchoredPosition)

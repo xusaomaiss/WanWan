@@ -160,7 +160,8 @@ namespace Wanwan.Runtime
         {
             float configuredInterval = WeaponConfig.Get(gameManager.CurrentWeaponType).FireInterval;
             float moduleBonus = HasModule(WeaponModuleType.RapidFire) ? 0.034f : 0f;
-            return Mathf.Max(0.065f, configuredInterval - moduleBonus - ((gameManager.FireLevel - 1) * 0.012f));
+            float interval = Mathf.Max(0.065f, configuredInterval - moduleBonus - ((gameManager.FireLevel - 1) * 0.012f));
+            return interval / gameManager.FocusFireRateMultiplier;
         }
 
         private bool HasModule(WeaponModuleType module)

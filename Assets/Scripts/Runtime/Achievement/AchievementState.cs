@@ -28,16 +28,21 @@ namespace Wanwan.Runtime.Achievement
 
         public void Save()
         {
+            foreach (var pair in progressCounters)
+            {
+                PlayerPrefs.SetInt($"wanwan.achievement.progress.{pair.Key}", pair.Value);
+            }
             PlayerPrefs.Save();
         }
 
-        public void Unlock(AchievementType type)
+        public bool Unlock(AchievementType type)
         {
             if (unlocked.Contains(type))
-                return;
+                return false;
             unlocked.Add(type);
             PlayerPrefs.SetInt($"wanwan.achievement.{type}", 1);
             PlayerPrefs.Save();
+            return true;
         }
 
         public bool IsUnlocked(AchievementType type) => unlocked.Contains(type);
@@ -47,6 +52,7 @@ namespace Wanwan.Runtime.Achievement
             if (unlocked.Contains(type))
                 return;
             progressCounters[type] = (progressCounters.ContainsKey(type) ? progressCounters[type] : 0) + amount;
+            PlayerPrefs.SetInt($"wanwan.achievement.progress.{type}", progressCounters[type]);
             CheckProgress(type);
         }
 

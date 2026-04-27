@@ -7,13 +7,15 @@ namespace Wanwan.Runtime
     {
         private GrazeState grazeState;
         private PlayerController player;
+        private GameManager gameManager;
         private readonly HashSet<EnemyFireballController> grazedFireballs = new HashSet<EnemyFireballController>();
         private float nextCheckTime;
 
-        public void Initialize(GrazeState state, PlayerController playerController)
+        public void Initialize(GrazeState state, PlayerController playerController, GameManager manager)
         {
             grazeState = state;
             player = playerController;
+            gameManager = manager;
         }
 
         private void Update()
@@ -46,7 +48,11 @@ namespace Wanwan.Runtime
                 float dist = Vector2.Distance(playerPos, fb.transform.position);
                 if (dist < radius)
                 {
-                    grazeState.RegisterGraze();
+                    bool focusActivated = grazeState.RegisterGraze();
+                    if (gameManager != null)
+                    {
+                        gameManager.NotifyGraze(fb.transform.position, focusActivated);
+                    }
                     grazedFireballs.Add(fb);
                 }
             }
