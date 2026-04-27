@@ -23,6 +23,8 @@ namespace Wanwan.Runtime
         private readonly PlayerInvulnerabilityState invulnerabilityState = new PlayerInvulnerabilityState();
         private readonly WaveDirector waveDirector = new WaveDirector();
         private readonly AchievementState achievementState = new AchievementState();
+        private readonly GrazeState grazeState = new GrazeState();
+        private GrazeDetector grazeDetector;
         private AchievementPopup achievementPopup;
         private bool gameEnded;
         private bool paused;
@@ -822,6 +824,9 @@ namespace Wanwan.Runtime
             {
                 case PlayerSkill.ExtraShield:
                     shieldCharges = Mathf.Min(3, shieldCharges + 1);
+                    break;
+                case PlayerSkill.BetterGraze:
+                    grazeState.GrazeRadius = 2.2f;
                     break;
                 case PlayerSkill.Level2Weapon:
                     weaponState.UpgradeFireLevel();
