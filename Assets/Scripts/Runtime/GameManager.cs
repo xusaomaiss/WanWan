@@ -525,6 +525,14 @@ namespace Wanwan.Runtime
             {
                 ShowStageBanner(PowerupCycle.GetLabel(type) + " 火力 " + weaponState.FireLevel + "级");
             }
+            else if (outcome == AmmoPickupOutcome.ModuleSynergy)
+            {
+                var synergy = Wanwan.Runtime.Weapons.ModuleSynergy.Check(weaponState.GetEquippedModules());
+                if (synergy.HasValue)
+                {
+                    ShowStageBanner("联动激活: " + synergy.Value.DisplayName);
+                }
+            }
             uiController.RefreshHud();
         }
 

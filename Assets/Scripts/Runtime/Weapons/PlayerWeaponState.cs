@@ -1,4 +1,5 @@
 using UnityEngine;
+using Wanwan.Runtime.Weapons;
 
 namespace Wanwan.Runtime
 {
@@ -16,6 +17,11 @@ namespace Wanwan.Runtime
             if (module != WeaponModuleType.None)
             {
                 EquipModule(module);
+                WeaponModuleType[] equipped = GetEquippedModules();
+                if (ModuleSynergy.Check(equipped).HasValue)
+                {
+                    return AmmoPickupOutcome.ModuleSynergy;
+                }
                 return AmmoPickupOutcome.ModuleEquipped;
             }
 

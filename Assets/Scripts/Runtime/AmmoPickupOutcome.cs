@@ -5,6 +5,7 @@ namespace Wanwan.Runtime
         None = 0,
         FireLevelUp = 1,
         ModuleEquipped = 2,
-        OffColorShield = 3
+        OffColorShield = 3,
+        ModuleSynergy = 4
     }
 }
