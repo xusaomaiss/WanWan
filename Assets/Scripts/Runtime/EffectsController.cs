@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
 {
@@ -18,10 +19,12 @@ namespace Wanwan.Runtime
         private AudioClip bombClip;
         private AudioClip bossAlarmClip;
         private VisualEffectsQuality EffectsQuality => SessionState.VisualEffectsQuality;
+        private PoolCollection pools;
 
         public void Initialize(Camera mainCamera)
         {
             targetCamera = mainCamera;
+            pools = FindObjectOfType<GameBootstrap>()?.Pools;
             sfxSource = gameObject.AddComponent<AudioSource>();
             sfxSource.playOnAwake = false;
 
@@ -173,7 +176,7 @@ namespace Wanwan.Runtime
             int budgetedCount = VisualEffectsBudget.GetParticleCount(EffectsQuality, count);
             for (int i = 0; i < budgetedCount; i++)
             {
-                GameObject particle = new GameObject("CandyParticle");
+                GameObject particle = pools != null ? pools.RentParticle() : new GameObject("CandyParticle");
                 SpriteRenderer renderer = particle.AddComponent<SpriteRenderer>();
                 renderer.sprite = RuntimeSpriteFactory.GetCircleSprite();
                 renderer.color = color;
@@ -187,7 +190,7 @@ namespace Wanwan.Runtime
 
         private void EmitExplosionImage(Vector3 position)
         {
-            GameObject explosion = new GameObject("ExplosionImage");
+            GameObject explosion = pools != null ? pools.RentParticle() : new GameObject("ExplosionImage");
             SpriteRenderer renderer = explosion.AddComponent<SpriteRenderer>();
             Sprite[] frames = RuntimeSpriteFactory.GetArcadeExplosionFrameSprites();
             renderer.sprite = frames[0];
@@ -202,7 +205,7 @@ namespace Wanwan.Runtime
         {
             for (int i = 0; i < count; i++)
             {
-                GameObject debris = new GameObject("ExplosionDebris");
+                GameObject debris = pools != null ? pools.RentParticle() : new GameObject("ExplosionDebris");
                 SpriteRenderer renderer = debris.AddComponent<SpriteRenderer>();
                 renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
                 renderer.color = Color.Lerp(color, new Color(1f, 0.82f, 0.32f), 0.55f);
@@ -319,7 +322,7 @@ namespace Wanwan.Runtime
 
         private IEnumerator AnimatePowerupLabel(Vector3 position, Color color, string label)
         {
-            GameObject labelObject = new GameObject("PowerupLabel");
+            GameObject labelObject = pools != null ? pools.RentLabel() : new GameObject("PowerupLabel");
             TextMesh textMesh = labelObject.AddComponent<TextMesh>();
             ArcadeFontProvider.ApplyTo(textMesh);
             textMesh.text = label + "!";
@@ -351,7 +354,7 @@ namespace Wanwan.Runtime
 
         private IEnumerator AnimateScoreLabel(Vector3 position, int scoreValue)
         {
-            GameObject labelObject = new GameObject("ScorePopup");
+            GameObject labelObject = pools != null ? pools.RentLabel() : new GameObject("ScorePopup");
             TextMesh textMesh = labelObject.AddComponent<TextMesh>();
             ArcadeFontProvider.ApplyTo(textMesh);
             textMesh.text = "+" + scoreValue;
@@ -383,7 +386,7 @@ namespace Wanwan.Runtime
 
         private IEnumerator AnimateBombFlash(Vector3 center)
         {
-            GameObject flash = new GameObject("BombFlash");
+            GameObject flash = pools != null ? pools.RentParticle() : new GameObject("BombFlash");
             SpriteRenderer renderer = flash.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
             renderer.color = new Color(0.72f, 0.95f, 1f, 0.58f);
@@ -408,7 +411,7 @@ namespace Wanwan.Runtime
 
         private IEnumerator AnimateBombShockwave(Vector3 center)
         {
-            GameObject shockwave = new GameObject("BombShockwave");
+            GameObject shockwave = pools != null ? pools.RentParticle() : new GameObject("BombShockwave");
             SpriteRenderer renderer = shockwave.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetCircleSprite();
             renderer.color = new Color(0.34f, 0.86f, 1f, 0.52f);
