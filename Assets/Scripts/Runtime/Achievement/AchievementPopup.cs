@@ -50,7 +50,7 @@ namespace Wanwan.Runtime.Achievement
 
             var rect = popupPanel.GetComponent<RectTransform>();
             Vector3 endPos = rect.anchoredPosition;
-            rect.anchoredPosition += Vector3.right * 300f;
+            rect.anchoredPosition += Vector2.right * 300f;
 
             float elapsed = 0f;
             float duration = 0.3f;

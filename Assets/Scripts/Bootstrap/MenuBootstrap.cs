@@ -309,6 +309,8 @@ namespace Wanwan.Runtime
             back.onClick.AddListener(ShowTitle);
             if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
+
+        private static string Stars(int count)
         {
             return new string('■', Mathf.Clamp(count, 1, 5)).PadRight(5, '□');
         }

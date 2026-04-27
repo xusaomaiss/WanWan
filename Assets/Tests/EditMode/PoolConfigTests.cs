@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Wanwan.Runtime;
 using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Tests.EditMode

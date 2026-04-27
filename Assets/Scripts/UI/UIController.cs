@@ -261,9 +261,9 @@ namespace Wanwan.Runtime
             playerHealthLabel = UiFactory.CreateArcadeLabel(playerHealthRoot.transform, "装甲 10/10", 22, TextAnchor.MiddleCenter, new Color(0.98f, 1f, 1f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
             playerHealthRoot.gameObject.SetActive(false);
 
-            vignetteTop = UiFactory.CreatePanel(canvas, "DamageVignetteTop", new Color(1f, 0f, 0f, 0f), new Vector2(0f, 0.88f), Vector2.one);
+            vignetteTop = UiFactory.CreatePanel(canvas.transform, "DamageVignetteTop", new Color(1f, 0f, 0f, 0f), new Vector2(0f, 0.88f), Vector2.one);
             vignetteTop.raycastTarget = false;
-            vignetteBottom = UiFactory.CreatePanel(canvas, "DamageVignetteBottom", new Color(1f, 0f, 0f, 0f), Vector2.zero, new Vector2(1f, 0.12f));
+            vignetteBottom = UiFactory.CreatePanel(canvas.transform, "DamageVignetteBottom", new Color(1f, 0f, 0f, 0f), Vector2.zero, new Vector2(1f, 0.12f));
             vignetteBottom.raycastTarget = false;
 
             pauseHintText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 40, TextAnchor.MiddleCenter, new Color(0.6f, 0.84f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.3f, 0.79f), new Vector2(0.7f, 0.84f), Vector2.zero);

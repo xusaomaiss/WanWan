@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using Wanwan.Runtime;
 
 namespace Wanwan.Tests.EditMode
 {
