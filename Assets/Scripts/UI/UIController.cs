@@ -60,6 +60,8 @@ namespace Wanwan.Runtime
         private Text overlayBestScore;
         private Text overlaySummary;
         private float playerDamageFlashTimer;
+        private Image vignetteTop;
+        private Image vignetteBottom;
 
         public void Bind(GameManager manager)
         {
@@ -258,6 +260,11 @@ namespace Wanwan.Runtime
             playerHealthGlow.raycastTarget = false;
             playerHealthLabel = UiFactory.CreateArcadeLabel(playerHealthRoot.transform, "装甲 10/10", 22, TextAnchor.MiddleCenter, new Color(0.98f, 1f, 1f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
             playerHealthRoot.gameObject.SetActive(false);
+
+            vignetteTop = UiFactory.CreatePanel(canvas, "DamageVignetteTop", new Color(1f, 0f, 0f, 0f), new Vector2(0f, 0.88f), Vector2.one);
+            vignetteTop.raycastTarget = false;
+            vignetteBottom = UiFactory.CreatePanel(canvas, "DamageVignetteBottom", new Color(1f, 0f, 0f, 0f), Vector2.zero, new Vector2(1f, 0.12f));
+            vignetteBottom.raycastTarget = false;
 
             pauseHintText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 40, TextAnchor.MiddleCenter, new Color(0.6f, 0.84f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.3f, 0.79f), new Vector2(0.7f, 0.84f), Vector2.zero);
             stageBannerText = UiFactory.CreateArcadeLabel(canvas.transform, string.Empty, 48, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.54f, 0.94f), FontStyle.Bold, new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.61f), Vector2.zero);
@@ -471,6 +478,20 @@ namespace Wanwan.Runtime
                 Color flash = playerHealthGlow.color;
                 flash.a = Mathf.Clamp01(playerDamageFlashTimer / 0.42f) * 0.58f;
                 playerHealthGlow.color = flash;
+            }
+
+            float vignetteAlpha = Mathf.Clamp01(playerDamageFlashTimer / 0.42f) * 0.35f;
+            if (vignetteTop != null)
+            {
+                Color c = vignetteTop.color;
+                c.a = vignetteAlpha;
+                vignetteTop.color = c;
+            }
+            if (vignetteBottom != null)
+            {
+                Color c = vignetteBottom.color;
+                c.a = vignetteAlpha;
+                vignetteBottom.color = c;
             }
         }
 

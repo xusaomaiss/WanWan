@@ -83,6 +83,14 @@ namespace Wanwan.Runtime
             sfxSource.PlayOneShot(hitClip, 0.7f);
         }
 
+        public void PlaySmallBurst(Vector3 position, Color color)
+        {
+            EmitExplosionImage(position);
+            EmitParticles(position, color, 6, 0.12f, 0.2f);
+            sfxSource.PlayOneShot(explosionSmallClip, 0.6f);
+            StartShake(0.04f, 0.04f);
+        }
+
         public void PlayBurst(Vector3 position, Color color)
         {
             EmitExplosionImage(position);
@@ -90,6 +98,16 @@ namespace Wanwan.Runtime
             EmitDebris(position, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 14));
             sfxSource.PlayOneShot(explosionSmallClip, 0.86f);
             StartShake(0.07f, 0.08f);
+        }
+
+        public void PlayEliteBurst(Vector3 position, Color color)
+        {
+            EmitExplosionImage(position);
+            EmitExplosionImage(position + new Vector3(0.2f, -0.1f, 0f));
+            EmitParticles(position, color, 24, 0.4f, 0.9f);
+            EmitDebris(position, color, VisualEffectsBudget.GetParticleCount(EffectsQuality, 20));
+            sfxSource.PlayOneShot(explosionSmallClip, 1f);
+            StartShake(0.12f, 0.12f);
         }
 
         public void PlayGroundTargetDestroyed(Vector3 position, Color color)

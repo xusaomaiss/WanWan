@@ -21,6 +21,7 @@ namespace Wanwan.Runtime
         private Text opacityValueText;
         private Text saveStatusText;
         private float saveStatusTimer;
+        private MenuTransitionController transitionController;
 
         private void Awake()
         {
@@ -28,6 +29,9 @@ namespace Wanwan.Runtime
             selectedShip = SessionState.SelectedShip;
             EnsureCamera(ArcadeTheme.BackgroundBlack);
             canvas = UiFactory.CreateCanvas("MenuCanvas");
+            var transitionGo = new GameObject("MenuTransition");
+            transitionGo.transform.SetParent(canvas.transform, false);
+            transitionController = transitionGo.AddComponent<MenuTransitionController>();
             if (ShowStartupLogo)
             {
                 ShowLogo();
@@ -143,6 +147,7 @@ namespace Wanwan.Runtime
 
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";
             UiFactory.CreateArcadeLabel(background.transform, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
 
         private void ShowShipSelect()
@@ -160,6 +165,7 @@ namespace Wanwan.Runtime
                 SessionState.SelectShip(selectedShip);
                 ShowDifficulty();
             });
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
 
         private void CreateShipCard(Transform parent, PlayerShipType shipType, Vector2 anchorMin, Vector2 anchorMax)
@@ -199,6 +205,7 @@ namespace Wanwan.Runtime
             CreateDifficultyCard(background.transform, GameDifficulty.High, "困难", "初始生命 2 / 强化火力 / 高压挑战", ArcadeTheme.WarningRed, new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.38f));
             Button back = UiFactory.CreatePixelButton(background.transform, "返回选机", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
             back.onClick.AddListener(ShowShipSelect);
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
 
         private void CreateDifficultyCard(Transform parent, GameDifficulty difficulty, string title, string desc, Color edge, Vector2 anchorMin, Vector2 anchorMax)
@@ -237,6 +244,7 @@ namespace Wanwan.Runtime
 
             Button back = UiFactory.CreatePixelButton(background.transform, "返回标题", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
             back.onClick.AddListener(ShowTitle);
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
 
         private void ShowSettings()
@@ -299,9 +307,8 @@ namespace Wanwan.Runtime
 
             Button back = UiFactory.CreatePixelButton(background.transform, "返回标题", ArcadeTheme.DimGray, new Vector2(360f, 78f), new Vector2(0f, -780f));
             back.onClick.AddListener(ShowTitle);
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
         }
-
-        private static string Stars(int count)
         {
             return new string('■', Mathf.Clamp(count, 1, 5)).PadRight(5, '□');
         }

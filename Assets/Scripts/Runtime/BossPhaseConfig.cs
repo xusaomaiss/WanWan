@@ -2,7 +2,7 @@ namespace Wanwan.Runtime
 {
     public class BossPhaseConfig
     {
-        public BossPhaseConfig(float triggerHealthNormalized, float fireInterval, int salvoCount, float spreadAngle, bool aimedCoreShot, bool extraRingShot = false)
+        public BossPhaseConfig(float triggerHealthNormalized, float fireInterval, int salvoCount, float spreadAngle, bool aimedCoreShot, bool extraRingShot = false, float movementSpeedMultiplier = 1f, bool isEnraged = false)
         {
             TriggerHealthNormalized = triggerHealthNormalized;
             FireInterval = fireInterval;
@@ -10,6 +10,8 @@ namespace Wanwan.Runtime
             SpreadAngle = spreadAngle;
             AimedCoreShot = aimedCoreShot;
             ExtraRingShot = extraRingShot;
+            MovementSpeedMultiplier = movementSpeedMultiplier;
+            IsEnraged = isEnraged;
         }
 
         public float TriggerHealthNormalized { get; }
@@ -18,5 +20,7 @@ namespace Wanwan.Runtime
         public float SpreadAngle { get; }
         public bool AimedCoreShot { get; }
         public bool ExtraRingShot { get; }
+        public float MovementSpeedMultiplier { get; }
+        public bool IsEnraged { get; }
     }
 }

@@ -64,9 +64,30 @@ namespace Wanwan.Runtime
             }
 
             Vector3 hoverPosition = transform.position;
-            hoverPosition.x = Mathf.Sin(elapsed * hoverSpeed) * hoverAmplitude;
+            float speedMultiplier = 1f;
+            bool enraged = false;
+            try
+            {
+                var activePhase = GetActivePhase();
+                speedMultiplier = activePhase.MovementSpeedMultiplier;
+                enraged = activePhase.IsEnraged;
+            }
+            catch
+            {
+                // ignore if no active phase yet
+            }
+            hoverPosition.x = Mathf.Sin(elapsed * hoverSpeed * speedMultiplier) * hoverAmplitude;
             hoverPosition.y = anchorY + (Mathf.Sin(elapsed * 0.55f) * 0.18f);
             transform.position = hoverPosition;
+
+            if (enraged && spriteRenderer != null)
+            {
+                spriteRenderer.color = Color.Lerp(baseColor, Color.red, 0.2f + Mathf.Sin(elapsed * 8f) * 0.15f);
+            }
+            else if (!enraged && spriteRenderer != null && !telegraphing)
+            {
+                spriteRenderer.color = baseColor;
+            }
 
             if (telegraphing)
             {

@@ -303,6 +303,24 @@ namespace Wanwan.Runtime
 
             Color color = spriteRenderer.color;
             color.a = gameManager.PlayerInvulnerabilityFlashAlpha;
+
+            if (gameManager.IsPlayerInvulnerable && color.a > 0f)
+            {
+                float flashT = color.a;
+                if (flashT > 0.6f)
+                {
+                    color.r = Mathf.Lerp(color.r, 1f, (flashT - 0.6f) / 0.4f);
+                    color.g = Mathf.Lerp(color.g, 1f, (flashT - 0.6f) / 0.4f);
+                    color.b = Mathf.Lerp(color.b, 1f, (flashT - 0.6f) / 0.4f);
+                }
+                else if (flashT > 0.3f)
+                {
+                    color.r = Mathf.Lerp(color.r, 0.3f, (flashT - 0.3f) / 0.3f);
+                    color.g = Mathf.Lerp(color.g, 0.6f, (flashT - 0.3f) / 0.3f);
+                    color.b = Mathf.Lerp(color.b, 1f, (flashT - 0.3f) / 0.3f);
+                }
+            }
+
             spriteRenderer.color = color;
             for (int i = 0; i < mountRenderers.Length; i++)
             {
