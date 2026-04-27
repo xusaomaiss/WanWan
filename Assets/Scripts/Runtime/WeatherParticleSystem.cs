@@ -29,7 +29,7 @@ namespace Wanwan.Runtime
 
             for (int i = 0; i < particleCount; i++)
             {
-                SpawnParticle(Random.Range(0f, 999f));
+                SpawnParticle(i, Random.Range(0f, 999f));
             }
         }
 
@@ -87,23 +87,23 @@ namespace Wanwan.Runtime
             }
         }
 
-        private void SpawnParticle(float y)
+        private void SpawnParticle(int index, float y)
         {
             if (pools != null)
             {
-                activeParticles[0] = pools.RentParticle();
+                activeParticles[index] = pools.RentParticle();
             }
             else
             {
-                activeParticles[0] = new GameObject("WeatherParticle");
+                activeParticles[index] = new GameObject("WeatherParticle");
             }
 
-            activeParticles[0].transform.position = new Vector3(
+            activeParticles[index].transform.position = new Vector3(
                 Random.Range(leftBound, rightBound),
                 topBound + Random.Range(0f, 2f),
                 5f);
 
-            SpriteRenderer renderer = activeParticles[0].AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = activeParticles[index].AddComponent<SpriteRenderer>();
 
             Color particleColor = weather switch
             {
@@ -117,7 +117,7 @@ namespace Wanwan.Runtime
             renderer.sortingOrder = -40;
 
             float scale = weather == StageWeather.Rain ? 0.04f : 0.08f;
-            activeParticles[0].transform.localScale = Vector3.one * scale;
+            activeParticles[index].transform.localScale = Vector3.one * scale;
         }
     }
 }
