@@ -1,4 +1,5 @@
 using UnityEngine;
+using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
 {
@@ -6,6 +7,7 @@ namespace Wanwan.Runtime
     {
         private GameManager gameManager;
         private EffectsController effectsController;
+        private PoolCollection pools;
         private StageGameplayProfile gameplayProfile;
         private float leftBound;
         private float rightBound;
@@ -29,6 +31,7 @@ namespace Wanwan.Runtime
         {
             gameManager = manager;
             effectsController = effects;
+            pools = FindObjectOfType<GameBootstrap>()?.Pools;
             leftBound = minX;
             rightBound = maxX;
             spawnY = topY;
@@ -88,7 +91,7 @@ namespace Wanwan.Runtime
 
         public void SpawnEnemyMissile(Vector3 origin, Vector2 direction, Color color, bool fromBoss = false)
         {
-            GameObject fireballObject = new GameObject(fromBoss ? "BossMissile" : "EnemyMissile");
+            GameObject fireballObject = pools != null ? pools.RentFireball() : new GameObject(fromBoss ? "BossMissile" : "EnemyMissile");
             fireballObject.transform.position = origin;
 
             SpriteRenderer renderer = fireballObject.AddComponent<SpriteRenderer>();
@@ -125,7 +128,7 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            GameObject packObject = new GameObject(type + "Pack");
+            GameObject packObject = pools != null ? pools.RentPickup() : new GameObject(type + "Pack");
             packObject.transform.position = position;
             packObject.transform.localScale = Vector3.one * PickupPresentation.AmmoPackVisualScale;
 
@@ -156,7 +159,7 @@ namespace Wanwan.Runtime
             int count = Mathf.CeilToInt(gameManager.RewardConfig.CoinsPerEnemy * GetCoinDropMultiplier());
             for (int i = 0; i < count; i++)
             {
-                GameObject coinObject = new GameObject("Coin");
+                GameObject coinObject = pools != null ? pools.RentPickup() : new GameObject("Coin");
                 coinObject.transform.position = position + new Vector3(Random.Range(-0.18f, 0.18f), Random.Range(-0.14f, 0.2f), 0f);
                 coinObject.transform.localScale = Vector3.one * CoinController.BaseVisualScale;
 
@@ -239,7 +242,7 @@ namespace Wanwan.Runtime
 
         public void SpawnBombPickupAtPosition(Vector3 position)
         {
-            GameObject bombObject = new GameObject("BombPickup");
+            GameObject bombObject = pools != null ? pools.RentPickup() : new GameObject("BombPickup");
             bombObject.transform.position = position;
             bombObject.transform.localScale = Vector3.one * PickupPresentation.BombVisualScale;
 
@@ -262,7 +265,7 @@ namespace Wanwan.Runtime
 
         public void SpawnHealthPickupAtPosition(Vector3 position)
         {
-            GameObject healthObject = new GameObject("HealthPickup");
+            GameObject healthObject = pools != null ? pools.RentPickup() : new GameObject("HealthPickup");
             healthObject.transform.position = position + new Vector3(-0.28f, 0.22f, 0f);
             healthObject.transform.localScale = Vector3.one * PickupPresentation.HealthPickupVisualScale;
 
@@ -285,7 +288,7 @@ namespace Wanwan.Runtime
 
         private void SpawnPowerCapsuleAtPosition(Vector3 position)
         {
-            GameObject capsuleObject = new GameObject("PowerCapsule");
+            GameObject capsuleObject = pools != null ? pools.RentPickup() : new GameObject("PowerCapsule");
             capsuleObject.transform.position = position + new Vector3(0.28f, 0.22f, 0f);
             capsuleObject.transform.localScale = Vector3.one * PickupPresentation.PowerCapsuleVisualScale;
 
@@ -842,7 +845,7 @@ namespace Wanwan.Runtime
             float speed = pacedElite ? DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, true) * 0.82f : DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, tough);
             speed *= Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.32f);
 
-            GameObject enemyObject = new GameObject(pacedElite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
+            GameObject enemyObject = pools != null ? pools.RentEnemy() : new GameObject(pacedElite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
             enemyObject.transform.position = position;
 
             SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
@@ -956,7 +959,7 @@ namespace Wanwan.Runtime
         private void SpawnGroundTarget(GroundTargetType type, Vector3 position)
         {
             GroundTargetProfile profile = GroundTargetProfile.Get(type, gameManager.StageDifficultyMultiplier);
-            GameObject targetObject = new GameObject(type == GroundTargetType.Turret ? "GroundTurret" : "GroundTank");
+            GameObject targetObject = pools != null ? pools.RentEnemy() : new GameObject(type == GroundTargetType.Turret ? "GroundTurret" : "GroundTank");
             targetObject.transform.position = position;
             targetObject.transform.localScale = type == GroundTargetType.Turret ? new Vector3(0.68f, 0.68f, 1f) : new Vector3(0.82f, 0.68f, 1f);
 
@@ -1074,7 +1077,7 @@ namespace Wanwan.Runtime
 
         private void SpawnBoss()
         {
-            GameObject bossObject = new GameObject("BossFlagship");
+            GameObject bossObject = pools != null ? pools.RentEnemy() : new GameObject("BossFlagship");
             bossObject.transform.position = new Vector3(0f, spawnY + 2.6f, 0f);
 
             SpriteRenderer renderer = bossObject.AddComponent<SpriteRenderer>();
