@@ -141,10 +141,11 @@ namespace Wanwan.Tests.EditMode
             Assert.That(SessionState.LeaderboardName, Is.EqualTo("AAA"));
             Assert.That(SessionState.SpendableScore, Is.EqualTo(0));
             Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.None));
+            Assert.That(SessionState.PendingMountUnits, Is.EqualTo(0));
         }
 
         [Test]
-        public void TryPurchaseMount_DeductsScoreAndStoresPendingMount()
+        public void TryPurchaseMount_DeductsScoreAndStoresPendingMountUnits()
         {
             SessionState.AddSpendableScore(MountConfig.Get(MountType.MissilePod).Cost + 100);
 
@@ -152,7 +153,23 @@ namespace Wanwan.Tests.EditMode
 
             Assert.That(purchased, Is.True);
             Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.MissilePod));
+            Assert.That(SessionState.PendingMountUnits, Is.EqualTo(MountConfig.Get(MountType.MissilePod).PurchaseUnits));
             Assert.That(SessionState.SpendableScore, Is.EqualTo(100));
+        }
+
+        [Test]
+        public void TryPurchaseMount_AllowsStackingSameConsumableAndRejectsMixedMount()
+        {
+            MountConfig missile = MountConfig.Get(MountType.MissilePod);
+            MountConfig drone = MountConfig.Get(MountType.DefenseDrone);
+            SessionState.AddSpendableScore((missile.Cost * 2) + drone.Cost);
+
+            Assert.That(SessionState.TryPurchaseMount(MountType.MissilePod), Is.True);
+            Assert.That(SessionState.TryPurchaseMount(MountType.MissilePod), Is.True);
+            Assert.That(SessionState.TryPurchaseMount(MountType.DefenseDrone), Is.False);
+
+            Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.MissilePod));
+            Assert.That(SessionState.PendingMountUnits, Is.EqualTo(missile.PurchaseUnits * 2));
         }
 
         [Test]
@@ -163,18 +180,21 @@ namespace Wanwan.Tests.EditMode
             Assert.That(SessionState.TryPurchaseMount(MountType.MissilePod), Is.False);
             Assert.That(SessionState.TryPurchaseMount(MountType.None), Is.False);
             Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.None));
+            Assert.That(SessionState.PendingMountUnits, Is.EqualTo(0));
         }
 
         [Test]
-        public void ConsumePendingMountForRun_ReturnsAndClearsPurchasedMount()
+        public void ConsumePendingMountForRun_ReturnsAndClearsPurchasedMountUnits()
         {
             SessionState.AddSpendableScore(MountConfig.Get(MountType.DefenseDrone).Cost);
             SessionState.TryPurchaseMount(MountType.DefenseDrone);
 
-            MountType consumed = SessionState.ConsumePendingMountForRun();
+            MountType consumed = SessionState.ConsumePendingMountForRun(out int units);
 
             Assert.That(consumed, Is.EqualTo(MountType.DefenseDrone));
+            Assert.That(units, Is.EqualTo(MountConfig.Get(MountType.DefenseDrone).PurchaseUnits));
             Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.None));
+            Assert.That(SessionState.PendingMountUnits, Is.EqualTo(0));
         }
 
         [Test]

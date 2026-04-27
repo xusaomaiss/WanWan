@@ -62,10 +62,55 @@ namespace Wanwan.Tests.EditMode
             PlayerShotSpec[] shieldShots = MountShotPattern.GetShots(MountType.ShieldEmitter);
 
             Assert.That(missileShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.WeaponType == WeaponType.Burst && shot.MotionType == BulletMotionType.Homing));
-            Assert.That(droneShots.Length, Is.EqualTo(2));
+            Assert.That(missileShots, Has.All.Matches<PlayerShotSpec>(shot => shot.Damage >= 2 && shot.ExplosionRadius > 0f));
+            Assert.That(droneShots.Length, Is.EqualTo(4));
             Assert.That(droneShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.Offset.x < -0.45f));
             Assert.That(droneShots, Has.Some.Matches<PlayerShotSpec>(shot => shot.Offset.x > 0.45f));
             Assert.That(shieldShots, Is.Empty);
+        }
+
+        [Test]
+        public void TryConsumeMountUnits_DepletesConsumableAmmo()
+        {
+            GameObject gameObject = new GameObject("GameManager");
+            try
+            {
+                GameManager manager = gameObject.AddComponent<GameManager>();
+                typeof(GameManager).GetField("currentMount", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, MountType.DefenseDrone);
+                typeof(GameManager).GetField("currentMountUnits", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, 4);
+
+                Assert.That(manager.HasActiveMount, Is.True);
+                Assert.That(manager.TryConsumeMountUnits(4), Is.True);
+                Assert.That(manager.CurrentMountUnits, Is.EqualTo(0));
+                Assert.That(manager.HasActiveMount, Is.False);
+                Assert.That(manager.TryConsumeMountUnits(1), Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
+
+        [Test]
+        public void DamageActiveMountAfterHit_RemovesSomeConsumableAmmo()
+        {
+            GameObject gameObject = new GameObject("GameManager");
+            try
+            {
+                GameManager manager = gameObject.AddComponent<GameManager>();
+                typeof(GameManager).GetField("currentMount", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, MountType.MissilePod);
+                typeof(GameManager).GetField("currentMountUnits", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, 16);
+
+                typeof(GameManager)
+                    .GetMethod("DamageActiveMountAfterHit", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(manager, null);
+
+                Assert.That(manager.CurrentMountUnits, Is.EqualTo(12));
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
         }
 
         [Test]

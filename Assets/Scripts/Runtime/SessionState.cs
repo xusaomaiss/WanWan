@@ -19,6 +19,8 @@ namespace Wanwan.Runtime
         private const string LeaderboardNameKey = "wanwan.leaderboard_name";
         private const string SpendableScoreKey = "wanwan.spendable_score";
         private const string PendingMountKey = "wanwan.pending_mount";
+        private const string PendingMountUnitsKey = "wanwan.pending_mount_units";
+        private const int MaxPendingMountUnits = 99;
 
         public static int LastScore { get; private set; }
         public static int HighScore => PlayerPrefs.GetInt(HighScoreKey, 0);
@@ -35,6 +37,7 @@ namespace Wanwan.Runtime
         public static string LeaderboardName => SanitizeName(PlayerPrefs.GetString(LeaderboardNameKey, "AAA"));
         public static int SpendableScore => PlayerPrefs.GetInt(SpendableScoreKey, 0);
         public static MountType PendingMount => (MountType)PlayerPrefs.GetInt(PendingMountKey, (int)MountType.None);
+        public static int PendingMountUnits => PlayerPrefs.GetInt(PendingMountUnitsKey, 0);
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "乙";
         public static string LastRunSummary { get; private set; } = string.Empty;
@@ -106,6 +109,7 @@ namespace Wanwan.Runtime
             PlayerPrefs.DeleteKey(LeaderboardNameKey);
             PlayerPrefs.DeleteKey(SpendableScoreKey);
             PlayerPrefs.DeleteKey(PendingMountKey);
+            PlayerPrefs.DeleteKey(PendingMountUnitsKey);
             PlayerPrefs.Save();
         }
 
@@ -139,23 +143,38 @@ namespace Wanwan.Runtime
         public static bool TryPurchaseMount(MountType type)
         {
             MountConfig config = MountConfig.Get(type);
-            if (type == MountType.None || config.Cost <= 0 || PendingMount != MountType.None || SpendableScore < config.Cost)
+            MountType pendingMount = PendingMount;
+            if (type == MountType.None || config.Cost <= 0 || config.PurchaseUnits <= 0 || SpendableScore < config.Cost)
+            {
+                return false;
+            }
+
+            if (pendingMount != MountType.None && pendingMount != type)
             {
                 return false;
             }
 
             PlayerPrefs.SetInt(SpendableScoreKey, SpendableScore - config.Cost);
             PlayerPrefs.SetInt(PendingMountKey, (int)type);
+            PlayerPrefs.SetInt(PendingMountUnitsKey, Mathf.Min(MaxPendingMountUnits, PendingMountUnits + config.PurchaseUnits));
             PlayerPrefs.Save();
             return true;
         }
 
         public static MountType ConsumePendingMountForRun()
         {
+            int ignored;
+            return ConsumePendingMountForRun(out ignored);
+        }
+
+        public static MountType ConsumePendingMountForRun(out int units)
+        {
             MountType mount = PendingMount;
+            units = mount == MountType.None ? 0 : Mathf.Max(0, PendingMountUnits);
             if (mount != MountType.None)
             {
                 PlayerPrefs.SetInt(PendingMountKey, (int)MountType.None);
+                PlayerPrefs.SetInt(PendingMountUnitsKey, 0);
                 PlayerPrefs.Save();
             }
 

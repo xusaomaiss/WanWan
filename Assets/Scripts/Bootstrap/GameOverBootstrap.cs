@@ -127,8 +127,8 @@ namespace Wanwan.Runtime
                 float start = 0.04f + (i * 0.31f);
                 float end = start + 0.29f;
                 Image card = UiFactory.CreatePixelPanel(panel.transform, config.DisplayName + "Card", new Color(0.02f, 0.025f, 0.055f, 0.92f), config.AccentColor, new Vector2(start, 0.31f), new Vector2(end, 0.68f), new Vector2(4f, 4f));
-                UiFactory.CreateArcadeLabel(card.transform, config.DisplayName, 18, TextAnchor.MiddleCenter, config.AccentColor, FontStyle.Bold, new Vector2(0.04f, 0.55f), new Vector2(0.96f, 0.92f), Vector2.zero);
-                UiFactory.CreateArcadeLabel(card.transform, config.Cost.ToString("00000"), 16, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.04f, 0.28f), new Vector2(0.96f, 0.56f), Vector2.zero);
+                UiFactory.CreateArcadeLabel(card.transform, config.DisplayName, 18, TextAnchor.MiddleCenter, config.AccentColor, FontStyle.Bold, new Vector2(0.04f, 0.58f), new Vector2(0.96f, 0.94f), Vector2.zero);
+                UiFactory.CreateArcadeLabel(card.transform, config.Cost.ToString("00000") + " / +" + config.PurchaseUnits + config.UnitLabel, 13, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.04f, 0.3f), new Vector2(0.96f, 0.58f), Vector2.zero);
                 Button buyButton = UiFactory.CreateButton(card.transform, "购买", config.AccentColor, Color.white, new Vector2(116f, 36f), new Vector2(0f, -30f));
                 int index = i;
                 buyButton.onClick.AddListener(() => PurchaseMount(mounts[index]));
@@ -154,8 +154,8 @@ namespace Wanwan.Runtime
             mountScoreText.text = $"可用积分 {SessionState.SpendableScore:0000000}";
             MountType pendingMount = SessionState.PendingMount;
             mountStatusText.text = pendingMount == MountType.None
-                ? "选择一个挂载带入下一关"
-                : "已装备 " + MountConfig.Get(pendingMount).DisplayName;
+                ? "购买弹药或护盾带入下一关"
+                : "已补给 " + MountConfig.Get(pendingMount).DisplayName + " " + SessionState.PendingMountUnits + MountConfig.Get(pendingMount).UnitLabel;
 
             MountType[] mounts = MountConfig.GetPlayableMounts();
             for (int i = 0; i < mounts.Length && i < mountButtons.Length; i++)
@@ -167,10 +167,21 @@ namespace Wanwan.Runtime
 
                 MountConfig config = MountConfig.Get(mounts[i]);
                 bool selected = pendingMount == mounts[i];
-                bool canBuy = pendingMount == MountType.None && SessionState.SpendableScore >= config.Cost;
+                bool canBuy = (pendingMount == MountType.None || selected) && SessionState.SpendableScore >= config.Cost;
                 mountButtons[i].interactable = canBuy;
                 Text text = mountButtons[i].GetComponentInChildren<Text>();
-                text.text = selected ? "已装" : canBuy ? "购买" : "不足";
+                if (selected)
+                {
+                    text.text = canBuy ? "加购" : "不足";
+                }
+                else if (pendingMount != MountType.None)
+                {
+                    text.text = "已选";
+                }
+                else
+                {
+                    text.text = canBuy ? "购买" : "不足";
+                }
             }
         }
 

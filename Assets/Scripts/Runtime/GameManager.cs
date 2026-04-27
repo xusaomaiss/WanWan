@@ -38,6 +38,7 @@ namespace Wanwan.Runtime
         private int speedUpLevel;
         private int shieldCharges;
         private MountType currentMount = MountType.None;
+        private int currentMountUnits;
         private StagePhase currentStagePhase = StagePhase.Preparation;
 
         public GameFlowState CurrentState { get; private set; } = GameFlowState.Intro;
@@ -72,8 +73,10 @@ namespace Wanwan.Runtime
         public bool HasBomb => BombCount > 0;
         public int ShieldCharges => shieldCharges;
         public MountType CurrentMount => currentMount;
-        public bool HasActiveMount => currentMount != MountType.None;
+        public int CurrentMountUnits => currentMountUnits;
+        public bool HasActiveMount => currentMount != MountType.None && (currentMount == MountType.ShieldEmitter ? shieldCharges > 0 : currentMountUnits > 0);
         public string CurrentMountDisplayName => MountConfig.Get(currentMount).DisplayName;
+        public string CurrentMountHudText => BuildMountHudText();
         public float PlayerSpeedMultiplier => 1f + (Mathf.Clamp(speedUpLevel, 0, 3) * 0.18f);
         public bool CanActivatePowerMeter => powerMeter.CanActivate;
         public int PowerMeterCollectedCapsules => powerMeter.CollectedCapsules;
@@ -114,10 +117,11 @@ namespace Wanwan.Runtime
             RightBound = rightBound;
             TopBound = topBound;
             BottomBound = bottomBound;
-            currentMount = SessionState.ConsumePendingMountForRun();
+            currentMount = SessionState.ConsumePendingMountForRun(out currentMountUnits);
             if (currentMount == MountType.ShieldEmitter)
             {
-                shieldCharges = Mathf.Min(3, shieldCharges + 1);
+                shieldCharges = Mathf.Min(3, shieldCharges + currentMountUnits);
+                currentMountUnits = 0;
             }
 
             waveDirector.PhaseChanged += HandleWavePhaseChanged;
@@ -149,7 +153,7 @@ namespace Wanwan.Runtime
 
             CurrentState = GameFlowState.Playing;
             stageLabel = "敌机来袭";
-            ShowStageBanner(currentMount == MountType.None ? "开始出击" : MountConfig.Get(currentMount).DisplayName + " 装备");
+            ShowStageBanner(currentMount == MountType.None ? "开始出击" : BuildMountReadyText());
             if (uiController != null)
             {
                 uiController.HideIntroPrompt();
@@ -303,6 +307,32 @@ namespace Wanwan.Runtime
             DamagePlayer(1, "战机损毁");
         }
 
+        public bool TryConsumeMountUnits(int amount)
+        {
+            if (currentMount == MountType.None || currentMount == MountType.ShieldEmitter || amount <= 0)
+            {
+                return false;
+            }
+
+            if (currentMountUnits < amount)
+            {
+                return false;
+            }
+
+            currentMountUnits -= amount;
+            if (currentMountUnits <= 0)
+            {
+                currentMountUnits = 0;
+                ShowStageBanner(MountConfig.Get(currentMount).DisplayName + " 弹药耗尽");
+            }
+
+            if (uiController != null)
+            {
+                uiController.RefreshHud();
+            }
+            return true;
+        }
+
         private void DamagePlayer(int amount, string depletedTitle)
         {
             if (gameEnded)
@@ -334,6 +364,7 @@ namespace Wanwan.Runtime
             if (!playerHealth.IsDepleted)
             {
                 DropRecoveryPowerupsAfterDamage();
+                DamageActiveMountAfterHit();
             }
 
             invulnerabilityState.Trigger();
@@ -371,6 +402,18 @@ namespace Wanwan.Runtime
             }
 
             ShowStageBanner("火力重置");
+        }
+
+        private void DamageActiveMountAfterHit()
+        {
+            if (currentMount == MountType.None || currentMount == MountType.ShieldEmitter || currentMountUnits <= 0)
+            {
+                return;
+            }
+
+            int lostUnits = Mathf.Clamp(Mathf.CeilToInt(currentMountUnits * 0.25f), 1, currentMountUnits);
+            currentMountUnits -= lostUnits;
+            ShowStageBanner(MountConfig.Get(currentMount).DisplayName + " 受损 -" + lostUnits + MountConfig.Get(currentMount).UnitLabel);
         }
 
         public void SetStageState(StagePhase phase, string label)
@@ -744,6 +787,40 @@ namespace Wanwan.Runtime
             }
 
             return $"第{StageNumber}关 {StageName} 作战中断，{BossDisplayName}仍在压制空域。保持走位和火力节奏再试一次。";
+        }
+
+        private string BuildMountReadyText()
+        {
+            if (currentMount == MountType.None)
+            {
+                return "开始出击";
+            }
+
+            MountConfig config = MountConfig.Get(currentMount);
+            if (currentMount == MountType.ShieldEmitter)
+            {
+                return config.DisplayName + " +" + shieldCharges + "层";
+            }
+
+            return config.DisplayName + " " + currentMountUnits + config.UnitLabel;
+        }
+
+        private string BuildMountHudText()
+        {
+            if (currentMount == MountType.None)
+            {
+                return string.Empty;
+            }
+
+            MountConfig config = MountConfig.Get(currentMount);
+            if (currentMount == MountType.ShieldEmitter)
+            {
+                return config.DisplayName;
+            }
+
+            return currentMountUnits > 0
+                ? config.DisplayName + " " + currentMountUnits + config.UnitLabel
+                : config.DisplayName + " 空";
         }
 
         private static float GetBaselineProgress(StagePhase phase)

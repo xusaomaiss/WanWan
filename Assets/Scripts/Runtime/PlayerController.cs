@@ -142,6 +142,11 @@ namespace Wanwan.Runtime
             }
 
             PlayerShotSpec[] shots = MountShotPattern.GetShots(mount);
+            if (!gameManager.TryConsumeMountUnits(shots.Length))
+            {
+                return;
+            }
+
             for (int i = 0; i < shots.Length; i++)
             {
                 FireOffsetShot(shots[i]);
@@ -323,8 +328,8 @@ namespace Wanwan.Runtime
             renderer.color = Color.Lerp(Color.white, color, 0.64f);
             renderer.sortingOrder = 11;
             Vector2 size = renderer.sprite.bounds.size;
-            float targetWidth = gameManager.CurrentMount == MountType.MissilePod ? 0.24f : 0.42f;
-            float targetHeight = gameManager.CurrentMount == MountType.MissilePod ? 0.54f : 0.42f;
+            float targetWidth = gameManager.CurrentMount == MountType.MissilePod ? 0.32f : 0.54f;
+            float targetHeight = gameManager.CurrentMount == MountType.MissilePod ? 0.68f : 0.54f;
             mountObject.transform.localScale = new Vector3(targetWidth / size.x, targetHeight / size.y, 1f);
             mountRenderers[index] = renderer;
         }

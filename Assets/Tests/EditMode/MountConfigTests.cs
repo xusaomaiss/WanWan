@@ -16,6 +16,8 @@ namespace Wanwan.Tests.EditMode
             Assert.That(config.Cost, Is.GreaterThan(0));
             Assert.That(config.DisplayName, Is.Not.Empty);
             Assert.That(config.Description, Is.Not.Empty);
+            Assert.That(config.PurchaseUnits, Is.GreaterThan(0));
+            Assert.That(config.UnitLabel, Is.Not.Empty);
         }
 
         [Test]
