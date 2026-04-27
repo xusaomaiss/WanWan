@@ -23,9 +23,15 @@ namespace Wanwan.Runtime
         private float fireTimer;
         private bool resolved;
         private AmmoPowerupType guaranteedDrop;
+        private EnemyType enemyType;
+        private bool shieldAbsorbedFirstHit;
+        private float healTimer;
+        private float barrageHoverEndTime;
+        private const float HealerInterval = 2f;
+        private const float BarrageHoverDuration = 3f;
         public bool IsResolved => resolved;
 
-        public void Initialize(GameManager manager, BlockSpawner spawner, EffectsController effects, int startingHitPoints, int awardedScore, float speed, Color color, Vector2 direction, float swayAmount, float swayRate, bool elite, AmmoPowerupType dropType)
+        public void Initialize(GameManager manager, BlockSpawner spawner, EffectsController effects, int startingHitPoints, int awardedScore, float speed, Color color, Vector2 direction, float swayAmount, float swayRate, bool elite, AmmoPowerupType dropType, EnemyType type = EnemyType.Normal)
         {
             gameManager = manager;
             blockSpawner = spawner;
@@ -44,6 +50,9 @@ namespace Wanwan.Runtime
             spriteRenderer = GetComponent<SpriteRenderer>();
             effectColor = color;
             spriteRenderer.color = elite ? color : Color.white;
+            enemyType = type;
+            shieldAbsorbedFirstHit = false;
+            healTimer = HealerInterval;
             BuildHealthLabel();
             RefreshHealthLabel();
         }
@@ -56,10 +65,38 @@ namespace Wanwan.Runtime
             }
 
             flightTime += Time.deltaTime;
-            Vector2 drift = moveDirection * (fallSpeed * flightTime);
-            Vector2 perpendicular = new Vector2(-moveDirection.y, moveDirection.x);
-            float sway = swayAmplitude > 0f ? Mathf.Sin(flightTime * swayFrequency) * swayAmplitude : 0f;
-            transform.position = spawnPosition + new Vector3(drift.x, drift.y, 0f) + ((Vector3)(perpendicular * sway));
+
+            if (enemyType == EnemyType.SelfDestruct)
+            {
+                UpdateSelfDestructBehavior();
+            }
+
+            if (enemyType == EnemyType.Healer)
+            {
+                UpdateHealerBehavior();
+            }
+
+            bool shouldMove = true;
+            if (enemyType == EnemyType.Barrage)
+            {
+                if (barrageHoverEndTime <= 0f && transform.position.y < gameManager.BottomBound + 5f)
+                {
+                    barrageHoverEndTime = Time.time + BarrageHoverDuration;
+                }
+                if (barrageHoverEndTime > 0f && Time.time < barrageHoverEndTime)
+                {
+                    shouldMove = false;
+                }
+            }
+
+            if (shouldMove)
+            {
+                Vector2 drift = moveDirection * (fallSpeed * flightTime);
+                Vector2 perpendicular = new Vector2(-moveDirection.y, moveDirection.x);
+                float sway = swayAmplitude > 0f ? Mathf.Sin(flightTime * swayFrequency) * swayAmplitude : 0f;
+                transform.position = spawnPosition + new Vector3(drift.x, drift.y, 0f) + ((Vector3)(perpendicular * sway));
+            }
+
             if (transform.position.y < gameManager.BottomBound - 1.2f)
             {
                 Escape();
@@ -67,6 +104,45 @@ namespace Wanwan.Runtime
             }
 
             UpdateFireTimer();
+        }
+
+        private void UpdateSelfDestructBehavior()
+        {
+            PlayerController player = FindObjectOfType<PlayerController>();
+            if (player != null)
+            {
+                float dist = Vector2.Distance(transform.position, player.transform.position);
+                if (dist < 4f)
+                {
+                    Vector2 towardPlayer = (player.transform.position - transform.position).normalized;
+                    spawnPosition = transform.position - (Vector3)(towardPlayer * fallSpeed * flightTime);
+                    moveDirection = towardPlayer;
+                    fallSpeed *= 1.02f;
+                }
+            }
+        }
+
+        private void UpdateHealerBehavior()
+        {
+            healTimer -= Time.deltaTime;
+            if (healTimer <= 0f)
+            {
+                healTimer = HealerInterval;
+                BlockController[] allBlocks = FindObjectsByType<BlockController>(FindObjectsSortMode.None);
+                int healed = 0;
+                for (int i = 0; i < allBlocks.Length; i++)
+                {
+                    if (allBlocks[i] == this || allBlocks[i].resolved)
+                        continue;
+                    if (Vector2.Distance(transform.position, allBlocks[i].transform.position) < 3.5f)
+                    {
+                        allBlocks[i].Heal(1);
+                        healed++;
+                        if (healed >= 3)
+                            break;
+                    }
+                }
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -82,6 +158,10 @@ namespace Wanwan.Runtime
                 effectsController.PlayPlayerPierced(transform.position, effectColor);
                 gameManager.DamagePlayerByCollision();
                 blockSpawner.NotifyEnemyResolved();
+                if (enemyType == EnemyType.SelfDestruct)
+                {
+                    effectsController.PlayEliteBurst(transform.position, Color.red);
+                }
                 Destroy(gameObject);
             }
         }
@@ -90,6 +170,15 @@ namespace Wanwan.Runtime
         {
             if (resolved)
             {
+                return;
+            }
+
+            if (enemyType == EnemyType.Shield && !shieldAbsorbedFirstHit)
+            {
+                shieldAbsorbedFirstHit = true;
+                spriteRenderer.color = Color.white;
+                Invoke(nameof(RestoreEnemyColor), 0.18f);
+                effectsController.PlayHit(transform.position, effectColor);
                 return;
             }
 
@@ -103,7 +192,18 @@ namespace Wanwan.Runtime
                 gameManager.NotifyEnemyDestroyed();
                 blockSpawner.SpawnCoinsAtPosition(transform.position);
                 blockSpawner.SpawnEnemyAmmoPackDrop(guaranteedDrop, transform.position);
-                effectsController.PlayBurst(transform.position, effectColor);
+                if (isElite)
+                {
+                    effectsController.PlayEliteBurst(transform.position, effectColor);
+                }
+                else if (isTough)
+                {
+                    effectsController.PlayBurst(transform.position, effectColor);
+                }
+                else
+                {
+                    effectsController.PlaySmallBurst(transform.position, effectColor);
+                }
                 blockSpawner.NotifyEnemyResolved();
                 Destroy(gameObject);
                 return;
@@ -124,7 +224,18 @@ namespace Wanwan.Runtime
             gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
             gameManager.NotifyEnemyDestroyed();
             blockSpawner.SpawnCoinsAtPosition(transform.position);
-            effectsController.PlayBurst(transform.position, effectColor);
+            if (isElite)
+            {
+                effectsController.PlayEliteBurst(transform.position, effectColor);
+            }
+            else if (isTough)
+            {
+                effectsController.PlayBurst(transform.position, effectColor);
+            }
+            else
+            {
+                effectsController.PlaySmallBurst(transform.position, effectColor);
+            }
             blockSpawner.NotifyEnemyResolved();
             Destroy(gameObject);
         }
@@ -145,6 +256,22 @@ namespace Wanwan.Runtime
             gameManager.NotifyEnemyEscaped(transform.position);
             blockSpawner.NotifyEnemyResolved();
             Destroy(gameObject);
+        }
+
+        public void Heal(int amount)
+        {
+            if (resolved)
+                return;
+            hitPoints += amount;
+            RefreshHealthLabel();
+        }
+
+        private void RestoreEnemyColor()
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = isElite ? effectColor : Color.white;
+            }
         }
 
         private void BuildHealthLabel()
@@ -183,6 +310,12 @@ namespace Wanwan.Runtime
 
         private void FireEnemyShot()
         {
+            if (enemyType == EnemyType.Barrage)
+            {
+                FireBarrageSpread();
+                return;
+            }
+
             if (isElite)
             {
                 blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.42f), new Vector2(-0.16f, -1f), new Color(1f, 0.52f, 0.28f));
@@ -218,6 +351,16 @@ namespace Wanwan.Runtime
             }
 
             return interval / Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.28f);
+        }
+
+        private void FireBarrageSpread()
+        {
+            float[] angles = { 0f, -0.22f, 0.22f, -0.44f, 0.44f };
+            for (int i = 0; i < angles.Length; i++)
+            {
+                Vector2 dir = new Vector2(angles[i], -1f).normalized;
+                blockSpawner.SpawnEnemyMissile(transform.position + (Vector3.down * 0.45f), dir, effectColor);
+            }
         }
     }
 }

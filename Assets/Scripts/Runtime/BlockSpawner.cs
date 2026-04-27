@@ -453,7 +453,7 @@ namespace Wanwan.Runtime
                 for (int j = 0; j < instructions.Length; j++)
                 {
                     EnemySpawnInstruction instruction = wave.Instructions[j];
-                    instructions[j] = new EnemySpawnInstruction(instruction.Time * multiplier, instruction.Formation, instruction.Count, instruction.Elite, instruction.GuaranteedDrop);
+                    instructions[j] = new EnemySpawnInstruction(instruction.Time * multiplier, instruction.Formation, instruction.Count, instruction.Elite, instruction.GuaranteedDrop, instruction.EnemyType);
                 }
 
                 adjusted[i] = new StageWaveConfig(wave.Phase, wave.Banner, wave.DurationSeconds * multiplier, wave.WaitForClear, instructions);
@@ -492,6 +492,7 @@ namespace Wanwan.Runtime
                         new EnemySpawnInstruction(1.8f, EnemyFormationType.DiveLine, 4),
                         new EnemySpawnInstruction(3.4f, EnemyFormationType.SnakeSweep, 6),
                         new EnemySpawnInstruction(5.5f, EnemyFormationType.VShape, 5, false, AmmoPowerupType.RapidFire),
+                        new EnemySpawnInstruction(6.8f, EnemyFormationType.DiveLine, 2, enemyType: EnemyType.SelfDestruct),
                         new EnemySpawnInstruction(7.2f, EnemyFormationType.SideCutInLeft, 5),
                         new EnemySpawnInstruction(8.4f, EnemyFormationType.DiveLine, 5, false, AmmoPowerupType.Laser),
                         new EnemySpawnInstruction(9.5f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Laser)
@@ -505,9 +506,11 @@ namespace Wanwan.Runtime
                     {
                         new EnemySpawnInstruction(0.4f, EnemyFormationType.VShape, 2),
                         new EnemySpawnInstruction(1.2f, EnemyFormationType.DiveLine, 1, true, AmmoPowerupType.Pierce),
-                        new EnemySpawnInstruction(2.8f, EnemyFormationType.SideCutInRight, 2),
+                        new EnemySpawnInstruction(2.8f, EnemyFormationType.SideCutInRight, 2, enemyType: EnemyType.Shield),
                         new EnemySpawnInstruction(4.2f, EnemyFormationType.SnakeSweep, 2, true, AmmoPowerupType.Plasma),
-                        new EnemySpawnInstruction(5.6f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing)
+                        new EnemySpawnInstruction(5.6f, EnemyFormationType.VShape, 3, true, AmmoPowerupType.Homing),
+                        new EnemySpawnInstruction(6.2f, EnemyFormationType.DiveLine, 1, enemyType: EnemyType.Healer),
+                        new EnemySpawnInstruction(6.8f, EnemyFormationType.SnakeSweep, 2, enemyType: EnemyType.Barrage)
                     }),
                 BuildBossWave()
             };
@@ -632,15 +635,18 @@ namespace Wanwan.Runtime
                     new EnemySpawnInstruction(0.3f, EnemyFormationType.DiveLine, 4, true),
                     new EnemySpawnInstruction(2.4f, EnemyFormationType.SideCutInRight, 4),
                     new EnemySpawnInstruction(4.2f, EnemyFormationType.VShape, 5, true, AmmoPowerupType.Guard),
+                    new EnemySpawnInstruction(5.8f, EnemyFormationType.DiveLine, 3, enemyType: EnemyType.SelfDestruct),
                     new EnemySpawnInstruction(6.6f, EnemyFormationType.SnakeSweep, 5),
                     new EnemySpawnInstruction(8.8f, EnemyFormationType.DiveLine, 3, true, AmmoPowerupType.Laser),
-                    new EnemySpawnInstruction(10.1f, EnemyFormationType.VShape, 4)
+                    new EnemySpawnInstruction(10.1f, EnemyFormationType.VShape, 2, enemyType: EnemyType.Shield)
                 }),
                 new StageWaveConfig(StagePhase.Elite, "重型护卫", 8f, true, new[]
                 {
                     new EnemySpawnInstruction(0.5f, EnemyFormationType.VShape, 2, true),
                     new EnemySpawnInstruction(2.6f, EnemyFormationType.DiveLine, 2, true, AmmoPowerupType.Pierce),
-                    new EnemySpawnInstruction(4.8f, EnemyFormationType.SnakeSweep, 3, true, AmmoPowerupType.Homing)
+                    new EnemySpawnInstruction(4.8f, EnemyFormationType.SnakeSweep, 3, true, AmmoPowerupType.Homing),
+                    new EnemySpawnInstruction(5.8f, EnemyFormationType.VShape, 2, enemyType: EnemyType.Barrage),
+                    new EnemySpawnInstruction(6.8f, EnemyFormationType.DiveLine, 1, enemyType: EnemyType.Healer)
                 }),
                 BuildBossWave()
             };
@@ -732,16 +738,20 @@ namespace Wanwan.Runtime
                     new EnemySpawnInstruction(1.8f, EnemyFormationType.VShape, 6, true, AmmoPowerupType.Laser),
                     new EnemySpawnInstruction(3.8f, EnemyFormationType.SideCutInLeft, 5),
                     new EnemySpawnInstruction(4.8f, EnemyFormationType.SideCutInRight, 5),
+                    new EnemySpawnInstruction(5.6f, EnemyFormationType.DiveLine, 3, enemyType: EnemyType.SelfDestruct),
                     new EnemySpawnInstruction(6.8f, EnemyFormationType.DiveLine, 5, true, AmmoPowerupType.Homing),
                     new EnemySpawnInstruction(8.8f, EnemyFormationType.SnakeSweep, 6),
+                    new EnemySpawnInstruction(9.6f, EnemyFormationType.DiveLine, 2, enemyType: EnemyType.Barrage),
                     new EnemySpawnInstruction(10.2f, EnemyFormationType.VShape, 4, true, AmmoPowerupType.Guard)
                 }),
                 new StageWaveConfig(StagePhase.Elite, "核心护卫队", 8.2f, true, new[]
                 {
                     new EnemySpawnInstruction(0.4f, EnemyFormationType.VShape, 3, true),
                     new EnemySpawnInstruction(2.2f, EnemyFormationType.SnakeSweep, 4, true, AmmoPowerupType.Wave),
-                    new EnemySpawnInstruction(4.4f, EnemyFormationType.SideCutInLeft, 3, true, AmmoPowerupType.Pierce),
-                    new EnemySpawnInstruction(5.8f, EnemyFormationType.SideCutInRight, 3, true, AmmoPowerupType.Scatter)
+                    new EnemySpawnInstruction(4.4f, EnemyFormationType.SideCutInLeft, 2, true, AmmoPowerupType.Pierce),
+                    new EnemySpawnInstruction(5.2f, EnemyFormationType.DiveLine, 2, enemyType: EnemyType.Shield),
+                    new EnemySpawnInstruction(5.8f, EnemyFormationType.SideCutInRight, 3, true, AmmoPowerupType.Scatter),
+                    new EnemySpawnInstruction(6.8f, EnemyFormationType.DiveLine, 1, enemyType: EnemyType.Healer)
                 }),
                 BuildBossWave()
             };
@@ -785,7 +795,7 @@ namespace Wanwan.Runtime
             for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 position = new Vector3(startX + (i * spacing), spawnY + (i * 0.12f), 0f);
-                SpawnEnemy(position, instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None, instruction.EnemyType);
             }
         }
 
@@ -798,7 +808,7 @@ namespace Wanwan.Runtime
             for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 position = new Vector3(x, spawnY - (i * 0.5f), 0f);
-                SpawnEnemy(position, instruction.Elite, direction, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, direction, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None, instruction.EnemyType);
             }
         }
 
@@ -810,7 +820,7 @@ namespace Wanwan.Runtime
                 float offsetIndex = i - ((spawnCount - 1) * 0.5f);
                 float x = offsetIndex * 1.15f;
                 float y = spawnY + (Mathf.Abs(offsetIndex) * 0.28f);
-                SpawnEnemy(new Vector3(x, y, 0f), instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(new Vector3(x, y, 0f), instruction.Elite, Vector2.down, 0f, 0f, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None, instruction.EnemyType);
             }
         }
 
@@ -824,7 +834,7 @@ namespace Wanwan.Runtime
                 Vector3 position = new Vector3(startX + (i * spacing), spawnY + (i * 0.08f), 0f);
                 float swayAmplitude = 0.8f + (i * 0.05f);
                 float swayFrequency = 2.4f + (i * 0.12f);
-                SpawnEnemy(position, instruction.Elite, Vector2.down, swayAmplitude, swayFrequency, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None);
+                SpawnEnemy(position, instruction.Elite, Vector2.down, swayAmplitude, swayFrequency, i == spawnCount / 2 ? instruction.GuaranteedDrop : AmmoPowerupType.None, instruction.EnemyType);
             }
         }
 
@@ -835,7 +845,7 @@ namespace Wanwan.Runtime
             return Mathf.Max(1, Mathf.FloorToInt(adjustedCount * multiplier));
         }
 
-        private void SpawnEnemy(Vector3 position, bool elite, Vector2 moveDirection, float swayAmplitude, float swayFrequency, AmmoPowerupType guaranteedDrop)
+        private void SpawnEnemy(Vector3 position, bool elite, Vector2 moveDirection, float swayAmplitude, float swayFrequency, AmmoPowerupType guaranteedDrop, EnemyType enemyType = EnemyType.Normal)
         {
             bool pacedElite = ShouldSpawnElite(elite);
             bool tough = pacedElite || ShouldSpawnTough();
@@ -881,7 +891,7 @@ namespace Wanwan.Runtime
 
             BlockController block = enemyObject.AddComponent<BlockController>();
             Color effectColor = pacedElite ? eliteColor : (tough ? toughColor : normalColor);
-            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, pacedElite, guaranteedDrop);
+            block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, pacedElite, guaranteedDrop, enemyType);
             activeEnemyCount++;
         }
 
@@ -1119,31 +1129,31 @@ namespace Wanwan.Runtime
                 case GameDifficulty.High:
                     return new[]
                     {
-                        BuildBossPhase(0.7f, 1.38f, 5, 46f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.4f, 1.12f, 6, 62f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.1f, 0.9f, 7, 82f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0f, 0.74f, 9, 102f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
+                        BuildBossPhase(0.7f, 1.38f, 5, 46f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1f, false),
+                        BuildBossPhase(0.4f, 1.12f, 6, 62f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.2f, false),
+                        BuildBossPhase(0.1f, 0.9f, 7, 82f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.4f, true),
+                        BuildBossPhase(0f, 0.74f, 9, 102f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.6f, true)
                     };
                 case GameDifficulty.Medium:
                     return new[]
                     {
-                        BuildBossPhase(0.7f, 1.58f, 4, 38f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.4f, 1.32f, 5, 52f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.1f, 1.08f, 6, 70f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0f, 0.9f, 7, 86f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
+                        BuildBossPhase(0.7f, 1.58f, 4, 38f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1f, false),
+                        BuildBossPhase(0.4f, 1.32f, 5, 52f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.15f, false),
+                        BuildBossPhase(0.1f, 1.08f, 6, 70f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.35f, true),
+                        BuildBossPhase(0f, 0.9f, 7, 86f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.5f, true)
                     };
                 default:
                     return new[]
                     {
-                        BuildBossPhase(0.7f, 1.82f, 3, 28f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.4f, 1.5f, 4, 40f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0.1f, 1.2f, 5, 54f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing),
-                        BuildBossPhase(0f, 1f, 6, 66f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing)
+                        BuildBossPhase(0.7f, 1.82f, 3, 28f, false, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1f, false),
+                        BuildBossPhase(0.4f, 1.5f, 4, 40f, true, false, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.1f, false),
+                        BuildBossPhase(0.1f, 1.2f, 5, 54f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.25f, false),
+                        BuildBossPhase(0f, 1f, 6, 66f, true, true, intervalMultiplier, salvoBonus, spreadBonus, forceAimed, forceRing, 1.4f, true)
                     };
             }
         }
 
-        private static BossPhaseConfig BuildBossPhase(float triggerHealthNormalized, float fireInterval, int salvoCount, float spreadAngle, bool aimedCoreShot, bool extraRingShot, float intervalMultiplier, int salvoBonus, float spreadBonus, bool forceAimed, bool forceRing)
+        private static BossPhaseConfig BuildBossPhase(float triggerHealthNormalized, float fireInterval, int salvoCount, float spreadAngle, bool aimedCoreShot, bool extraRingShot, float intervalMultiplier, int salvoBonus, float spreadBonus, bool forceAimed, bool forceRing, float movementSpeedMultiplier = 1f, bool isEnraged = false)
         {
             return new BossPhaseConfig(
                 triggerHealthNormalized,
@@ -1151,7 +1161,9 @@ namespace Wanwan.Runtime
                 Mathf.Max(1, salvoCount + salvoBonus),
                 Mathf.Max(18f, spreadAngle + spreadBonus),
                 aimedCoreShot || forceAimed,
-                extraRingShot || forceRing);
+                extraRingShot || forceRing,
+                movementSpeedMultiplier,
+                isEnraged);
         }
 
         private static float GetBossPatternIntervalMultiplier(BossPatternStyle style)
