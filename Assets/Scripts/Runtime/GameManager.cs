@@ -125,6 +125,7 @@ namespace Wanwan.Runtime
             }
 
             waveDirector.PhaseChanged += HandleWavePhaseChanged;
+            ApplyShipSkill(ShipDefinition.Get(SessionState.SelectedShip).Skill);
             uiController.Bind(this);
         }
 
@@ -589,6 +590,7 @@ namespace Wanwan.Runtime
 
             effectsController.PlayBombDetonation(origin);
             bombsUsed++;
+            StartCoroutine(PlayBulletTime());
             ShowStageBanner("炸弹清屏");
             uiController.RefreshHud();
             return true;
@@ -683,6 +685,40 @@ namespace Wanwan.Runtime
             SceneNavigator.LoadGameOver();
         }
 
+        private IEnumerator PlayBulletTime()
+        {
+            float elapsed = 0f;
+            const float slowDownDuration = 0.25f;
+            const float holdDuration = 0.15f;
+            const float speedUpDuration = 0.25f;
+
+            while (elapsed < slowDownDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / slowDownDuration;
+                Time.timeScale = Mathf.Lerp(1f, 0.2f, t);
+                yield return null;
+            }
+
+            elapsed = 0f;
+            while (elapsed < holdDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            elapsed = 0f;
+            while (elapsed < speedUpDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / speedUpDuration;
+                Time.timeScale = Mathf.Lerp(0.2f, 1f, t);
+                yield return null;
+            }
+
+            Time.timeScale = 1f;
+        }
+
         private void SetPaused(bool value)
         {
             paused = value;
@@ -761,6 +797,19 @@ namespace Wanwan.Runtime
             }
 
             uiController.RefreshHud();
+        }
+
+        private void ApplyShipSkill(PlayerSkill skill)
+        {
+            switch (skill)
+            {
+                case PlayerSkill.ExtraShield:
+                    shieldCharges = Mathf.Min(3, shieldCharges + 1);
+                    break;
+                case PlayerSkill.Level2Weapon:
+                    weaponState.UpgradeFireLevel();
+                    break;
+            }
         }
 
         private string BuildRunRating()

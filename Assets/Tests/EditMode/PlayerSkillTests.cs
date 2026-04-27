@@ -1,0 +1,57 @@
+using NUnit.Framework;
+using Wanwan.Runtime;
+
+namespace Wanwan.Tests.EditMode
+{
+    [TestFixture]
+    public class PlayerSkillTests
+    {
+        [Test]
+        public void PlayerSkill_AllTypesDefined()
+        {
+            Assert.IsTrue(System.Enum.IsDefined(typeof(PlayerSkill), PlayerSkill.None));
+            Assert.IsTrue(System.Enum.IsDefined(typeof(PlayerSkill), PlayerSkill.ExtraShield));
+            Assert.IsTrue(System.Enum.IsDefined(typeof(PlayerSkill), PlayerSkill.BetterGraze));
+            Assert.IsTrue(System.Enum.IsDefined(typeof(PlayerSkill), PlayerSkill.Level2Weapon));
+        }
+
+        [Test]
+        public void GetDisplayName_ReturnsCorrectLabels()
+        {
+            Assert.AreEqual("初始护盾", PlayerSkill.ExtraShield.GetDisplayName());
+            Assert.AreEqual("擦弹强化", PlayerSkill.BetterGraze.GetDisplayName());
+            Assert.AreEqual("火力预热", PlayerSkill.Level2Weapon.GetDisplayName());
+            Assert.AreEqual(string.Empty, PlayerSkill.None.GetDisplayName());
+        }
+
+        [Test]
+        public void ShipDefinition_HasSkillProperty()
+        {
+            var prop = typeof(ShipDefinition).GetProperty("Skill");
+            Assert.IsNotNull(prop);
+            Assert.AreEqual(typeof(PlayerSkill), prop.PropertyType);
+        }
+
+        [Test]
+        public void ShipDefinition_GreenHasExtraShieldSkill()
+        {
+            var definition = ShipDefinition.Get(PlayerShipType.Green);
+            Assert.AreEqual(PlayerSkill.ExtraShield, definition.Skill);
+        }
+
+        [Test]
+        public void ShipDefinition_BlueHasBetterGrazeSkill()
+        {
+            var definition = ShipDefinition.Get(PlayerShipType.Blue);
+            Assert.AreEqual(PlayerSkill.BetterGraze, definition.Skill);
+        }
+
+        [Test]
+        public void GameManager_HasApplyShipSkillMethod()
+        {
+            var method = typeof(GameManager).GetMethod("ApplyShipSkill",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method, "GameManager should have ApplyShipSkill method");
+        }
+    }
+}
