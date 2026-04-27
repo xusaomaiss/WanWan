@@ -13,8 +13,8 @@ namespace Wanwan.Tests.EditMode
             GameObject parent = new GameObject("ButtonParent");
             try
             {
-                Button nextButton = UiFactory.CreatePixelButton(parent.transform, "继续下一关", ArcadeTheme.ElectricBlue, new Vector2(390f, 118f), Vector2.zero);
-                Button menuButton = UiFactory.CreatePixelButton(parent.transform, "返回主页", ArcadeTheme.EnergyYellow, new Vector2(390f, 118f), Vector2.zero);
+                Button nextButton = UiFactory.CreatePixelButton(parent.transform, "继续下一关", ArcadeTheme.ElectricBlue, GameOverBootstrap.ResultActionButtonSize, Vector2.zero);
+                Button menuButton = UiFactory.CreatePixelButton(parent.transform, "返回主页", ArcadeTheme.EnergyYellow, GameOverBootstrap.ResultActionButtonSize, Vector2.zero);
 
                 AssertSingleLineText(nextButton, "继续下一关");
                 AssertSingleLineText(menuButton, "返回主页");
@@ -43,6 +43,17 @@ namespace Wanwan.Tests.EditMode
             {
                 Object.DestroyImmediate(parent);
             }
+        }
+
+        [Test]
+        public void VictoryActionButtons_SitBelowMountShopPanel()
+        {
+            const float referenceHeight = 1920f;
+            const float minGap = 24f;
+            float panelBottom = GameOverBootstrap.MountShopAnchorMin.y * referenceHeight;
+            float buttonTop = (referenceHeight * 0.5f) + GameOverBootstrap.VictoryActionButtonY + (GameOverBootstrap.ResultActionButtonSize.y * 0.5f);
+
+            Assert.That(buttonTop, Is.LessThan(panelBottom - minGap));
         }
 
         private static void AssertSingleLineText(Button button, string expected)
