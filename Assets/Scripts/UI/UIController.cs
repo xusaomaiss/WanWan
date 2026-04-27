@@ -20,6 +20,7 @@ namespace Wanwan.Runtime
         private Text stageProgressText;
         private Text stageProgressPercentText;
         private Text comboText;
+        private Text comboMultiplierText;
         private Text powerupText;
         private Text powerMeterText;
         private Text pauseHintText;
@@ -80,6 +81,7 @@ namespace Wanwan.Runtime
             highScoreText.text = $"最高分 {SessionState.HighScore:0000000}";
             difficultyText.text = $"第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
             comboText.text = gameManager.GetComboDisplayText();
+            RefreshComboDisplay();
             stageProgressText.text = $"{(gameManager.StageProgress * 100f):0}%  击落 {gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
             if (stageProgressFill != null)
             {
@@ -211,12 +213,14 @@ namespace Wanwan.Runtime
             UiFactory.CreateDivider(topBar.transform, "HudBottomLine", new Color(0.14f, 0.88f, 1f, 0.78f), Vector2.zero, new Vector2(1f, 0.035f));
             UiFactory.CreateDivider(topBar.transform, "HudAlertLine", new Color(1f, 0f, 0.25f, 0.5f), new Vector2(0.03f, 0.04f), new Vector2(0.97f, 0.06f));
 
-            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "得分 0000000\n金币 000", 28, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.035f, 0.18f), new Vector2(0.31f, 0.92f), Vector2.zero);
-            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "最高分 0000000", 24, TextAnchor.UpperCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.34f, 0.62f), new Vector2(0.66f, 0.96f), Vector2.zero);
-            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 19, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.32f, 0.34f), new Vector2(0.68f, 0.64f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "第1关 0%  击落 0/0", 19, TextAnchor.LowerCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.32f, 0.08f), new Vector2(0.68f, 0.34f), Vector2.zero);
-            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 24, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.34f, -0.34f), new Vector2(0.66f, -0.06f), Vector2.zero);
-            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■\n炸弹 ◇◇◇", 24, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.68f, 0.18f), new Vector2(0.91f, 0.92f), Vector2.zero);
+            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "得分 0000000\n金币 000", 28, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.02f, 0.12f), new Vector2(0.32f, 0.92f), Vector2.zero);
+            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "最高分 0000000", 24, TextAnchor.UpperCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.34f, 0.68f), new Vector2(0.66f, 0.98f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 19, TextAnchor.MiddleCenter, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.33f, 0.42f), new Vector2(0.67f, 0.66f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "第1关 0%  击落 0/0", 19, TextAnchor.LowerCenter, new Color(0.96f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.33f, 0.14f), new Vector2(0.67f, 0.42f), Vector2.zero);
+            comboMultiplierText = UiFactory.CreateArcadeLabel(topBar.transform, "2x", 40, TextAnchor.MiddleCenter, ArcadeTheme.ComboYellow, FontStyle.Bold, new Vector2(0.34f, 0.86f), new Vector2(0.66f, 0.98f), Vector2.zero);
+            comboMultiplierText.gameObject.SetActive(false);
+            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 22, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.34f, 0.04f), new Vector2(0.66f, 0.32f), Vector2.zero);
+            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■\n炸弹 ◇◇◇", 24, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.68f, 0.12f), new Vector2(0.96f, 0.92f), Vector2.zero);
             pauseButton = UiFactory.CreateButton(topBar.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(54f, 54f), new Vector2(-34f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
@@ -307,6 +311,26 @@ namespace Wanwan.Runtime
             overlayScore = UiFactory.CreateArcadeLabel(overlay.transform, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.4f), new Vector2(0.85f, 0.49f), Vector2.zero);
             overlayBestScore = UiFactory.CreateArcadeLabel(overlay.transform, "最高分 0000000", 38, TextAnchor.MiddleCenter, new Color(0.54f, 0.85f, 1f), FontStyle.Bold, new Vector2(0.15f, 0.32f), new Vector2(0.85f, 0.4f), Vector2.zero);
             overlaySummary = UiFactory.CreateArcadeLabel(overlay.transform, "击落 0/0", 30, TextAnchor.MiddleCenter, new Color(1f, 0.72f, 0.82f), FontStyle.Bold, new Vector2(0.12f, 0.22f), new Vector2(0.88f, 0.31f), Vector2.zero);
+        }
+
+        private void RefreshComboDisplay()
+        {
+            if (comboMultiplierText == null) return;
+
+            int multiplier = gameManager.CurrentComboMultiplier;
+            if (multiplier <= 1)
+            {
+                if (comboMultiplierText.gameObject.activeSelf)
+                    comboMultiplierText.gameObject.SetActive(false);
+                return;
+            }
+
+            comboMultiplierText.gameObject.SetActive(true);
+            comboMultiplierText.text = multiplier + "x";
+            comboMultiplierText.color = multiplier >= 5 ? ArcadeTheme.ComboRed
+                : multiplier >= 3 ? ArcadeTheme.ComboOrange
+                : ArcadeTheme.ComboYellow;
+            comboMultiplierText.fontSize = multiplier >= 5 ? 52 : multiplier >= 3 ? 40 : 32;
         }
 
         private string BuildPowerupHudText()

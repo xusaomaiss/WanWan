@@ -12,6 +12,9 @@ namespace Wanwan.Runtime
         public static readonly Color WarningRed = FromHex(0xFF, 0x00, 0x40);
         public static readonly Color EnergyYellow = FromHex(0xFF, 0xD7, 0x00);
         public static readonly Color White = Color.white;
+        public static readonly Color ComboYellow = new Color(1f, 0.86f, 0.32f);
+        public static readonly Color ComboOrange = new Color(1f, 0.55f, 0.12f);
+        public static readonly Color ComboRed = new Color(1f, 0.15f, 0.12f);
         public static readonly Color DimGray = FromHex(0x4A, 0x4A, 0x6A);
 
         public const int LogoSize = 64;

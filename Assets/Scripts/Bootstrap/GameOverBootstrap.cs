@@ -17,6 +17,8 @@ namespace Wanwan.Runtime
         private Text mountStatusText;
         private readonly Button[] mountButtons = new Button[3];
         private char[] initials;
+        private ScoreCounter scoreCounter;
+        private Text scoreCounterText;
 
         private void Awake()
         {
@@ -24,6 +26,18 @@ namespace Wanwan.Runtime
             Screen.orientation = ScreenOrientation.Portrait;
             EnsureCamera(victory ? new Color(0.03f, 0.06f, 0.14f) : new Color(0.09f, 0.03f, 0.12f));
             BuildGameOver();
+        }
+
+        private void Update()
+        {
+            if (scoreCounter != null && !scoreCounter.IsComplete)
+            {
+                scoreCounter.Tick(Time.deltaTime);
+                if (scoreCounterText != null)
+                {
+                    scoreCounterText.text = $"本局得分 {scoreCounter.CurrentScore:0000000}";
+                }
+            }
         }
 
         private static void EnsureCamera(Color background)
@@ -61,8 +75,8 @@ namespace Wanwan.Runtime
             Color detailColor = victory ? new Color(0.78f, 1f, 0.92f) : new Color(1f, 0.9f, 0.66f);
             string titleText = victory ? "任务完成" : "任务失败";
             string stageLine = victory
-                ? $"第{SessionState.CurrentStageNumber}关突破  得分 {SessionState.LastScore:0000000}"
-                : $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}  得分 {SessionState.LastScore:0000000}";
+                ? $"第{SessionState.CurrentStageNumber}关突破"
+                : $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}";
 
             UiFactory.CreatePanel(background, "ResultDim", new Color(0.01f, 0.01f, 0.03f, victory ? 0.5f : 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
             UiFactory.CreatePanel(background, "ResultTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
@@ -84,6 +98,13 @@ namespace Wanwan.Runtime
             Outline stageOutline = stage.gameObject.AddComponent<Outline>();
             stageOutline.effectColor = new Color(0f, 0f, 0f, 0.78f);
             stageOutline.effectDistance = new Vector2(2f, -2f);
+
+            scoreCounter = new ScoreCounter();
+            scoreCounter.Start(SessionState.LastScore);
+            scoreCounterText = UiFactory.CreateArcadeLabel(background, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.42f), new Vector2(0.88f, 0.5f), Vector2.zero);
+            Outline scoreOutline = scoreCounterText.gameObject.AddComponent<Outline>();
+            scoreOutline.effectColor = new Color(0f, 0f, 0f, 0.72f);
+            scoreOutline.effectDistance = new Vector2(2f, -2f);
 
             initials = SessionState.LeaderboardName.ToCharArray();
             Image namePanel = UiFactory.CreatePixelPanel(background, "NameEntryPanel", new Color(0.03f, 0.04f, 0.09f, 0.82f), ArcadeTheme.ElectricBlue, new Vector2(0.2f, 0.31f), new Vector2(0.8f, 0.43f), new Vector2(5f, 5f));
