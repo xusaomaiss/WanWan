@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Wanwan.Runtime.Achievement;
 using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
@@ -40,6 +41,7 @@ namespace Wanwan.Runtime
             SpriteRenderer introBackdrop = CreateIntroCinematicBackdrop(orthographicSize, horizontalExtent);
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
+            CreateAchievementPopup(manager, ui);
             player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, bottomBound, topBound);
             spawner.Initialize(manager, effects, cameraComponent, leftBound, rightBound, topBound);
             manager.BeginIntro();
@@ -208,6 +210,16 @@ namespace Wanwan.Runtime
 
             PlayerController playerController = playerObject.AddComponent<PlayerController>();
             return playerController;
+        }
+
+        private static void CreateAchievementPopup(GameManager manager, UIController ui)
+        {
+            var achievementState = new AchievementState();
+            achievementState.Load();
+
+            AchievementPopup popup = new GameObject("AchievementPopup").AddComponent<AchievementPopup>();
+            popup.Initialize(ui.transform);
+            manager.SetAchievementPopup(popup);
         }
 
     }

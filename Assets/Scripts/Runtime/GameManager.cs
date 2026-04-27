@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Wanwan.Runtime.Achievement;
 
 namespace Wanwan.Runtime
 {
@@ -21,6 +22,8 @@ namespace Wanwan.Runtime
         private readonly PlayerHealthState playerHealth = new PlayerHealthState();
         private readonly PlayerInvulnerabilityState invulnerabilityState = new PlayerInvulnerabilityState();
         private readonly WaveDirector waveDirector = new WaveDirector();
+        private readonly AchievementState achievementState = new AchievementState();
+        private AchievementPopup achievementPopup;
         private bool gameEnded;
         private bool paused;
         private bool stageClear;
@@ -228,6 +231,9 @@ namespace Wanwan.Runtime
                 ShowStageBanner("炸弹就绪");
             }
 
+            achievementState.AddProgress(AchievementType.Collect200Coins, 1);
+            achievementState.AddProgress(AchievementType.Collect500Coins, 1);
+
             uiController.RefreshHud();
         }
 
@@ -255,6 +261,7 @@ namespace Wanwan.Runtime
 
             comboState.RegisterKill();
             AddComboScaledScore(baseScore, position);
+            TrackComboAchievement();
         }
 
         public void RegisterBossPhaseCombo()
@@ -278,6 +285,7 @@ namespace Wanwan.Runtime
 
             comboState.RegisterBossDefeated();
             AddComboScaledScore(baseScore, position);
+            TrackBossAchievement();
         }
 
         public void NotifyEnemyEscaped(Vector3 position)
@@ -470,6 +478,7 @@ namespace Wanwan.Runtime
             Score += clearBonus;
             effectsController.PlayScorePopup(PlayerPosition, clearBonus);
             ShowStageBanner("任务完成");
+            TrackClearAchievements();
             StartCoroutine(EndVictoryRun());
         }
 
@@ -810,6 +819,41 @@ namespace Wanwan.Runtime
                     weaponState.UpgradeFireLevel();
                     break;
             }
+        }
+
+        private void TrackComboAchievement()
+        {
+            if (comboState.MaxCombo >= 50)
+            {
+                achievementState.AddProgress(AchievementType.MaxCombo50, comboState.MaxCombo);
+            }
+            if (comboState.MaxCombo >= 100)
+            {
+                achievementState.AddProgress(AchievementType.MaxCombo100, comboState.MaxCombo);
+            }
+        }
+
+        private void TrackBossAchievement()
+        {
+            achievementState.Unlock(AchievementType.FirstBossDefeat);
+        }
+
+        private void TrackClearAchievements()
+        {
+            achievementState.Unlock(AchievementType.FirstClear);
+            if (Difficulty == GameDifficulty.High)
+            {
+                achievementState.Unlock(AchievementType.HardClear);
+            }
+            if (BombCount == 0 && bombsUsed == 0)
+            {
+                achievementState.Unlock(AchievementType.NoBombClear);
+            }
+        }
+
+        public void SetAchievementPopup(AchievementPopup popup)
+        {
+            achievementPopup = popup;
         }
 
         private string BuildRunRating()
