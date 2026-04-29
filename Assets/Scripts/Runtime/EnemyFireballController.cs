@@ -26,11 +26,12 @@ namespace Wanwan.Runtime
             leftDespawnX = minX - 1.2f;
             rightDespawnX = maxX + 1.2f;
             color = fireColor;
+            resolved = false;
         }
 
         private void Update()
         {
-            if (resolved || !gameManager.IsPlaying)
+            if (resolved || gameManager == null || !gameManager.IsPlaying)
             {
                 return;
             }
@@ -56,7 +57,7 @@ namespace Wanwan.Runtime
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
@@ -64,7 +65,10 @@ namespace Wanwan.Runtime
             if (other.GetComponent<PlayerController>() != null)
             {
                 resolved = true;
-                effectsController.PlayPlayerPierced(transform.position, color);
+                if (effectsController != null)
+                {
+                    effectsController.PlayPlayerPierced(transform.position, color);
+                }
                 gameManager.DamagePlayerByPierce();
                 ReturnOrDestroy();
             }

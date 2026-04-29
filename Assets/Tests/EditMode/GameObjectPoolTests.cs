@@ -80,5 +80,23 @@ namespace Wanwan.Tests.EditMode
             Assert.That(reused.GetComponents<Component>().Length, Is.EqualTo(1));
             Assert.That(reused.transform.childCount, Is.EqualTo(0));
         }
+
+        [Test]
+        public void Rent_AfterReturn_ResetsTransformState()
+        {
+            var pool = new GameObjectPool("Test", 0);
+            var obj = pool.Rent();
+            obj.transform.position = new Vector3(4f, -3f, 2f);
+            obj.transform.rotation = Quaternion.Euler(0f, 0f, 35f);
+            obj.transform.localScale = new Vector3(2f, 3f, 1f);
+
+            pool.Return(obj);
+            var reused = pool.Rent();
+
+            Assert.AreSame(obj, reused);
+            Assert.That(reused.transform.position, Is.EqualTo(Vector3.zero));
+            Assert.That(reused.transform.rotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(reused.transform.localScale, Is.EqualTo(Vector3.one));
+        }
     }
 }

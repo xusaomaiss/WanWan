@@ -364,7 +364,11 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            if (Application.isPlaying)
+            {
+                Object.DontDestroyOnLoad(eventSystem);
+            }
         }
     }
 }

@@ -9,10 +9,13 @@ namespace Wanwan.Runtime
     {
         public const float PlayerShipWorldSize = 2f;
 
+        public static GameBootstrap Instance { get; private set; }
         public PoolCollection Pools { get; private set; }
 
         private void Awake()
         {
+            Instance = this;
+
             Screen.orientation = ScreenOrientation.Portrait;
             StageDefinition stage = SessionState.CurrentStage;
             Camera cameraComponent = EnsureCamera(stage.BackgroundColor);
@@ -232,5 +235,12 @@ namespace Wanwan.Runtime
             weather.Initialize(stage.Weather, Pools, leftBound, rightBound, bottomBound, topBound);
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
     }
 }

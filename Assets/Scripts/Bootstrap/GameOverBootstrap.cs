@@ -7,10 +7,10 @@ namespace Wanwan.Runtime
     {
         public static readonly Vector2 ResultActionButtonSize = new Vector2(360f, 96f);
         public static readonly Vector2 LegacyResultActionButtonSize = new Vector2(390f, 118f);
-        public const float VictoryActionButtonY = -790f;
-        public const float DefaultActionButtonY = -610f;
-        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.08f, 0.13f);
-        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.92f, 0.29f);
+        public const float VictoryActionButtonY = -660f;
+        public const float DefaultActionButtonY = -480f;
+        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.08f, 0.22f);
+        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.92f, 0.38f);
 
         private Text nameText;
         private Text mountScoreText;
@@ -80,7 +80,6 @@ namespace Wanwan.Runtime
 
             UiFactory.CreatePanel(background, "ResultDim", new Color(0.01f, 0.01f, 0.03f, victory ? 0.5f : 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
             UiFactory.CreatePanel(background, "ResultTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
-            UiFactory.CreatePanel(background, "ResultBottomShade", new Color(0f, 0f, 0f, 0.34f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
 
             Text shadow = UiFactory.CreateArcadeLabel(background, titleText, 92, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.86f), FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), new Vector2(6f, -8f));
             UiFactory.ConfigureSingleLine(shadow);
@@ -101,23 +100,10 @@ namespace Wanwan.Runtime
 
             scoreCounter = new ScoreCounter();
             scoreCounter.Start(SessionState.LastScore);
-            scoreCounterText = UiFactory.CreateArcadeLabel(background, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.42f), new Vector2(0.88f, 0.5f), Vector2.zero);
+            scoreCounterText = UiFactory.CreateArcadeLabel(background, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.48f), new Vector2(0.88f, 0.56f), Vector2.zero);
             Outline scoreOutline = scoreCounterText.gameObject.AddComponent<Outline>();
             scoreOutline.effectColor = new Color(0f, 0f, 0f, 0.72f);
             scoreOutline.effectDistance = new Vector2(2f, -2f);
-
-            initials = SessionState.LeaderboardName.ToCharArray();
-            Image namePanel = UiFactory.CreatePixelPanel(background, "NameEntryPanel", new Color(0.03f, 0.04f, 0.09f, 0.82f), ArcadeTheme.ElectricBlue, new Vector2(0.2f, 0.31f), new Vector2(0.8f, 0.43f), new Vector2(5f, 5f));
-            UiFactory.CreateArcadeLabel(namePanel.transform, "本地榜名", 24, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.07f, 0.52f), new Vector2(0.42f, 0.92f), Vector2.zero);
-            nameText = UiFactory.CreateArcadeLabel(namePanel.transform, new string(initials), 46, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.38f, 0.1f), new Vector2(0.62f, 0.9f), Vector2.zero);
-            for (int i = 0; i < 3; i++)
-            {
-                int index = i;
-                Button up = UiFactory.CreatePixelButton(namePanel.transform, "+", ArcadeTheme.ElectricBlue, new Vector2(58f, 42f), new Vector2(42f + i * 58f, 34f));
-                up.onClick.AddListener(() => CycleInitial(index, 1));
-                Button down = UiFactory.CreatePixelButton(namePanel.transform, "-", ArcadeTheme.DimGray, new Vector2(58f, 42f), new Vector2(42f + i * 58f, -34f));
-                down.onClick.AddListener(() => CycleInitial(index, -1));
-            }
 
             if (victory)
             {
@@ -126,11 +112,14 @@ namespace Wanwan.Runtime
 
             string primaryCopy = victory ? "继续下一关" : "重新挑战";
             Vector2 actionButtonSize = victory ? ResultActionButtonSize : LegacyResultActionButtonSize;
-            float actionButtonY = victory ? VictoryActionButtonY : DefaultActionButtonY;
+            float actionButtonY = victory ? VictoryActionButtonY : -480f;
             Button primaryButton = UiFactory.CreatePixelButton(background, primaryCopy, victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed, actionButtonSize, new Vector2(-210f, actionButtonY));
             primaryButton.onClick.AddListener(victory ? SceneNavigator.LoadNextStage : SceneNavigator.LoadGame);
             Button menuButton = UiFactory.CreatePixelButton(background, "返回主页", ArcadeTheme.EnergyYellow, actionButtonSize, new Vector2(210f, actionButtonY));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
+
+            // Bottom shade must be created after buttons so it renders behind them
+            UiFactory.CreatePanel(background, "ResultBottomShade", new Color(0f, 0f, 0f, 0.34f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
         }
 
         private void BuildMountShop(Transform background, Color detailColor)

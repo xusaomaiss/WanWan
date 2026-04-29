@@ -19,6 +19,8 @@ namespace Wanwan.Runtime
             gameManager = manager;
             effectsController = effects;
             blockSpawner = spawner;
+            consumed = false;
+            age = 0f;
             fallSpeed = Mathf.Max(0.8f, speed);
             bottomDespawnY = despawnY;
             spriteRenderer = GetComponent<SpriteRenderer>();

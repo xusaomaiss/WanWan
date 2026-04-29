@@ -25,12 +25,13 @@ namespace Wanwan.Runtime
             hitPoints = targetProfile.HitPoints;
             scrollSpeed = Mathf.Max(0.2f, stageScrollSpeed);
             fireTimer = targetProfile.FireInterval * Random.Range(0.45f, 0.9f);
+            resolved = false;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
         private void Update()
         {
-            if (!gameManager.IsPlaying)
+            if (resolved || gameManager == null || !gameManager.IsPlaying)
             {
                 return;
             }
@@ -57,25 +58,29 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (other.GetComponent<PlayerController>() != null)
+            if (other.GetComponent<PlayerController>() != null && gameManager != null)
             {
-                resolved = true;
-                effectsController.PlayPlayerPierced(transform.position, profile.AccentColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlayPlayerPierced(transform.position, profile.AccentColor);
+                }
                 gameManager.DamagePlayerByCollision();
-                blockSpawner.NotifyEnemyResolved();
-                Destroy(gameObject);
+                ResolveWithoutPenalty();
             }
         }
 
         public void ApplyHit(int damage)
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
 
             hitPoints -= Mathf.Max(1, damage);
-            effectsController.PlayHit(transform.position, profile.AccentColor);
+            if (effectsController != null)
+            {
+                effectsController.PlayHit(transform.position, profile.AccentColor);
+            }
             if (hitPoints > 0)
             {
                 transform.localScale *= 0.97f;
@@ -85,16 +90,26 @@ namespace Wanwan.Runtime
             resolved = true;
             gameManager.RegisterEnemyKillScore(profile.ScoreValue, transform.position);
             gameManager.NotifyEnemyDestroyed();
-            blockSpawner.SpawnCoinsAtPosition(transform.position);
-            blockSpawner.SpawnEnemyAmmoPackDrop(AmmoPowerupType.None, transform.position);
-            effectsController.PlayGroundTargetDestroyed(transform.position, profile.AccentColor);
-            blockSpawner.NotifyEnemyResolved();
-            Destroy(gameObject);
+            if (blockSpawner != null)
+            {
+                blockSpawner.SpawnCoinsAtPosition(transform.position);
+                blockSpawner.SpawnEnemyAmmoPackDrop(AmmoPowerupType.None, transform.position);
+                blockSpawner.NotifyEnemyResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+            }
+            if (effectsController != null)
+            {
+                effectsController.PlayGroundTargetDestroyed(transform.position, profile.AccentColor);
+            }
+            if (blockSpawner == null)
+            {
+                Destroy(gameObject);
+            }
         }
 
         public void ClearByBomb()
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
@@ -102,14 +117,29 @@ namespace Wanwan.Runtime
             resolved = true;
             gameManager.RegisterEnemyKillScore(profile.ScoreValue, transform.position);
             gameManager.NotifyEnemyDestroyed();
-            blockSpawner.SpawnCoinsAtPosition(transform.position);
-            effectsController.PlayGroundTargetDestroyed(transform.position, profile.AccentColor);
-            blockSpawner.NotifyEnemyResolved();
-            Destroy(gameObject);
+            if (blockSpawner != null)
+            {
+                blockSpawner.SpawnCoinsAtPosition(transform.position);
+                blockSpawner.NotifyEnemyResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+            }
+            if (effectsController != null)
+            {
+                effectsController.PlayGroundTargetDestroyed(transform.position, profile.AccentColor);
+            }
+            if (blockSpawner == null)
+            {
+                Destroy(gameObject);
+            }
         }
 
         private void FireAtPlayer()
         {
+            if (gameManager == null || blockSpawner == null)
+            {
+                return;
+            }
+
             Vector2 direction = ((Vector2)(gameManager.PlayerPosition - transform.position)).normalized;
             if (direction == Vector2.zero)
             {
@@ -128,7 +158,13 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            blockSpawner.NotifyEnemyResolved();
+            if (blockSpawner != null)
+            {
+                blockSpawner.NotifyEnemyResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+                return;
+            }
+
             Destroy(gameObject);
         }
     }

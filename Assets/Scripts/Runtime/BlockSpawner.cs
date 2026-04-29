@@ -31,7 +31,7 @@ namespace Wanwan.Runtime
         {
             gameManager = manager;
             effectsController = effects;
-            pools = FindObjectOfType<GameBootstrap>()?.Pools;
+            pools = GameBootstrap.Instance?.Pools;
             leftBound = minX;
             rightBound = maxX;
             spawnY = topY;
@@ -124,10 +124,20 @@ namespace Wanwan.Runtime
 
         public void SpawnEnemyMissile(Vector3 origin, Vector2 direction, Color color, bool fromBoss = false)
         {
-            GameObject fireballObject = pools != null ? pools.RentFireball() : new GameObject(fromBoss ? "BossMissile" : "EnemyMissile");
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
+            GameObject fireballObject = pools.RentFireball();
+            if (fireballObject == null)
+            {
+                return;
+            }
             fireballObject.transform.position = origin;
 
-            SpriteRenderer renderer = fireballObject.AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = fireballObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = fireballObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(fromBoss ? AmmoPowerupType.Burst : AmmoPowerupType.Normal);
             renderer.color = fromBoss ? Color.Lerp(color, gameManager.StageAccentColor, 0.26f) : color;
             renderer.sortingOrder = 14;
@@ -135,11 +145,13 @@ namespace Wanwan.Runtime
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
             fireballObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
-            BoxCollider2D collider = fireballObject.AddComponent<BoxCollider2D>();
+            BoxCollider2D collider = fireballObject.GetComponent<BoxCollider2D>();
+            if (collider == null) collider = fireballObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
             collider.size = WeaponShotPresentation.GetEnemyColliderSize(fromBoss);
 
-            Rigidbody2D rigidbody2D = fireballObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = fireballObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = fireballObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
@@ -150,35 +162,46 @@ namespace Wanwan.Runtime
                 speed *= GetBossPatternSpeedMultiplier(gameManager.BossPatternStyle);
             }
 
-            EnemyFireballController fireball = fireballObject.AddComponent<EnemyFireballController>();
+            EnemyFireballController fireball = fireballObject.GetComponent<EnemyFireballController>();
+            if (fireball == null) fireball = fireballObject.AddComponent<EnemyFireballController>();
             fireball.Initialize(gameManager, effectsController, this, speed, direction, gameManager.BottomBound - 1.2f, gameManager.LeftBound, gameManager.RightBound, renderer.color);
         }
 
         public void SpawnAmmoPackAtPosition(AmmoPowerupType type, Vector3 position, AmmoPackPickupMode pickupMode = AmmoPackPickupMode.Normal)
         {
-            if (type == AmmoPowerupType.None)
+            if (type == AmmoPowerupType.None || pools == null || gameManager == null || effectsController == null)
             {
                 return;
             }
 
-            GameObject packObject = pools != null ? pools.RentPickup() : new GameObject(type + "Pack");
+            GameObject packObject = pools.RentPickup();
+            if (packObject == null)
+            {
+                return;
+            }
             packObject.transform.position = position;
             packObject.transform.localScale = Vector3.one * PickupPresentation.AmmoPackVisualScale;
 
-            SpriteRenderer renderer = packObject.AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = packObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = packObject.AddComponent<SpriteRenderer>();
+
             renderer.sprite = RuntimeSpriteFactory.GetAmmoPackSprite(type);
             renderer.color = GetAmmoPackColor(type);
             renderer.sortingOrder = 11;
 
-            CircleCollider2D collider = packObject.AddComponent<CircleCollider2D>();
+            CircleCollider2D collider = packObject.GetComponent<CircleCollider2D>();
+            if (collider == null) collider = packObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
             collider.radius = PickupPresentation.AmmoPackColliderRadius;
 
-            Rigidbody2D rigidbody2D = packObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = packObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = packObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            AmmoPackController packController = packObject.AddComponent<AmmoPackController>();
+            AmmoPackController packController = packObject.GetComponent<AmmoPackController>();
+            if (packController == null) packController = packObject.AddComponent<AmmoPackController>();
+
             packController.Initialize(gameManager, effectsController, this, type, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime), gameManager.BottomBound - 1.25f, gameManager.LeftBound, gameManager.RightBound, gameManager.TopBound, renderer.color, GetAmmoPackLabel(type), pickupMode);
         }
 
@@ -189,28 +212,53 @@ namespace Wanwan.Runtime
 
         public void SpawnCoinsAtPosition(Vector3 position)
         {
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
             int count = Mathf.CeilToInt(gameManager.RewardConfig.CoinsPerEnemy * GetCoinDropMultiplier());
             for (int i = 0; i < count; i++)
             {
-                GameObject coinObject = pools != null ? pools.RentPickup() : new GameObject("Coin");
-                coinObject.transform.position = position + new Vector3(Random.Range(-0.18f, 0.18f), Random.Range(-0.14f, 0.2f), 0f);
-                coinObject.transform.localScale = Vector3.one * CoinController.BaseVisualScale;
+                GameObject coinObject = pools.RentPickup();
+                if (coinObject == null)
+                {
+                    continue;
+                }
 
-                SpriteRenderer renderer = coinObject.AddComponent<SpriteRenderer>();
+                Transform coinTransform = coinObject.transform;
+                if (coinTransform == null)
+                {
+                    continue;
+                }
+
+                coinTransform.position = position + new Vector3(Random.Range(-0.18f, 0.18f), Random.Range(-0.14f, 0.2f), 0f);
+                coinTransform.localScale = Vector3.one * CoinController.BaseVisualScale;
+
+                SpriteRenderer renderer = coinObject.GetComponent<SpriteRenderer>();
+                if (renderer == null) renderer = coinObject.AddComponent<SpriteRenderer>();
+
                 renderer.sprite = RuntimeSpriteFactory.GetCoinSprite();
                 renderer.color = Color.white;
                 renderer.sortingOrder = 18;
 
-            CoinController coin = coinObject.AddComponent<CoinController>();
-            float angle = ((Mathf.PI * 2f) / Mathf.Max(1, count)) * i;
-            Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
-            drift.y = Mathf.Abs(drift.y) * 0.65f;
-            coin.Initialize(gameManager, this, drift);
+                CoinController coin = coinObject.GetComponent<CoinController>();
+                if (coin == null) coin = coinObject.AddComponent<CoinController>();
+
+                float angle = ((Mathf.PI * 2f) / Mathf.Max(1, count)) * i;
+                Vector2 drift = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(0.55f, 1.05f);
+                drift.y = Mathf.Abs(drift.y) * 0.65f;
+                coin.Initialize(gameManager, this, drift);
             }
         }
 
         public void SpawnEnemyAmmoPackDrop(AmmoPowerupType guaranteedDrop, Vector3 position)
         {
+            if (gameManager == null)
+            {
+                return;
+            }
+
             TrySpawnPowerCapsule(position);
             if (TrySpawnGuaranteedStagePickup(position))
             {
@@ -252,6 +300,11 @@ namespace Wanwan.Runtime
 
         public void SpawnBombPickupAtRandomReachablePosition()
         {
+            if (gameManager == null)
+            {
+                return;
+            }
+
             SpawnArea area = GetBombPickupSpawnArea(leftBound, rightBound, gameManager.BottomBound, gameManager.TopBound);
             Vector3 position = new Vector3(
                 Random.Range(area.MinX, area.MaxX),
@@ -275,76 +328,124 @@ namespace Wanwan.Runtime
 
         public void SpawnBombPickupAtPosition(Vector3 position)
         {
-            GameObject bombObject = pools != null ? pools.RentPickup() : new GameObject("BombPickup");
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
+            GameObject bombObject = pools.RentPickup();
+            if (bombObject == null)
+            {
+                return;
+            }
             bombObject.transform.position = position;
             bombObject.transform.localScale = Vector3.one * PickupPresentation.BombVisualScale;
 
-            SpriteRenderer renderer = bombObject.AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = bombObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = bombObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBombPickupSprite();
             renderer.sortingOrder = 19;
 
-            CircleCollider2D collider = bombObject.AddComponent<CircleCollider2D>();
+            CircleCollider2D collider = bombObject.GetComponent<CircleCollider2D>();
+            if (collider == null) collider = bombObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
             collider.radius = PickupPresentation.BombColliderRadius;
 
-            Rigidbody2D rigidbody2D = bombObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = bombObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = bombObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            BombPickupController pickup = bombObject.AddComponent<BombPickupController>();
+            BombPickupController pickup = bombObject.GetComponent<BombPickupController>();
+            if (pickup == null) pickup = bombObject.AddComponent<BombPickupController>();
             pickup.Initialize(gameManager, this);
             effectsController.PlayPowerupSpawn(position, new Color(0.45f, 0.86f, 1f));
         }
 
         public void SpawnHealthPickupAtPosition(Vector3 position)
         {
-            GameObject healthObject = pools != null ? pools.RentPickup() : new GameObject("HealthPickup");
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
+            GameObject healthObject = pools.RentPickup();
+            if (healthObject == null)
+            {
+                return;
+            }
             healthObject.transform.position = position + new Vector3(-0.28f, 0.22f, 0f);
             healthObject.transform.localScale = Vector3.one * PickupPresentation.HealthPickupVisualScale;
 
-            SpriteRenderer renderer = healthObject.AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = healthObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = healthObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetHealthPickupSprite();
             renderer.sortingOrder = 19;
 
-            CircleCollider2D collider = healthObject.AddComponent<CircleCollider2D>();
+            CircleCollider2D collider = healthObject.GetComponent<CircleCollider2D>();
+            if (collider == null) collider = healthObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
             collider.radius = PickupPresentation.HealthPickupColliderRadius;
 
-            Rigidbody2D rigidbody2D = healthObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = healthObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = healthObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            HealthPickupController pickup = healthObject.AddComponent<HealthPickupController>();
+            HealthPickupController pickup = healthObject.GetComponent<HealthPickupController>();
+            if (pickup == null) pickup = healthObject.AddComponent<HealthPickupController>();
             pickup.Initialize(gameManager, this);
             effectsController.PlayPowerupSpawn(position, new Color(0.35f, 1f, 0.62f));
         }
 
         private void SpawnPowerCapsuleAtPosition(Vector3 position)
         {
-            GameObject capsuleObject = pools != null ? pools.RentPickup() : new GameObject("PowerCapsule");
-            capsuleObject.transform.position = position + new Vector3(0.28f, 0.22f, 0f);
-            capsuleObject.transform.localScale = Vector3.one * PickupPresentation.PowerCapsuleVisualScale;
+            if (pools == null || gameManager == null || effectsController == null)
+            {
+                return;
+            }
 
-            SpriteRenderer renderer = capsuleObject.AddComponent<SpriteRenderer>();
+            GameObject capsuleObject = pools.RentPickup();
+            if (capsuleObject == null)
+            {
+                return;
+            }
+
+            Transform capsuleTransform = capsuleObject.transform;
+            if (capsuleTransform == null)
+            {
+                return;
+            }
+
+            capsuleTransform.position = position + new Vector3(0.28f, 0.22f, 0f);
+            capsuleTransform.localScale = Vector3.one * PickupPresentation.PowerCapsuleVisualScale;
+
+            SpriteRenderer renderer = capsuleObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = capsuleObject.AddComponent<SpriteRenderer>();
+
             renderer.sprite = RuntimeSpriteFactory.GetCapsuleSprite();
             renderer.color = new Color(0.42f, 0.9f, 1f);
             renderer.sortingOrder = 19;
 
-            CircleCollider2D collider = capsuleObject.AddComponent<CircleCollider2D>();
+            CircleCollider2D collider = capsuleObject.GetComponent<CircleCollider2D>();
+            if (collider == null) collider = capsuleObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
             collider.radius = PickupPresentation.PowerCapsuleColliderRadius;
 
-            Rigidbody2D rigidbody2D = capsuleObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = capsuleObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = capsuleObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            PowerCapsuleController capsule = capsuleObject.AddComponent<PowerCapsuleController>();
+            PowerCapsuleController capsule = capsuleObject.GetComponent<PowerCapsuleController>();
+            if (capsule == null) capsule = capsuleObject.AddComponent<PowerCapsuleController>();
+
             capsule.Initialize(gameManager, effectsController, this, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime) * 0.86f, gameManager.BottomBound - 1.25f);
         }
 
         private void TrySpawnPowerCapsule(Vector3 position)
         {
-            if (gameplayProfile == null || powerCapsulesSpawned >= gameplayProfile.PowerMeterCapsuleBudget)
+            if (gameManager == null || gameplayProfile == null || powerCapsulesSpawned >= gameplayProfile.PowerMeterCapsuleBudget)
             {
                 return;
             }
@@ -365,7 +466,7 @@ namespace Wanwan.Runtime
 
         private bool TrySpawnGuaranteedStagePickup(Vector3 position)
         {
-            if (gameplayProfile == null || gameManager.CurrentStagePhase == StagePhase.Preparation || gameManager.CurrentStagePhase == StagePhase.Boss)
+            if (gameManager == null || gameplayProfile == null || gameManager.CurrentStagePhase == StagePhase.Preparation || gameManager.CurrentStagePhase == StagePhase.Boss)
             {
                 return false;
             }
@@ -880,6 +981,11 @@ namespace Wanwan.Runtime
 
         private void SpawnEnemy(Vector3 position, bool elite, Vector2 moveDirection, float swayAmplitude, float swayFrequency, AmmoPowerupType guaranteedDrop, EnemyType enemyType = EnemyType.Normal)
         {
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
             bool pacedElite = ShouldSpawnElite(elite);
             bool tough = pacedElite || ShouldSpawnTough();
             int hitPoints = pacedElite ? GetEliteHitPoints() : DifficultyProgression.GetHitPoints(tough, gameManager.ElapsedTime);
@@ -888,10 +994,22 @@ namespace Wanwan.Runtime
             float speed = pacedElite ? DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, true) * 0.82f : DifficultyProgression.GetBlockSpeed(gameManager.ElapsedTime, tough);
             speed *= Mathf.Lerp(1f, gameManager.StageDifficultyMultiplier, 0.32f);
 
-            GameObject enemyObject = pools != null ? pools.RentEnemy() : new GameObject(pacedElite ? "ElitePlane" : (tough ? "ToughPlane" : "Plane"));
+            GameObject enemyObject = pools.RentEnemy();
+            if (enemyObject == null)
+            {
+                return;
+            }
             enemyObject.transform.position = position;
 
-            SpriteRenderer renderer = enemyObject.AddComponent<SpriteRenderer>();
+            // Disable BossController if present (enemy uses BlockController instead)
+            BossController existingBoss = enemyObject.GetComponent<BossController>();
+            if (existingBoss != null)
+            {
+                existingBoss.enabled = false;
+            }
+
+            SpriteRenderer renderer = enemyObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = enemyObject.AddComponent<SpriteRenderer>();
             if (pacedElite)
             {
                 renderer.sprite = RuntimeSpriteFactory.GetEliteInterceptorSprite();
@@ -914,15 +1032,18 @@ namespace Wanwan.Runtime
             enemyObject.transform.localScale = GetEnemyVisualScale(tough, pacedElite);
             enemyObject.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg - 90f);
 
-            BoxCollider2D collider = enemyObject.AddComponent<BoxCollider2D>();
+            BoxCollider2D collider = enemyObject.GetComponent<BoxCollider2D>();
+            if (collider == null) collider = enemyObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
             collider.size = GetEnemyColliderSize(tough, pacedElite);
 
-            Rigidbody2D rigidbody2D = enemyObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = enemyObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = enemyObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            BlockController block = enemyObject.AddComponent<BlockController>();
+            BlockController block = enemyObject.GetComponent<BlockController>();
+            if (block == null) block = enemyObject.AddComponent<BlockController>();
             Color effectColor = pacedElite ? eliteColor : (tough ? toughColor : normalColor);
             block.Initialize(gameManager, this, effectsController, hitPoints, scoreValue, speed, effectColor, moveDirection, swayAmplitude, swayFrequency, pacedElite, guaranteedDrop, enemyType);
             activeEnemyCount++;
@@ -1001,26 +1122,46 @@ namespace Wanwan.Runtime
 
         private void SpawnGroundTarget(GroundTargetType type, Vector3 position)
         {
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
             GroundTargetProfile profile = GroundTargetProfile.Get(type, gameManager.StageDifficultyMultiplier);
-            GameObject targetObject = pools != null ? pools.RentEnemy() : new GameObject(type == GroundTargetType.Turret ? "GroundTurret" : "GroundTank");
+            GameObject targetObject = pools.RentEnemy();
+            if (targetObject == null)
+            {
+                return;
+            }
             targetObject.transform.position = position;
             targetObject.transform.localScale = type == GroundTargetType.Turret ? new Vector3(0.68f, 0.68f, 1f) : new Vector3(0.82f, 0.68f, 1f);
 
-            SpriteRenderer renderer = targetObject.AddComponent<SpriteRenderer>();
+            // Disable BossController if present (ground target uses GroundTargetController instead)
+            BossController existingBoss = targetObject.GetComponent<BossController>();
+            if (existingBoss != null)
+            {
+                existingBoss.enabled = false;
+            }
+
+            SpriteRenderer renderer = targetObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = targetObject.AddComponent<SpriteRenderer>();
             renderer.sprite = type == GroundTargetType.Turret ? RuntimeSpriteFactory.GetGroundTurretSprite() : RuntimeSpriteFactory.GetGroundTankSprite();
             renderer.color = Color.Lerp(profile.AccentColor, gameManager.StageAccentColor, 0.18f);
             renderer.sortingOrder = 8;
 
-            BoxCollider2D collider = targetObject.AddComponent<BoxCollider2D>();
+            BoxCollider2D collider = targetObject.GetComponent<BoxCollider2D>();
+            if (collider == null) collider = targetObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
             collider.size = type == GroundTargetType.Turret ? new Vector2(0.54f, 0.54f) : new Vector2(0.62f, 0.46f);
 
-            Rigidbody2D rigidbody2D = targetObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = targetObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = targetObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
             float scrollSpeed = 0.68f * gameManager.StageDifficultyMultiplier;
-            GroundTargetController target = targetObject.AddComponent<GroundTargetController>();
+            GroundTargetController target = targetObject.GetComponent<GroundTargetController>();
+            if (target == null) target = targetObject.AddComponent<GroundTargetController>();
             target.Initialize(gameManager, this, effectsController, profile, scrollSpeed);
             activeEnemyCount++;
         }
@@ -1120,25 +1261,45 @@ namespace Wanwan.Runtime
 
         private void SpawnBoss()
         {
-            GameObject bossObject = pools != null ? pools.RentEnemy() : new GameObject("BossFlagship");
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
+            GameObject bossObject = pools.RentEnemy();
+            if (bossObject == null)
+            {
+                return;
+            }
             bossObject.transform.position = new Vector3(0f, spawnY + 2.6f, 0f);
 
-            SpriteRenderer renderer = bossObject.AddComponent<SpriteRenderer>();
+            // Disable BlockController if present (boss uses BossController instead)
+            BlockController existingBlock = bossObject.GetComponent<BlockController>();
+            if (existingBlock != null)
+            {
+                existingBlock.enabled = false;
+            }
+
+            SpriteRenderer renderer = bossObject.GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = bossObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBossFlagshipSprite();
             renderer.color = Color.Lerp(new Color(1f, 0.22f, 0.58f), gameManager.StageAccentColor, 0.32f);
             renderer.sortingOrder = 13;
             bossObject.transform.localScale = new Vector3(1.72f, 1.42f, 1f);
             bossObject.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
 
-            BoxCollider2D collider = bossObject.AddComponent<BoxCollider2D>();
+            BoxCollider2D collider = bossObject.GetComponent<BoxCollider2D>();
+            if (collider == null) collider = bossObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
             collider.size = new Vector2(0.88f, 0.9f);
 
-            Rigidbody2D rigidbody2D = bossObject.AddComponent<Rigidbody2D>();
+            Rigidbody2D rigidbody2D = bossObject.GetComponent<Rigidbody2D>();
+            if (rigidbody2D == null) rigidbody2D = bossObject.AddComponent<Rigidbody2D>();
             rigidbody2D.gravityScale = 0f;
             rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
 
-            BossController boss = bossObject.AddComponent<BossController>();
+            BossController boss = bossObject.GetComponent<BossController>();
+            if (boss == null) boss = bossObject.AddComponent<BossController>();
             boss.Initialize(gameManager, this, effectsController, GetBossHitPoints(), BuildBossPhases(gameManager.Difficulty, gameManager.BossPatternStyle), gameManager.TopBound - 3.2f);
             bossActive = true;
             activeEnemyCount++;

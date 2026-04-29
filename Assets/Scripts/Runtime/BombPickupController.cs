@@ -14,6 +14,8 @@ namespace Wanwan.Runtime
         {
             gameManager = manager;
             blockSpawner = spawner;
+            consumed = false;
+            age = 0f;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 

@@ -53,13 +53,16 @@ namespace Wanwan.Runtime
             enemyType = type;
             shieldAbsorbedFirstHit = false;
             healTimer = HealerInterval;
+            resolved = false;
+            barrageHoverEndTime = 0f;
+            flightTime = 0f;
             BuildHealthLabel();
             RefreshHealthLabel();
         }
 
         private void Update()
         {
-            if (!gameManager.IsPlaying)
+            if (resolved || gameManager == null || !gameManager.IsPlaying)
             {
                 return;
             }
@@ -152,23 +155,39 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (other.GetComponent<PlayerController>() != null)
+            if (other.GetComponent<PlayerController>() != null && gameManager != null)
             {
                 resolved = true;
-                effectsController.PlayPlayerPierced(transform.position, effectColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlayPlayerPierced(transform.position, effectColor);
+                }
                 gameManager.DamagePlayerByCollision();
-                blockSpawner.NotifyEnemyResolved();
+                if (blockSpawner != null)
+                {
+                    blockSpawner.NotifyEnemyResolved();
+                }
                 if (enemyType == EnemyType.SelfDestruct)
                 {
-                    effectsController.PlayEliteBurst(transform.position, Color.red);
+                    if (effectsController != null)
+                    {
+                        effectsController.PlayEliteBurst(transform.position, Color.red);
+                    }
                 }
-                blockSpawner.ReturnEnemyObject(gameObject);
+                if (blockSpawner != null)
+                {
+                    blockSpawner.ReturnEnemyObject(gameObject);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
         }
 
         public void ApplyHit(int damage)
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
@@ -178,34 +197,59 @@ namespace Wanwan.Runtime
                 shieldAbsorbedFirstHit = true;
                 spriteRenderer.color = Color.white;
                 Invoke(nameof(RestoreEnemyColor), 0.18f);
-                effectsController.PlayHit(transform.position, effectColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlayHit(transform.position, effectColor);
+                }
                 return;
             }
 
             hitPoints -= damage;
-            effectsController.PlayHit(transform.position, effectColor);
+            if (effectsController != null)
+            {
+                effectsController.PlayHit(transform.position, effectColor);
+            }
 
             if (hitPoints <= 0)
             {
                 resolved = true;
                 gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
                 gameManager.NotifyEnemyDestroyed();
-                blockSpawner.SpawnCoinsAtPosition(transform.position);
-                blockSpawner.SpawnEnemyAmmoPackDrop(guaranteedDrop, transform.position);
+                if (blockSpawner != null)
+                {
+                    blockSpawner.SpawnCoinsAtPosition(transform.position);
+                    blockSpawner.SpawnEnemyAmmoPackDrop(guaranteedDrop, transform.position);
+                }
                 if (isElite)
                 {
-                    effectsController.PlayEliteBurst(transform.position, effectColor);
+                    if (effectsController != null)
+                    {
+                        effectsController.PlayEliteBurst(transform.position, effectColor);
+                    }
                 }
                 else if (isTough)
                 {
-                    effectsController.PlayBurst(transform.position, effectColor);
+                    if (effectsController != null)
+                    {
+                        effectsController.PlayBurst(transform.position, effectColor);
+                    }
                 }
                 else
                 {
-                    effectsController.PlaySmallBurst(transform.position, effectColor);
+                    if (effectsController != null)
+                    {
+                        effectsController.PlaySmallBurst(transform.position, effectColor);
+                    }
                 }
-                blockSpawner.NotifyEnemyResolved();
-                blockSpawner.ReturnEnemyObject(gameObject);
+                if (blockSpawner != null)
+                {
+                    blockSpawner.NotifyEnemyResolved();
+                    blockSpawner.ReturnEnemyObject(gameObject);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
                 return;
             }
 
@@ -215,7 +259,7 @@ namespace Wanwan.Runtime
 
         public void ClearByBomb()
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
@@ -223,21 +267,40 @@ namespace Wanwan.Runtime
             resolved = true;
             gameManager.RegisterEnemyKillScore(scoreValue, transform.position);
             gameManager.NotifyEnemyDestroyed();
-            blockSpawner.SpawnCoinsAtPosition(transform.position);
+            if (blockSpawner != null)
+            {
+                blockSpawner.SpawnCoinsAtPosition(transform.position);
+            }
             if (isElite)
             {
-                effectsController.PlayEliteBurst(transform.position, effectColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlayEliteBurst(transform.position, effectColor);
+                }
             }
             else if (isTough)
             {
-                effectsController.PlayBurst(transform.position, effectColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlayBurst(transform.position, effectColor);
+                }
             }
             else
             {
-                effectsController.PlaySmallBurst(transform.position, effectColor);
+                if (effectsController != null)
+                {
+                    effectsController.PlaySmallBurst(transform.position, effectColor);
+                }
             }
-            blockSpawner.NotifyEnemyResolved();
-            blockSpawner.ReturnEnemyObject(gameObject);
+            if (blockSpawner != null)
+            {
+                blockSpawner.NotifyEnemyResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
         public void ReachBase()
@@ -253,9 +316,19 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            gameManager.NotifyEnemyEscaped(transform.position);
-            blockSpawner.NotifyEnemyResolved();
-            blockSpawner.ReturnEnemyObject(gameObject);
+            if (gameManager != null)
+            {
+                gameManager.NotifyEnemyEscaped(transform.position);
+            }
+            if (blockSpawner != null)
+            {
+                blockSpawner.NotifyEnemyResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
         public void Heal(int amount)

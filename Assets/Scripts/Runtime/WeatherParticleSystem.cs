@@ -103,7 +103,8 @@ namespace Wanwan.Runtime
                 topBound + Random.Range(0f, 2f),
                 5f);
 
-            SpriteRenderer renderer = activeParticles[index].AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = activeParticles[index].GetComponent<SpriteRenderer>();
+            if (renderer == null) renderer = activeParticles[index].AddComponent<SpriteRenderer>();
 
             Color particleColor = weather switch
             {

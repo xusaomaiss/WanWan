@@ -263,6 +263,10 @@ namespace Wanwan.Runtime
             if (pools != null)
             {
                 bulletObject = pools.RentBullet();
+                if (bulletObject == null)
+                {
+                    return;
+                }
             }
             else
             {
@@ -270,7 +274,9 @@ namespace Wanwan.Runtime
             }
             bulletObject.transform.position = transform.position + shot.Offset;
 
-            SpriteRenderer renderer = bulletObject.AddComponent<SpriteRenderer>();
+            SpriteRenderer renderer = bulletObject.GetComponent<SpriteRenderer>();
+            if (renderer == null)
+                renderer = bulletObject.AddComponent<SpriteRenderer>();
             renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(shot.WeaponType);
             renderer.color = Color.white;
             renderer.sortingOrder = 15;
@@ -278,15 +284,21 @@ namespace Wanwan.Runtime
             float angle = Mathf.Atan2(shot.Direction.y, shot.Direction.x) * Mathf.Rad2Deg - 90f;
             bulletObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
-            BoxCollider2D collider = bulletObject.AddComponent<BoxCollider2D>();
+            BoxCollider2D collider = bulletObject.GetComponent<BoxCollider2D>();
+            if (collider == null)
+                collider = bulletObject.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
             collider.size = WeaponShotPresentation.GetPlayerColliderSize(shot.WeaponType, shot.CanPierce);
 
-            Rigidbody2D rigidbody2D = bulletObject.AddComponent<Rigidbody2D>();
-            rigidbody2D.gravityScale = 0f;
-            rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+            Rigidbody2D rb = bulletObject.GetComponent<Rigidbody2D>();
+            if (rb == null)
+                rb = bulletObject.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.bodyType = RigidbodyType2D.Kinematic;
 
-            BulletController bullet = bulletObject.AddComponent<BulletController>();
+            BulletController bullet = bulletObject.GetComponent<BulletController>();
+            if (bullet == null)
+                bullet = bulletObject.AddComponent<BulletController>();
             if (pools != null)
             {
                 bullet.SetPool(pools);

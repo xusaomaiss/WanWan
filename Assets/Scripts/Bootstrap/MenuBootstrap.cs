@@ -23,6 +23,7 @@ namespace Wanwan.Runtime
         private Text saveStatusText;
         private float saveStatusTimer;
         private MenuTransitionController transitionController;
+        private Image backgroundImage; // Store reference to background image
 
         private void Awake()
         {
@@ -89,48 +90,33 @@ namespace Wanwan.Runtime
         private Image CreateBackground(string name)
         {
             ClearCanvas();
-            Image background = UiFactory.CreatePanel(canvas.transform, name, Color.black, Vector2.zero, Vector2.one);
-            background.raycastTarget = false;
+
+            Image root = UiFactory.CreatePanel(canvas.transform, name, Color.clear, Vector2.zero, Vector2.one);
+            root.raycastTarget = false;
 
             Sprite backgroundSprite = state == MenuUiState.Title ? RuntimeSpriteFactory.GetMenuStormTitleSprite() : RuntimeSpriteFactory.GetSkyBackgroundSprite();
-            RawImage backgroundArt = UiFactory.CreateRawImage(background.transform, name + "Art", backgroundSprite.texture, Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            backgroundArt.raycastTarget = false;
-            ApplyAspectFill(backgroundArt.rectTransform, backgroundSprite);
 
-            Image shade = UiFactory.CreatePanel(background.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
+            backgroundImage = UiFactory.CreatePanel(root.transform, name + "BG", Color.white, Vector2.zero, Vector2.one);
+            backgroundImage.sprite = backgroundSprite;
+            backgroundImage.type = Image.Type.Simple;
+            backgroundImage.preserveAspect = false;
+            backgroundImage.raycastTarget = false;
+
+            Image shade = UiFactory.CreatePanel(root.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
-            UiFactory.CreatePanel(background.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one).raycastTarget = false;
+
+            Image topVignette = UiFactory.CreatePanel(root.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one);
+            topVignette.raycastTarget = false;
+
             if (state != MenuUiState.Title)
             {
-                UiFactory.CreatePanel(background.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f)).raycastTarget = false;
-            }
-            CreateScanlines(background.transform);
-            return background;
-        }
-
-        private static void ApplyAspectFill(RectTransform rect, Sprite sprite)
-        {
-            float screenWidth = Mathf.Max(1080f, Screen.width);
-            float screenHeight = Mathf.Max(1920f, Screen.height);
-            float targetAspect = screenWidth / screenHeight;
-            float spriteAspect = sprite != null && sprite.rect.height > 0f ? sprite.rect.width / sprite.rect.height : targetAspect;
-
-            float width = screenWidth;
-            float height = screenHeight;
-            if (spriteAspect > targetAspect)
-            {
-                width = screenHeight * spriteAspect;
-            }
-            else
-            {
-                height = screenWidth / spriteAspect;
+                Image bottomVignette = UiFactory.CreatePanel(root.transform, name + "BottomVignette", new Color(0f, 0f, 0f, 0.58f), Vector2.zero, new Vector2(1f, 0.42f));
+                bottomVignette.raycastTarget = false;
             }
 
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(width, height);
+            CreateScanlines(root.transform);
+
+            return root;
         }
 
         private static void CreateScanlines(Transform parent)
@@ -156,25 +142,26 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Title;
             Image background = CreateBackground("TitleBackground");
-            CreateTitleHeroFighter(background.transform);
 
+            // Top buttons - leaderboard and settings
             Button leaderboard = UiFactory.CreateArcadeSpriteIconButton(background.transform, RuntimeSpriteFactory.GetLeaderboardIconSprite(), ArcadeTheme.EnergyYellow, new Vector2(96f, 96f), new Vector2(76f, -132f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             leaderboard.onClick.AddListener(ShowLeaderboard);
             Button settings = UiFactory.CreateArcadeSpriteIconButton(background.transform, RuntimeSpriteFactory.GetSettingsIconSprite(), ArcadeTheme.ElectricBlue, new Vector2(96f, 96f), new Vector2(-76f, -132f), Vector2.one, Vector2.one);
             settings.onClick.AddListener(ShowSettings);
 
+            // Save status text
             saveStatusText = UiFactory.CreateArcadeLabel(background.transform, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.27f), new Vector2(0.88f, 0.32f), Vector2.zero);
             saveStatusText.gameObject.SetActive(false);
 
-            Image menu = UiFactory.CreatePanel(background.transform, "TitleMenu", Color.clear, new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.265f));
-            menu.raycastTarget = false;
-            Button save = UiFactory.CreateArcadeCircleButton(menu.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(213f, 213f), new Vector2(-360f, 0f));
+            // Menu buttons - Start, Save, Exit (positioned below fighter, above carrier)
+            Button save = UiFactory.CreateArcadeCircleButton(background.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(213f, 213f), new Vector2(-360f, -250f));
             save.onClick.AddListener(ShowAutoSaveStatus);
-            Button start = UiFactory.CreateArcadeCircleButton(menu.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(285f, 285f), Vector2.zero);
+            Button start = UiFactory.CreateArcadeCircleButton(background.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(285f, 285f), new Vector2(0f, -280f));
             start.onClick.AddListener(SceneNavigator.LoadGame);
-            Button exit = UiFactory.CreateArcadeCircleButton(menu.transform, "退出", ArcadeTheme.WarningRed, new Vector2(213f, 213f), new Vector2(360f, 0f));
+            Button exit = UiFactory.CreateArcadeCircleButton(background.transform, "退出", ArcadeTheme.WarningRed, new Vector2(213f, 213f), new Vector2(360f, -250f));
             exit.onClick.AddListener(Application.Quit);
 
+            // High score
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";
             UiFactory.CreateArcadeLabel(background.transform, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
             if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
@@ -182,15 +169,7 @@ namespace Wanwan.Runtime
 
         private static void CreateTitleHeroFighter(Transform parent)
         {
-            Image glow = UiFactory.CreatePanel(parent, TitleHeroFighterObjectName + "Glow", new Color(0.2f, 0.9f, 1f, 0.18f), new Vector2(0.28f, 0.36f), new Vector2(0.72f, 0.68f));
-            glow.sprite = RuntimeSpriteFactory.GetCircleSprite();
-            glow.raycastTarget = false;
-
-            Image fighter = UiFactory.CreatePanel(parent, TitleHeroFighterObjectName, Color.white, new Vector2(0.35f, 0.39f), new Vector2(0.65f, 0.67f));
-            fighter.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
-            fighter.preserveAspect = true;
-            fighter.raycastTarget = false;
-            fighter.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -5f);
+            // Removed - the storm background already shows fighter jets
         }
 
         private void ShowShipSelect()

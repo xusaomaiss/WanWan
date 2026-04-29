@@ -18,6 +18,8 @@ namespace Wanwan.Runtime
             gameManager = manager;
             blockSpawner = spawner;
             driftVelocity = initialDrift;
+            collected = false;
+            age = 0f;
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
 

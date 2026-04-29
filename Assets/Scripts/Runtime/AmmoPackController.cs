@@ -47,6 +47,10 @@ namespace Wanwan.Runtime
             rightBound = right;
             topBound = top;
             pickupMode = mode;
+            resolved = false;
+            animationTime = 0f;
+            cycleTimer = 0f;
+            cycleIndex = 0;
             spriteRenderer = GetComponent<SpriteRenderer>();
             spriteRenderer.color = color;
             baseScale = transform.localScale;
@@ -111,10 +115,13 @@ namespace Wanwan.Runtime
 
         private void BuildLabel(string label)
         {
-            GameObject labelObject = new GameObject("PackLabel");
-            labelObject.transform.SetParent(transform, false);
-            labelObject.transform.localPosition = Vector3.zero;
-            labelText = labelObject.AddComponent<TextMesh>();
+            if (labelText == null)
+            {
+                GameObject labelObject = new GameObject("PackLabel");
+                labelObject.transform.SetParent(transform, false);
+                labelObject.transform.localPosition = Vector3.zero;
+                labelText = labelObject.AddComponent<TextMesh>();
+            }
             ArcadeFontProvider.ApplyTo(labelText);
             labelText.text = label;
             labelText.anchor = TextAnchor.MiddleCenter;

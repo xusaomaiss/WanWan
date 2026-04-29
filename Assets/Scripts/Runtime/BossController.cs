@@ -39,6 +39,11 @@ namespace Wanwan.Runtime
             anchorY = hoverY;
             hoverAmplitude = manager.Difficulty == GameDifficulty.High ? 2f : 1.45f;
             hoverSpeed = manager.Difficulty == GameDifficulty.High ? 1.35f : 1.05f;
+            resolved = false;
+            entering = true;
+            elapsed = 0f;
+            fireTimer = 0f;
+            telegraphing = false;
             spriteRenderer = GetComponent<SpriteRenderer>();
             baseColor = spriteRenderer.color;
             gameManager.NotifyBossSpawn(manager.BossDisplayName, hitPoints, maxHitPoints);
@@ -47,7 +52,7 @@ namespace Wanwan.Runtime
 
         private void Update()
         {
-            if (resolved || !gameManager.IsPlaying)
+            if (resolved || gameManager == null || !gameManager.IsPlaying)
             {
                 return;
             }
@@ -104,14 +109,17 @@ namespace Wanwan.Runtime
 
         public void ApplyHit(int damage)
         {
-            if (resolved)
+            if (resolved || gameManager == null)
             {
                 return;
             }
 
             float previousNormalized = hitPoints / (float)maxHitPoints;
             hitPoints -= damage;
-            effectsController.PlayHit(transform.position, spriteRenderer.color);
+            if (effectsController != null)
+            {
+                effectsController.PlayHit(transform.position, spriteRenderer.color);
+            }
             gameManager.UpdateBossHealth(hitPoints, maxHitPoints);
             RegisterCrossedPhases(previousNormalized, Mathf.Max(0, hitPoints) / (float)maxHitPoints);
 
@@ -146,9 +154,12 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (other.GetComponent<PlayerController>() != null)
+            if (other.GetComponent<PlayerController>() != null && gameManager != null)
             {
-                effectsController.PlayPlayerPierced(transform.position, spriteRenderer.color);
+                if (effectsController != null)
+                {
+                    effectsController.PlayPlayerPierced(transform.position, spriteRenderer.color);
+                }
                 gameManager.DamagePlayerByCollision();
             }
         }
@@ -195,6 +206,11 @@ namespace Wanwan.Runtime
 
         private void FirePattern(BossPhaseConfig active)
         {
+            if (blockSpawner == null || spriteRenderer == null)
+            {
+                return;
+            }
+
             int salvoCount = Mathf.Max(1, active.SalvoCount);
             float step = salvoCount == 1 ? 0f : active.SpreadAngle / (salvoCount - 1);
             float startAngle = -active.SpreadAngle * 0.5f;
@@ -305,16 +321,28 @@ namespace Wanwan.Runtime
             }
 
             resolved = true;
-            effectsController.PlayBossDefeat(transform.position, spriteRenderer.color);
+            if (effectsController != null && spriteRenderer != null)
+            {
+                effectsController.PlayBossDefeat(transform.position, spriteRenderer.color);
+            }
             for (int i = 0; i < 3; i++)
             {
                 Vector3 burstPosition = transform.position + (Vector3)(Random.insideUnitCircle * 0.7f);
-                effectsController.PlayBurst(burstPosition, spriteRenderer.color);
+                if (effectsController != null && spriteRenderer != null)
+                {
+                    effectsController.PlayBurst(burstPosition, spriteRenderer.color);
+                }
             }
 
             gameManager.RegisterBossDefeatedScore(ScoreRewardConfig.BossDefeatBaseScore, transform.position);
             gameManager.MarkStageClear();
-            blockSpawner.NotifyBossResolved();
+            if (blockSpawner != null)
+            {
+                blockSpawner.NotifyBossResolved();
+                blockSpawner.ReturnEnemyObject(gameObject);
+                return;
+            }
+
             Destroy(gameObject);
         }
     }
