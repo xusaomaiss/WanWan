@@ -29,6 +29,13 @@ namespace Wanwan.Tests.EditMode
             Assert.That(MenuBootstrap.StartScreenHitAreaNames, Is.EqualTo(new[] { "ArcadeStart", "ClassicExit", "Settings", "Leaderboard", "ShipSelect" }));
             Assert.That(MenuBootstrap.ModernTitleButtonSize, Is.EqualTo(new Vector2(486f, 96f)));
             Assert.That(MenuBootstrap.TitleStartScreenResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_start_screen_ai"));
+            Assert.That(MenuBootstrap.TitleStartScreenSliceResourcePaths, Is.EqualTo(new[]
+            {
+                "MainMenu/Backgrounds/bg_start_screen_ai_0",
+                "MainMenu/Backgrounds/bg_start_screen_ai_1",
+                "MainMenu/Backgrounds/bg_start_screen_ai_2",
+                "MainMenu/Backgrounds/bg_start_screen_ai_3"
+            }));
             Assert.That(MenuBootstrap.TitleStartButtonSliceResourcePath, Is.EqualTo("MainMenu/Buttons/button_start_game"));
             Assert.That(MenuBootstrap.TitleExitButtonSliceResourcePath, Is.EqualTo("MainMenu/Buttons/button_exit"));
             Assert.That(MenuBootstrap.TitleStarfieldResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_space_far"));
@@ -56,6 +63,10 @@ namespace Wanwan.Tests.EditMode
         {
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.TitleStarfieldResourcePath), Is.Not.Null);
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.TitleStartScreenResourcePath), Is.Not.Null);
+            foreach (string path in MenuBootstrap.TitleStartScreenSliceResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.TitleSparkleOverlayResourcePath), Is.Not.Null);
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.TitleLogoBackplateResourcePath), Is.Not.Null);
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.TitleMidNebulaResourcePath), Is.Not.Null);
@@ -154,10 +165,13 @@ namespace Wanwan.Tests.EditMode
                 Assert.That(GameObject.Find("SettingsIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
                 Assert.That(GameObject.Find("LeaderboardIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
                 Assert.That(GameObject.Find("ShipSelectIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
-                RawImage titleBackground = GameObject.Find("TitleBackgroundBG")?.GetComponent<RawImage>();
-                Assert.That(titleBackground, Is.Not.Null);
-                Assert.That(titleBackground.texture, Is.Not.Null);
-                Assert.That(titleBackground.raycastTarget, Is.False);
+                for (int i = 0; i < MenuBootstrap.TitleStartScreenSliceResourcePaths.Length; i++)
+                {
+                    Image titleBackground = GameObject.Find("TitleBackgroundBG" + i)?.GetComponent<Image>();
+                    Assert.That(titleBackground, Is.Not.Null, i.ToString());
+                    Assert.That(titleBackground.sprite, Is.Not.Null, i.ToString());
+                    Assert.That(titleBackground.raycastTarget, Is.False, i.ToString());
+                }
             }
             finally
             {

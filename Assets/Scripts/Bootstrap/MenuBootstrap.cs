@@ -11,6 +11,13 @@ namespace Wanwan.Runtime
         public const int TitleHighScoreFontSize = TitleCircleButtonFontSize;
         public const string TitleHeroFighterObjectName = "TitleHeroFighter";
         public const string TitleStartScreenResourcePath = "MainMenu/Backgrounds/bg_start_screen_ai";
+        public static readonly string[] TitleStartScreenSliceResourcePaths =
+        {
+            "MainMenu/Backgrounds/bg_start_screen_ai_0",
+            "MainMenu/Backgrounds/bg_start_screen_ai_1",
+            "MainMenu/Backgrounds/bg_start_screen_ai_2",
+            "MainMenu/Backgrounds/bg_start_screen_ai_3"
+        };
         public const string TitleFarStarsResourcePath = "MainMenu/Backgrounds/bg_space_far";
         public const string TitleMidNebulaResourcePath = "MainMenu/Backgrounds/bg_space_mid_nebula";
         public const string TitleFrontStarsResourcePath = "MainMenu/Backgrounds/bg_space_front_stars";
@@ -149,7 +156,7 @@ namespace Wanwan.Runtime
 
             if (state == MenuUiState.Title)
             {
-                CreateTitleBackgroundTexture(root.transform, name + "BG");
+                CreateTitleBackgroundSlices(root.transform, name + "BG");
                 return root;
             }
 
@@ -174,22 +181,22 @@ namespace Wanwan.Runtime
             return root;
         }
 
-        private static RawImage CreateTitleBackgroundTexture(Transform parent, string name)
+        private static void CreateTitleBackgroundSlices(Transform parent, string name)
         {
-            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(RawImage));
-            obj.transform.SetParent(parent, false);
-
-            RectTransform rect = obj.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            RawImage image = obj.GetComponent<RawImage>();
-            image.texture = Resources.Load<Texture2D>(TitleStartScreenResourcePath);
-            image.color = Color.white;
-            image.raycastTarget = false;
-            return image;
+            for (int i = 0; i < TitleStartScreenSliceResourcePaths.Length; i++)
+            {
+                float yMax = 1f - (i / (float)TitleStartScreenSliceResourcePaths.Length);
+                float yMin = 1f - ((i + 1) / (float)TitleStartScreenSliceResourcePaths.Length);
+                Image image = UiFactory.CreateSpritePanel(
+                    parent,
+                    name + i,
+                    TitleStartScreenSliceResourcePaths[i],
+                    Color.white,
+                    new Vector2(0f, yMin),
+                    new Vector2(1f, yMax));
+                image.preserveAspect = false;
+                image.raycastTarget = false;
+            }
         }
 
         private static Image CreateTitleParallaxLayer(Transform parent, string name, string resourcePath, Color tint, float speed, float y, Vector2 drift)
