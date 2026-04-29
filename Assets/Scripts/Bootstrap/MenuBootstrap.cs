@@ -147,18 +147,18 @@ namespace Wanwan.Runtime
             Image root = UiFactory.CreatePanel(canvas.transform, name, Color.clear, Vector2.zero, Vector2.one);
             root.raycastTarget = false;
 
-            Sprite backgroundSprite = state == MenuUiState.Title ? LoadTitleBackgroundSprite() : RuntimeSpriteFactory.GetSkyBackgroundSprite();
+            if (state == MenuUiState.Title)
+            {
+                CreateTitleBackgroundTexture(root.transform, name + "BG");
+                return root;
+            }
 
             backgroundImage = UiFactory.CreatePanel(root.transform, name + "BG", Color.white, Vector2.zero, Vector2.one);
-            backgroundImage.sprite = backgroundSprite;
+            backgroundImage.sprite = RuntimeSpriteFactory.GetSkyBackgroundSprite();
             backgroundImage.type = Image.Type.Simple;
             backgroundImage.preserveAspect = false;
             backgroundImage.raycastTarget = false;
 
-            if (state == MenuUiState.Title)
-            {
-                return root;
-            }
 
             Image shade = UiFactory.CreatePanel(root.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
@@ -172,6 +172,24 @@ namespace Wanwan.Runtime
             CreateScanlines(root.transform);
 
             return root;
+        }
+
+        private static RawImage CreateTitleBackgroundTexture(Transform parent, string name)
+        {
+            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(RawImage));
+            obj.transform.SetParent(parent, false);
+
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            RawImage image = obj.GetComponent<RawImage>();
+            image.texture = Resources.Load<Texture2D>(TitleStartScreenResourcePath);
+            image.color = Color.white;
+            image.raycastTarget = false;
+            return image;
         }
 
         private static Image CreateTitleParallaxLayer(Transform parent, string name, string resourcePath, Color tint, float speed, float y, Vector2 drift)

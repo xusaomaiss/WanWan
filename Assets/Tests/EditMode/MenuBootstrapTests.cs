@@ -154,7 +154,10 @@ namespace Wanwan.Tests.EditMode
                 Assert.That(GameObject.Find("SettingsIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
                 Assert.That(GameObject.Find("LeaderboardIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
                 Assert.That(GameObject.Find("ShipSelectIconSlice")?.GetComponent<Image>()?.raycastTarget, Is.False);
-                Assert.That(GameObject.Find("TitleBackgroundBG").GetComponent<Image>().raycastTarget, Is.False);
+                RawImage titleBackground = GameObject.Find("TitleBackgroundBG")?.GetComponent<RawImage>();
+                Assert.That(titleBackground, Is.Not.Null);
+                Assert.That(titleBackground.texture, Is.Not.Null);
+                Assert.That(titleBackground.raycastTarget, Is.False);
             }
             finally
             {
