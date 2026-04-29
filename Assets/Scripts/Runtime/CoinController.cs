@@ -9,6 +9,7 @@ namespace Wanwan.Runtime
         private GameManager gameManager;
         private BlockSpawner blockSpawner;
         private SpriteRenderer spriteRenderer;
+        private CoinMagnetEffect magnetEffect;
         private Vector3 driftVelocity;
         private float age;
         private bool collected;
@@ -21,6 +22,12 @@ namespace Wanwan.Runtime
             collected = false;
             age = 0f;
             spriteRenderer = GetComponent<SpriteRenderer>();
+            magnetEffect = GetComponent<CoinMagnetEffect>();
+            if (magnetEffect == null)
+            {
+                magnetEffect = gameObject.AddComponent<CoinMagnetEffect>();
+            }
+            magnetEffect.Initialize();
         }
 
         private void Update()
@@ -42,7 +49,8 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            if (distance <= gameManager.RewardConfig.CoinMagnetRadiusWorld * gameManager.FocusCoinMagnetMultiplier)
+            bool attracting = distance <= gameManager.RewardConfig.CoinMagnetRadiusWorld * gameManager.FocusCoinMagnetMultiplier;
+            if (attracting)
             {
                 float magnetStrength = Mathf.InverseLerp(gameManager.RewardConfig.CoinMagnetRadiusWorld * gameManager.FocusCoinMagnetMultiplier, gameManager.RewardConfig.CoinCollectRadiusWorld, distance);
                 transform.position = Vector3.Lerp(transform.position, playerPosition, Time.deltaTime * Mathf.Lerp(5f, 13f, magnetStrength));
@@ -54,8 +62,12 @@ namespace Wanwan.Runtime
             }
 
             float pulse = 1f + (Mathf.Sin(age * 9f) * 0.12f);
-            transform.localScale = Vector3.one * (BaseVisualScale * pulse);
+            transform.localScale = Vector3.one * (BaseVisualScale * pulse * (attracting ? CoinMagnetEffect.AttractingScaleMultiplier : 1f));
             transform.rotation = Quaternion.Euler(0f, 0f, age * 180f);
+            if (magnetEffect != null)
+            {
+                magnetEffect.SetAttracting(attracting);
+            }
 
             if (spriteRenderer != null)
             {

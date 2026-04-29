@@ -277,7 +277,7 @@ namespace Wanwan.Runtime
             SpriteRenderer renderer = bulletObject.GetComponent<SpriteRenderer>();
             if (renderer == null)
                 renderer = bulletObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(shot.WeaponType);
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiProjectileSprite(PowerupCycle.ToAmmoPowerupType(shot.WeaponType));
             renderer.color = Color.white;
             renderer.sortingOrder = 15;
             bulletObject.transform.localScale = WeaponShotPresentation.GetPlayerScale(shot.WeaponType, shot.CanPierce, shot.Width);

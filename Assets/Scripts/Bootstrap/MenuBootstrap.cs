@@ -10,6 +10,26 @@ namespace Wanwan.Runtime
         public const int TitleCircleButtonFontSize = 30;
         public const int TitleHighScoreFontSize = TitleCircleButtonFontSize;
         public const string TitleHeroFighterObjectName = "TitleHeroFighter";
+        public const string TitleFarStarsResourcePath = "MainMenu/Backgrounds/bg_space_far";
+        public const string TitleMidNebulaResourcePath = "MainMenu/Backgrounds/bg_space_mid_nebula";
+        public const string TitleFrontStarsResourcePath = "MainMenu/Backgrounds/bg_space_front_stars";
+        public const string TitleStarfieldResourcePath = TitleFarStarsResourcePath;
+        public const string TitleSparkleOverlayResourcePath = TitleFrontStarsResourcePath;
+        public const string TitleLogoBackplateResourcePath = "MainMenu/Titles/title_raiden";
+        public const string TitleSpaceShooterResourcePath = "MainMenu/Titles/title_space_shooter";
+        public const string TitleWideButtonResourcePath = "MainMenu/Buttons/ui_button_main";
+        public const string TitleIconFrameResourcePath = "MainMenu/Buttons/ui_button_square";
+        public const string IconInfoResourcePath = "MainMenu/Icons/icon_info";
+        public const string IconSettingsResourcePath = "MainMenu/Icons/icon_settings";
+        public const string IconControlResourcePath = "MainMenu/Icons/icon_control";
+        public const string IconTrophyResourcePath = "MainMenu/Icons/icon_trophy";
+        public const string IconShopResourcePath = "MainMenu/Icons/icon_shop";
+        public const string IconHelpResourcePath = "MainMenu/Icons/icon_help";
+        public const string ParticleStarResourcePath = "MainMenu/Effects/particle_star";
+        public static readonly string[] TitlePrimaryLabels = { "START", "MAP", "EXIT" };
+        public static readonly Vector2 ModernTitleButtonSize = new Vector2(486f, 96f);
+        public static readonly Vector2 ModernTitleIconSize = new Vector2(112f, 112f);
+        public static readonly string[] RightSideMenuLabels = { "CONTROL", "ACHIEVEMENT", "SHOP", "HELP" };
 
         private static readonly Vector2 ShipPreviewSize = new Vector2(128f, 128f);
 
@@ -83,7 +103,15 @@ namespace Wanwan.Runtime
             saveStatusTimer = 0f;
             for (int i = canvas.transform.childCount - 1; i >= 0; i--)
             {
-                Destroy(canvas.transform.GetChild(i).gameObject);
+                GameObject child = canvas.transform.GetChild(i).gameObject;
+                if (Application.isPlaying)
+                {
+                    Destroy(child);
+                }
+                else
+                {
+                    DestroyImmediate(child);
+                }
             }
         }
 
@@ -102,7 +130,17 @@ namespace Wanwan.Runtime
             backgroundImage.preserveAspect = false;
             backgroundImage.raycastTarget = false;
 
-            Image shade = UiFactory.CreatePanel(root.transform, name + "Shade", new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
+            if (state == MenuUiState.Title)
+            {
+                CreateTitleParallaxLayer(root.transform, "FarStarsA", TitleFarStarsResourcePath, new Color(0.86f, 0.94f, 1f, 0.88f), 8f, 0f, Vector2.zero);
+                CreateTitleParallaxLayer(root.transform, "FarStarsB", TitleFarStarsResourcePath, new Color(0.86f, 0.94f, 1f, 0.88f), 8f, 1920f, Vector2.zero);
+                CreateTitleParallaxLayer(root.transform, "MidNebulaA", TitleMidNebulaResourcePath, new Color(0.72f, 0.94f, 1f, 0.44f), 4f, 0f, new Vector2(4f, 0f));
+                CreateTitleParallaxLayer(root.transform, "MidNebulaB", TitleMidNebulaResourcePath, new Color(0.72f, 0.94f, 1f, 0.44f), 4f, 1920f, new Vector2(4f, 0f));
+                CreateTitleParallaxLayer(root.transform, "FrontStarsA", TitleFrontStarsResourcePath, new Color(0.55f, 0.9f, 1f, 0.36f), 22f, 0f, Vector2.zero);
+                CreateTitleParallaxLayer(root.transform, "FrontStarsB", TitleFrontStarsResourcePath, new Color(0.55f, 0.9f, 1f, 0.36f), 22f, 1920f, Vector2.zero);
+            }
+
+            Image shade = UiFactory.CreatePanel(root.transform, name + "Shade", state == MenuUiState.Title ? new Color(0.0f, 0.0f, 0.02f, 0.12f) : new Color(0.01f, 0.02f, 0.05f, 0.34f), Vector2.zero, Vector2.one);
             shade.raycastTarget = false;
 
             Image topVignette = UiFactory.CreatePanel(root.transform, name + "TopVignette", new Color(0f, 0f, 0f, 0.18f), new Vector2(0f, 0.72f), Vector2.one);
@@ -117,6 +155,18 @@ namespace Wanwan.Runtime
             CreateScanlines(root.transform);
 
             return root;
+        }
+
+        private static Image CreateTitleParallaxLayer(Transform parent, string name, string resourcePath, Color tint, float speed, float y, Vector2 drift)
+        {
+            Image layer = UiFactory.CreateSpritePanel(parent, name, resourcePath, tint, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            RectTransform rect = layer.rectTransform;
+            rect.sizeDelta = new Vector2(1080f, 1920f);
+            rect.anchoredPosition = new Vector2(0f, y);
+            layer.raycastTarget = false;
+            StarfieldParallax parallax = layer.gameObject.AddComponent<StarfieldParallax>();
+            parallax.Configure(speed, 1920f, drift);
+            return layer;
         }
 
         private static void CreateScanlines(Transform parent)
@@ -142,29 +192,158 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Title;
             Image background = CreateBackground("TitleBackground");
+            Image root = UiFactory.CreatePanel(background.transform, "MainMenuRoot", Color.clear, Vector2.zero, Vector2.one);
+            root.raycastTarget = false;
+            MainMenuController controller = root.gameObject.AddComponent<MainMenuController>();
+            controller.Initialize(
+                SceneNavigator.LoadGame,
+                ShowShipSelect,
+                Application.Quit,
+                ShowAutoSaveStatus,
+                ShowSettings,
+                ShowSettings,
+                ShowLeaderboard,
+                ShowAutoSaveStatus,
+                ShowSettings);
+            Transform t = root.transform;
 
-            // Top buttons - leaderboard and settings
-            Button leaderboard = UiFactory.CreateArcadeSpriteIconButton(background.transform, RuntimeSpriteFactory.GetLeaderboardIconSprite(), ArcadeTheme.EnergyYellow, new Vector2(96f, 96f), new Vector2(76f, -132f), new Vector2(0f, 1f), new Vector2(0f, 1f));
-            leaderboard.onClick.AddListener(ShowLeaderboard);
-            Button settings = UiFactory.CreateArcadeSpriteIconButton(background.transform, RuntimeSpriteFactory.GetSettingsIconSprite(), ArcadeTheme.ElectricBlue, new Vector2(96f, 96f), new Vector2(-76f, -132f), Vector2.one, Vector2.one);
-            settings.onClick.AddListener(ShowSettings);
+            CreateSparkleParticles(t);
 
-            // Save status text
-            saveStatusText = UiFactory.CreateArcadeLabel(background.transform, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.27f), new Vector2(0.88f, 0.32f), Vector2.zero);
+            Image leftVignette = UiFactory.CreatePanel(t, "TitleLeftVignette", new Color(0.24f, 0.22f, 0.5f, 0.22f), Vector2.zero, new Vector2(0.12f, 1f));
+            leftVignette.raycastTarget = false;
+            Image rightVignette = UiFactory.CreatePanel(t, "TitleRightVignette", new Color(0.28f, 0.26f, 0.58f, 0.24f), new Vector2(0.88f, 0f), Vector2.one);
+            rightVignette.raycastTarget = false;
+
+            Image titleGroup = UiFactory.CreatePanel(t, "TitleContentGroup", Color.clear, new Vector2(0f, 0.43f), new Vector2(1f, 0.82f));
+            titleGroup.raycastTarget = false;
+            titleGroup.gameObject.AddComponent<MenuScaleInAnimator>().Configure(0.9f, 0.36f);
+
+            CreateMetallicTitle(titleGroup.transform);
+
+            Button info = UiFactory.CreateSpaceIconButton(t, LoadTitleIcon(IconInfoResourcePath), string.Empty, TitleIconFrameResourcePath, ArcadeTheme.ElectricBlue, new Vector2(96f, 96f), new Vector2(82f, -92f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+            info.onClick.AddListener(controller.ShowInfo);
+            Button settings = UiFactory.CreateSpaceIconButton(t, LoadTitleIcon(IconSettingsResourcePath), string.Empty, TitleIconFrameResourcePath, ArcadeTheme.ElectricBlue, new Vector2(96f, 96f), new Vector2(-82f, -92f), Vector2.one, Vector2.one);
+            settings.onClick.AddListener(controller.OpenSettings);
+
+            Button start = UiFactory.CreateSpaceMenuButton(t, TitlePrimaryLabels[0], TitleWideButtonResourcePath, ArcadeTheme.ElectricBlue, ModernTitleButtonSize, new Vector2(0f, -270f));
+            start.onClick.AddListener(controller.StartGame);
+            Button map = UiFactory.CreateSpaceMenuButton(t, TitlePrimaryLabels[1], TitleWideButtonResourcePath, ArcadeTheme.ElectricBlue, ModernTitleButtonSize, new Vector2(0f, -395f));
+            map.onClick.AddListener(controller.OpenMap);
+            Button exit = UiFactory.CreateSpaceMenuButton(t, TitlePrimaryLabels[2], TitleWideButtonResourcePath, ArcadeTheme.ElectricBlue, ModernTitleButtonSize, new Vector2(0f, -520f));
+            exit.onClick.AddListener(controller.ExitGame);
+
+            CreateRightSideMenu(t, controller);
+
+            saveStatusText = UiFactory.CreateArcadeLabel(t, string.Empty, ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.14f, 0.30f), new Vector2(0.86f, 0.34f), Vector2.zero);
             saveStatusText.gameObject.SetActive(false);
 
-            // Menu buttons - Start, Save, Exit (positioned below fighter, above carrier)
-            Button save = UiFactory.CreateArcadeCircleButton(background.transform, "保存", ArcadeTheme.ElectricBlue, new Vector2(213f, 213f), new Vector2(-360f, -250f));
-            save.onClick.AddListener(ShowAutoSaveStatus);
-            Button start = UiFactory.CreateArcadeCircleButton(background.transform, "开始", ArcadeTheme.EnergyYellow, new Vector2(285f, 285f), new Vector2(0f, -280f));
-            start.onClick.AddListener(SceneNavigator.LoadGame);
-            Button exit = UiFactory.CreateArcadeCircleButton(background.transform, "退出", ArcadeTheme.WarningRed, new Vector2(213f, 213f), new Vector2(360f, -250f));
-            exit.onClick.AddListener(Application.Quit);
-
-            // High score
             string hiScore = $"最高分 {SessionState.HighScore:0000000}";
-            UiFactory.CreateArcadeLabel(background.transform, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.025f), new Vector2(0.88f, 0.07f), Vector2.zero);
-            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(background.transform));
+            UiFactory.CreateArcadeLabel(t, hiScore, TitleHighScoreFontSize, TextAnchor.MiddleCenter, new Color(0.78f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.048f), new Vector2(0.88f, 0.088f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(t, "v0.1.0", 22, TextAnchor.MiddleCenter, new Color(0.46f, 0.72f, 0.86f), FontStyle.Bold, new Vector2(0.12f, 0.018f), new Vector2(0.88f, 0.048f), Vector2.zero);
+
+            if (transitionController != null) StartCoroutine(transitionController.FadeGroup(t));
+        }
+
+        private static void CreateMetallicTitle(Transform parent)
+        {
+            Image subtitlePlate = UiFactory.CreateSpritePanel(parent, "TitleSpaceShooterPlate", TitleSpaceShooterResourcePath, new Color(0.62f, 0.94f, 1f, 0.18f), new Vector2(0.22f, 0.72f), new Vector2(0.78f, 0.9f));
+            subtitlePlate.raycastTarget = false;
+            UiFactory.CreateArcadeLabel(parent, "SPACE SHOOTER", 42, TextAnchor.MiddleCenter, new Color(0.58f, 0.94f, 1f, 0.96f), FontStyle.Bold, new Vector2(0.08f, 0.72f), new Vector2(0.92f, 0.88f), Vector2.zero);
+
+            Image titlePlate = UiFactory.CreateSpritePanel(parent, "TitleRaidenPlate", TitleLogoBackplateResourcePath, new Color(0.7f, 0.96f, 1f, 0.22f), new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.78f));
+            titlePlate.raycastTarget = false;
+
+            Text glow = UiFactory.CreateArcadeLabel(parent, "RAIDEN", 112, TextAnchor.MiddleCenter, new Color(0.2f, 0.86f, 1f, 0.38f), FontStyle.Bold, new Vector2(0.02f, 0.34f), new Vector2(0.98f, 0.74f), Vector2.zero);
+            Outline glowOutline = glow.gameObject.AddComponent<Outline>();
+            glowOutline.effectColor = new Color(0.26f, 0.95f, 1f, 0.8f);
+            glowOutline.effectDistance = new Vector2(7f, -7f);
+            glow.raycastTarget = false;
+
+            Text shadow = UiFactory.CreateArcadeLabel(parent, "RAIDEN", 112, TextAnchor.MiddleCenter, new Color(0.02f, 0.08f, 0.14f, 0.9f), FontStyle.Bold, new Vector2(0.02f, 0.32f), new Vector2(0.98f, 0.72f), new Vector2(0f, -8f));
+            shadow.raycastTarget = false;
+
+            Text title = UiFactory.CreateArcadeLabel(parent, "RAIDEN", 112, TextAnchor.MiddleCenter, new Color(0.86f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.02f, 0.34f), new Vector2(0.98f, 0.74f), Vector2.zero);
+            Outline outline = title.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0.05f, 0.42f, 0.6f, 0.95f);
+            outline.effectDistance = new Vector2(3f, -3f);
+            title.raycastTarget = false;
+
+            UiFactory.CreateDivider(parent, "TitleMetallicHighlight", new Color(1f, 1f, 1f, 0.58f), new Vector2(0.24f, 0.58f), new Vector2(0.76f, 0.594f));
+            UiFactory.CreateDivider(parent, "TitleCyanUnderGlow", new Color(0.22f, 0.92f, 1f, 0.42f), new Vector2(0.24f, 0.35f), new Vector2(0.76f, 0.365f));
+        }
+
+        private void CreateRightSideMenu(Transform parent, MainMenuController controller)
+        {
+            Sprite[] icons =
+            {
+                LoadTitleIcon(IconControlResourcePath),
+                LoadTitleIcon(IconTrophyResourcePath),
+                LoadTitleIcon(IconShopResourcePath),
+                LoadTitleIcon(IconHelpResourcePath)
+            };
+            UnityEngine.Events.UnityAction[] actions =
+            {
+                controller.OpenControl,
+                controller.OpenAchievement,
+                controller.OpenShop,
+                controller.OpenHelp
+            };
+            Color[] accents =
+            {
+                ArcadeTheme.ElectricBlue,
+                ArcadeTheme.EnergyYellow,
+                ArcadeTheme.EnergyYellow,
+                ArcadeTheme.ElectricBlue
+            };
+
+            const float firstY = -435f;
+            const float spacing = 144f;
+            for (int i = 0; i < icons.Length; i++)
+            {
+                Button button = UiFactory.CreateSpaceIconButton(parent, icons[i], string.Empty, TitleIconFrameResourcePath, accents[i], ModernTitleIconSize, new Vector2(-82f, firstY - (i * spacing)), Vector2.one, Vector2.one);
+                button.gameObject.name = RightSideMenuLabels[i] + "Button";
+                button.onClick.AddListener(actions[i]);
+            }
+        }
+
+        private static void CreateSparkleParticles(Transform parent)
+        {
+            for (int i = 0; i < 22; i++)
+            {
+                float x = 64f + ((i * 137f) % 950f);
+                float y = 80f + ((i * 211f) % 1780f);
+                float size = 6f + (i % 4) * 4f;
+                Image sparkle = UiFactory.CreatePanel(parent, "SparkleParticle" + i, new Color(0.6f, 0.95f, 1f, 0.18f + (i % 3) * 0.08f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+                sparkle.sprite = LoadTitleIcon(ParticleStarResourcePath);
+                sparkle.raycastTarget = false;
+                RectTransform rect = sparkle.rectTransform;
+                rect.sizeDelta = new Vector2(size, size);
+                rect.anchoredPosition = new Vector2(x - 540f, y - 960f);
+                sparkle.gameObject.AddComponent<StarfieldParallax>().Configure(5f + (i % 5) * 2f, 1920f, Vector2.zero);
+            }
+        }
+
+        private static Sprite LoadTitleIcon(string resourcePath)
+        {
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            return texture == null ? RuntimeSpriteFactory.GetCircleSprite() : Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 128f);
+        }
+
+        private IEnumerator AnimateFighter(Image fighter)
+        {
+            if (fighter == null) yield break;
+            RectTransform rt = fighter.rectTransform;
+            Vector2 basePos = rt.anchoredPosition;
+            float elapsed = 0f;
+            while (fighter != null && fighter.isActiveAndEnabled)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float yOffset = Mathf.Sin(elapsed * 1.2f) * 12f;
+                float rot = Mathf.Sin(elapsed * 0.8f) * 3f;
+                rt.anchoredPosition = basePos + new Vector2(0f, yOffset);
+                rt.localRotation = Quaternion.Euler(0f, 0f, rot);
+                yield return null;
+            }
         }
 
         private static void CreateTitleHeroFighter(Transform parent)
@@ -176,7 +355,9 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.ShipSelect;
             Image background = CreateBackground("ShipSelectBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "选择战机", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            Transform t = background.transform;
+            UiFactory.CreateArcadeLabel(t, "选择战机", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateSpritePanel(t, "ShipSelectSprite", "UI/panel/SelectPanel02", new Color(1f, 1f, 1f, 0.12f), new Vector2(0.06f, 0.14f), new Vector2(0.94f, 0.82f));
             CreateShipCard(background.transform, PlayerShipType.Green, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.78f));
             CreateShipCard(background.transform, PlayerShipType.Blue, new Vector2(0.08f, 0.17f), new Vector2(0.92f, 0.47f));
             Button back = UiFactory.CreatePixelButton(background.transform, "返回", ArcadeTheme.DimGray, new Vector2(260f, 76f), new Vector2(-230f, -812f));
@@ -194,7 +375,7 @@ namespace Wanwan.Runtime
         {
             ShipDefinition ship = ShipDefinition.Get(shipType);
             Color edge = selectedShip == shipType ? ArcadeTheme.EnergyYellow : ship.AccentColor;
-            Image card = UiFactory.CreatePixelPanel(parent, ship.DisplayName + "Card", new Color(0.08f, 0.08f, 0.16f, 0.96f), edge, anchorMin, anchorMax, new Vector2(8f, 8f));
+            Image card = UiFactory.CreateSpritePanel(parent, ship.DisplayName + "Card", "UI/panel/MainPanel03", new Color(0.9f, 0.9f, 1f, 0.2f), anchorMin, anchorMax);
             Image shipImage = UiFactory.CreatePanel(card.transform, "ShipImage", ship.AccentColor, new Vector2(0.165f, 0.49f), new Vector2(0.165f, 0.49f));
             ConfigureShipPreview(shipImage, ship.AccentColor);
             UiFactory.CreateArcadeLabel(card.transform, ship.DisplayName, ArcadeTheme.TitleSize, TextAnchor.MiddleLeft, ship.AccentColor, FontStyle.Bold, new Vector2(0.32f, 0.68f), new Vector2(0.74f, 0.86f), Vector2.zero);
@@ -221,7 +402,9 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Difficulty;
             Image background = CreateBackground("DifficultyBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "选择难度", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            Transform t = background.transform;
+            UiFactory.CreateArcadeLabel(t, "选择难度", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateSpritePanel(t, "DiffSprite", "UI/panel/SelectPanel01", new Color(1f, 1f, 1f, 0.10f), new Vector2(0.06f, 0.14f), new Vector2(0.94f, 0.82f));
             CreateDifficultyCard(background.transform, GameDifficulty.Low, "简单", "初始生命 5 / 敌弹较慢 / 适合长流程验收", ArcadeTheme.MilitaryGreen, new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.78f));
             CreateDifficultyCard(background.transform, GameDifficulty.Medium, "普通", "初始生命 3 / 标准弹幕 / 推荐体验", ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.58f));
             CreateDifficultyCard(background.transform, GameDifficulty.High, "困难", "初始生命 2 / 强化火力 / 高压挑战", ArcadeTheme.WarningRed, new Vector2(0.08f, 0.22f), new Vector2(0.92f, 0.38f));
@@ -232,7 +415,7 @@ namespace Wanwan.Runtime
 
         private void CreateDifficultyCard(Transform parent, GameDifficulty difficulty, string title, string desc, Color edge, Vector2 anchorMin, Vector2 anchorMax)
         {
-            Image card = UiFactory.CreatePixelPanel(parent, title + "Card", new Color(0.08f, 0.08f, 0.16f, 0.96f), edge, anchorMin, anchorMax, new Vector2(8f, 8f));
+            Image card = UiFactory.CreateSpritePanel(parent, title + "Card", "UI/panel/MainPanel03", new Color(1f, 1f, 1f, 0.15f), anchorMin, anchorMax);
             UiFactory.CreateArcadeLabel(card.transform, title, ArcadeTheme.TitleSize, TextAnchor.MiddleLeft, edge, FontStyle.Bold, new Vector2(0.08f, 0.5f), new Vector2(0.34f, 0.86f), Vector2.zero);
             UiFactory.CreateArcadeLabel(card.transform, desc, ArcadeTheme.BodySize, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.08f, 0.16f), new Vector2(0.68f, 0.5f), Vector2.zero);
             Button start = UiFactory.CreatePixelButton(card.transform, "出击", edge, new Vector2(180f, 72f), new Vector2(306f, -2f));
@@ -243,9 +426,12 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Leaderboard;
             Image background = CreateBackground("LeaderboardBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "本地排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
-            UiFactory.CreateArcadeLabel(background.transform, BuildDifficultySettingText(SessionState.SelectedDifficulty) + " / 单机记录", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.1f, 0.81f), new Vector2(0.9f, 0.86f), Vector2.zero);
-            Image board = UiFactory.CreatePixelPanel(background.transform, "LeaderboardPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.EnergyYellow, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
+            Transform t = background.transform;
+            UiFactory.CreateArcadeLabel(t, "本地排行榜", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(t, BuildDifficultySettingText(SessionState.SelectedDifficulty) + " / 单机记录", ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.1f, 0.81f), new Vector2(0.9f, 0.86f), Vector2.zero);
+            // Decorative panel background
+            UiFactory.CreateSpritePanel(t, "LeaderboardSprite", "UI/panel/MainPanel01", new Color(1f, 1f, 1f, 0.15f), new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f));
+            Image board = UiFactory.CreatePixelPanel(t, "LeaderboardPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.EnergyYellow, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
             UiFactory.CreateArcadeLabel(board.transform, "名次  名号   分数      难度  关卡", ArcadeTheme.BodySize, TextAnchor.UpperLeft, ArcadeTheme.ElectricBlue, FontStyle.Bold, new Vector2(0.08f, 0.9f), new Vector2(0.92f, 0.98f), Vector2.zero);
             LeaderboardEntry[] entries = SessionState.GetLeaderboardEntries(SessionState.SelectedDifficulty);
             if (entries.Length == 0)
@@ -273,8 +459,11 @@ namespace Wanwan.Runtime
         {
             state = MenuUiState.Settings;
             Image background = CreateBackground("SettingsBackground");
-            UiFactory.CreateArcadeLabel(background.transform, "设置", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
-            Image panel = UiFactory.CreatePixelPanel(background.transform, "SettingsPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
+            Transform t = background.transform;
+            UiFactory.CreateArcadeLabel(t, "设置", ArcadeTheme.ScreenTitleSize, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.94f), Vector2.zero);
+            // Decorative panel background
+            UiFactory.CreateSpritePanel(t, "SettingsPanelSprite", "UI/panel/MainPanel01", new Color(1f, 1f, 1f, 0.15f), new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f));
+            Image panel = UiFactory.CreatePixelPanel(t, "SettingsPanel", new Color(0.08f, 0.08f, 0.16f, 0.96f), ArcadeTheme.ElectricBlue, new Vector2(0.08f, 0.18f), new Vector2(0.92f, 0.82f), new Vector2(8f, 8f));
             audioStatusText = UiFactory.CreateArcadeLabel(panel.transform, BuildAudioText(), ArcadeTheme.BodySize, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.12f, 0.86f), new Vector2(0.88f, 0.96f), Vector2.zero);
 
             Button audioButton = UiFactory.CreatePixelToggle(panel.transform, "总声音", SessionState.AudioEnabled, new Vector2(0f, 260f), () =>

@@ -79,6 +79,26 @@ namespace Wanwan.Runtime
             return GetOrCreate("settings-icon", BuildSettingsIconTexture);
         }
 
+        public static Sprite GetGamepadIconSprite()
+        {
+            return GetOrCreate("gamepad-icon", BuildGamepadIconTexture);
+        }
+
+        public static Sprite GetTrophyIconSprite()
+        {
+            return GetLeaderboardIconSprite();
+        }
+
+        public static Sprite GetShopIconSprite()
+        {
+            return GetOrCreate("shop-icon", BuildShopIconTexture);
+        }
+
+        public static Sprite GetQuestionIconSprite()
+        {
+            return GetOrCreate("question-icon", BuildQuestionIconTexture);
+        }
+
         public static Sprite GetMissileSprite()
         {
             return GetOrCreate("missile", BuildMissileTexture);
@@ -263,6 +283,93 @@ namespace Wanwan.Runtime
         public static Sprite GetMenuStormTitleSprite()
         {
             return GetResourceSpriteOrFallback("menu-storm-title-ai", MenuStormTitleResourcePath, GetSkyBackgroundSprite);
+        }
+
+        public static Sprite GetSciFiBackgroundSprite(SciFiBackgroundLayerKind kind)
+        {
+            switch (kind)
+            {
+                case SciFiBackgroundLayerKind.Nebula:
+                    return GetResourceSpriteOrFallback("scifi-bg-nebula", SciFiResourcePaths.BackgroundNebula, () => GetResourceSpriteOrFallback("scifi-bg-nebula-fallback", MenuBootstrap.TitleSparkleOverlayResourcePath, GetSkyBackgroundSprite));
+                case SciFiBackgroundLayerKind.FarStars:
+                    return GetResourceSpriteOrFallback("scifi-bg-far-stars", SciFiResourcePaths.BackgroundFarStars, () => GetResourceSpriteOrFallback("scifi-bg-far-stars-fallback", MenuBootstrap.TitleStarfieldResourcePath, GetSkyBackgroundSprite));
+                case SciFiBackgroundLayerKind.NearStars:
+                    return GetResourceSpriteOrFallback("scifi-bg-near-stars", SciFiResourcePaths.BackgroundNearStars, () => GetResourceSpriteOrFallback("scifi-bg-near-stars-fallback", MenuBootstrap.TitleSparkleOverlayResourcePath, GetCloudStreakSprite));
+                case SciFiBackgroundLayerKind.Dust:
+                    return GetResourceSpriteOrFallback("scifi-bg-dust", SciFiResourcePaths.BackgroundDust, GetCloudLayerSprite);
+                case SciFiBackgroundLayerKind.Deep:
+                default:
+                    return GetResourceSpriteOrFallback("scifi-bg-deep", SciFiResourcePaths.BackgroundDeep, () => GetResourceSpriteOrFallback("scifi-bg-deep-fallback", MenuBootstrap.TitleStarfieldResourcePath, GetSkyBackgroundSprite));
+            }
+        }
+
+        public static Sprite GetSciFiHudSprite(SciFiHudSpriteKind kind)
+        {
+            switch (kind)
+            {
+                case SciFiHudSpriteKind.PausePanel:
+                    return GetResourceSpriteOrFallback("scifi-hud-pause-panel", SciFiResourcePaths.HudPausePanel, () => GetResourceSpriteOrFallback("scifi-hud-pause-fallback", "UI/panel/MainPanel01", GetRoundedSquareSprite));
+                case SciFiHudSpriteKind.ResultPanel:
+                    return GetResourceSpriteOrFallback("scifi-hud-result-panel", SciFiResourcePaths.HudResultPanel, () => GetResourceSpriteOrFallback("scifi-hud-result-fallback", "UI/panel/MainPanel03", GetRoundedSquareSprite));
+                case SciFiHudSpriteKind.IconBomb:
+                    return GetResourceSpriteOrFallback("scifi-hud-icon-bomb", SciFiResourcePaths.HudIconBomb, GetBombPickupSprite);
+                case SciFiHudSpriteKind.IconCoin:
+                    return GetResourceSpriteOrFallback("scifi-hud-icon-coin", SciFiResourcePaths.HudIconCoin, GetCoinSprite);
+                case SciFiHudSpriteKind.IconFire:
+                    return GetResourceSpriteOrFallback("scifi-hud-icon-fire", SciFiResourcePaths.HudIconFire, GetCapsuleSprite);
+                case SciFiHudSpriteKind.TopFrame:
+                default:
+                    return GetResourceSpriteOrFallback("scifi-hud-top-frame", SciFiResourcePaths.HudTopFrame, () => GetHudDecorSprite(0));
+            }
+        }
+
+        public static Sprite GetSciFiButtonSprite(SciFiButtonSpriteKind kind)
+        {
+            switch (kind)
+            {
+                case SciFiButtonSpriteKind.WideCyan:
+                    return GetResourceSpriteOrFallback("scifi-button-wide-cyan", SciFiResourcePaths.ButtonWideCyan, () => GetResourceSpriteOrFallback("space-button-wide-cyan-fallback", MenuBootstrap.TitleWideButtonResourcePath, GetRoundedSquareSprite));
+                case SciFiButtonSpriteKind.IconFrame:
+                    return GetResourceSpriteOrFallback("scifi-button-icon-frame", SciFiResourcePaths.ButtonIconFrame, () => GetResourceSpriteOrFallback("space-icon-frame-fallback", MenuBootstrap.TitleIconFrameResourcePath, GetRoundedSquareSprite));
+                case SciFiButtonSpriteKind.Disabled:
+                    return GetResourceSpriteOrFallback("scifi-button-disabled", SciFiResourcePaths.ButtonDisabled, GetRoundedSquareSprite);
+                case SciFiButtonSpriteKind.WideBlue:
+                default:
+                    return GetResourceSpriteOrFallback("scifi-button-wide-blue", SciFiResourcePaths.ButtonWideBlue, () => GetResourceSpriteOrFallback("space-button-wide-blue-fallback", MenuBootstrap.TitleWideButtonResourcePath, GetRoundedSquareSprite));
+            }
+        }
+
+        public static Sprite GetSciFiProjectileSprite(AmmoPowerupType type)
+        {
+            string path = type == AmmoPowerupType.Laser || type == AmmoPowerupType.Pierce
+                ? SciFiResourcePaths.ProjectilePlayerLaser
+                : SciFiResourcePaths.ProjectilePlayerBlue;
+            return GetResourceSpriteOrFallback("scifi-projectile-" + type, path, () => GetBulletSprite(type));
+        }
+
+        public static Sprite GetSciFiEnemyProjectileSprite()
+        {
+            return GetResourceSpriteOrFallback("scifi-projectile-enemy-red", SciFiResourcePaths.ProjectileEnemyRed, () => GetBulletSprite(AmmoPowerupType.Burst));
+        }
+
+        public static Sprite GetSciFiCoinSprite()
+        {
+            return GetResourceSpriteOrFallback("scifi-coin", SciFiResourcePaths.PickupCoin, GetCoinSprite);
+        }
+
+        public static Sprite GetSciFiBombSprite()
+        {
+            return GetResourceSpriteOrFallback("scifi-bomb", SciFiResourcePaths.PickupBomb, GetBombPickupSprite);
+        }
+
+        public static Sprite GetSciFiExplosionSprite()
+        {
+            return GetResourceSpriteOrFallback("scifi-explosion-core", SciFiResourcePaths.EffectExplosionCore, GetExplosionSprite);
+        }
+
+        public static Sprite GetSciFiFlashSprite()
+        {
+            return GetResourceSpriteOrFallback("scifi-flash-radial", SciFiResourcePaths.EffectFlashRadial, GetCircleSprite);
         }
 
         public static string GetLaunchTakeoffFrameResourcePath(int frameIndex)
@@ -503,6 +610,84 @@ namespace Wanwan.Runtime
                     bool hub = radius >= 10f && radius <= 19f;
                     bool centerHole = radius < 8f;
                     bool lit = (outerTeeth || ring || hub) && !centerHole;
+                    texture.SetPixel(x, y, lit ? Color.white : Color.clear);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildGamepadIconTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 leftCenter = new Vector2(42f, 58f);
+            Vector2 rightCenter = new Vector2(86f, 58f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 point = new Vector2(x, y);
+                    bool leftGrip = Vector2.Distance(point, leftCenter) < 31f;
+                    bool rightGrip = Vector2.Distance(point, rightCenter) < 31f;
+                    bool bridge = x >= 38 && x <= 90 && y >= 48 && y <= 72;
+                    bool topCut = x >= 48 && x <= 80 && y > 73 && y < 91;
+                    bool dpadHorizontal = x >= 27 && x <= 50 && y >= 57 && y <= 65;
+                    bool dpadVertical = x >= 35 && x <= 43 && y >= 49 && y <= 73;
+                    bool buttonA = Vector2.Distance(point, new Vector2(84f, 65f)) < 6f;
+                    bool buttonB = Vector2.Distance(point, new Vector2(99f, 55f)) < 6f;
+                    bool lit = ((leftGrip || rightGrip || bridge) && !topCut) || dpadHorizontal || dpadVertical || buttonA || buttonB;
+                    texture.SetPixel(x, y, lit ? Color.white : Color.clear);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildShopIconTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    bool basket = x >= 34 && x <= 92 && y >= 34 && y <= 70;
+                    bool basketCut = x >= 42 && x <= 84 && y >= 45 && y <= 61;
+                    bool handle = Mathf.Abs(Vector2.Distance(new Vector2(x, y), new Vector2(64f, 75f)) - 25f) < 4f && y >= 70 && y <= 100;
+                    bool leftWheel = Vector2.Distance(new Vector2(x, y), new Vector2(46f, 25f)) < 7f;
+                    bool rightWheel = Vector2.Distance(new Vector2(x, y), new Vector2(82f, 25f)) < 7f;
+                    bool front = x >= 88 && x <= 96 && y >= 42 && y <= 74;
+                    bool lit = (basket && !basketCut) || handle || leftWheel || rightWheel || front;
+                    texture.SetPixel(x, y, lit ? Color.white : Color.clear);
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D BuildQuestionIconTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Vector2 center = new Vector2(64f, 78f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 p = new Vector2(x, y);
+                    float arc = Mathf.Abs(Vector2.Distance(p, center) - 24f);
+                    bool upperArc = arc < 7f && x >= 46 && x <= 88 && y >= 74 && y <= 105;
+                    bool rightStem = x >= 70 && x <= 82 && y >= 55 && y <= 80;
+                    bool lowerStem = x >= 58 && x <= 70 && y >= 42 && y <= 58;
+                    bool dot = Vector2.Distance(p, new Vector2(64f, 24f)) < 8f;
+                    bool lit = upperArc || rightStem || lowerStem || dot;
                     texture.SetPixel(x, y, lit ? Color.white : Color.clear);
                 }
             }

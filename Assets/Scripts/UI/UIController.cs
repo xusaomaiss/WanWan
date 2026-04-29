@@ -11,6 +11,7 @@ namespace Wanwan.Runtime
         public const float RightStageProgressAnchorWidth = 0.045f;
         public const int PowerMeterSlotCount = 6;
         public static readonly bool BottomHudTextUsesConstrainedWrapping = true;
+        public static readonly string[] TopHudStatLabels = { "SCORE", "COIN", "BOMB", "FIRE" };
         private const float PowerMeterPulseDuration = 0.38f;
 
         private GameManager gameManager;
@@ -19,6 +20,8 @@ namespace Wanwan.Runtime
         private Text highScoreText;
         private Text coinCountText;
         private Text bombCountText;
+        private Text fireLevelText;
+        private Image bombIcon;
         private Text difficultyText;
         private Text stageProgressText;
         private Text stageProgressPercentText;
@@ -28,6 +31,7 @@ namespace Wanwan.Runtime
         private Text powerMeterText;
         private Text pauseHintText;
         private Text stageBannerText;
+        private Image weaponIcon;
         private Image playerHealthRoot;
         private Image playerHealthFill;
         private Image playerHealthGlow;
@@ -81,10 +85,14 @@ namespace Wanwan.Runtime
                 return;
             }
 
-            scoreText.text = $"得分 {gameManager.Score:0000000}";
-            coinCountText.text = $"金币 {gameManager.CoinCount:000}";
+            scoreText.text = $"{TopHudStatLabels[0]} {gameManager.Score:0000000}";
+            coinCountText.text = $"{TopHudStatLabels[1]} {gameManager.CoinCount:000}";
             livesText.text = $"装甲 {BuildHealthBar()}";
-            bombCountText.text = BuildBombIcons();
+            UpdateBombDisplay();
+            if (fireLevelText != null)
+            {
+                fireLevelText.text = $"{TopHudStatLabels[3]} LV.{gameManager.FireLevel}";
+            }
             RefreshPlayerHealthBar();
             highScoreText.text = $"最高分 {SessionState.HighScore:0000000}";
             difficultyText.text = $"第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
@@ -115,6 +123,7 @@ namespace Wanwan.Runtime
                 stageProgressPercentText.text = $"{(gameManager.StageProgress * 100f):0}%";
             }
             powerupText.text = BuildPowerupHudText();
+            RefreshWeaponIcon();
             if (powerMeterText != null)
             {
                 powerMeterText.text = string.Empty;
@@ -217,35 +226,45 @@ namespace Wanwan.Runtime
             canvas.transform.SetParent(transform, false);
 
             Image topBar = UiFactory.CreatePanel(canvas.transform, "TopHud", new Color(0.015f, 0.018f, 0.035f, 0.65f), new Vector2(0f, 1f - TopHudAnchorHeight), Vector2.one);
-            topBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(0);
+            topBar.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.TopFrame);
             UiFactory.CreateDivider(topBar.transform, "HudBottomLine", new Color(0.14f, 0.88f, 1f, 0.65f), Vector2.zero, new Vector2(1f, 0.03f));
 
-            // Left side: Score + Level name
-            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "得分 0000000", 30, TextAnchor.MiddleLeft, new Color(0.08f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.02f, 0.3f), new Vector2(0.42f, 0.88f), Vector2.zero);
-            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "最高分 0000000", 17, TextAnchor.MiddleLeft, new Color(0.3f, 0.65f, 0.95f), FontStyle.Bold, new Vector2(0.02f, 0.06f), new Vector2(0.42f, 0.36f), Vector2.zero);
-            coinCountText = UiFactory.CreateArcadeLabel(topBar.transform, "金币 000", 16, TextAnchor.LowerLeft, new Color(1f, 0.85f, 0.1f, 0.7f), FontStyle.Bold, new Vector2(0.02f, 0.02f), new Vector2(0.2f, 0.12f), Vector2.zero);
+            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "SCORE 0000000", 25, TextAnchor.MiddleLeft, new Color(0.08f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.018f, 0.54f), new Vector2(0.32f, 0.92f), Vector2.zero);
+            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "BEST 0000000", 15, TextAnchor.MiddleLeft, new Color(0.3f, 0.65f, 0.95f), FontStyle.Bold, new Vector2(0.018f, 0.16f), new Vector2(0.32f, 0.48f), Vector2.zero);
+            coinCountText = UiFactory.CreateArcadeLabel(topBar.transform, "COIN 000", 18, TextAnchor.MiddleLeft, new Color(1f, 0.85f, 0.1f, 0.88f), FontStyle.Bold, new Vector2(0.335f, 0.54f), new Vector2(0.48f, 0.9f), Vector2.zero);
 
             // Center: combo display
+            Image comboBadge = UiFactory.CreateSpritePanel(topBar.transform, "ComboBadge", "UI/hud/combo_badge", new Color(1f, 0.4f, 0.2f, 0.25f), new Vector2(0.38f, 0.6f), new Vector2(0.62f, 0.94f));
+            comboBadge.raycastTarget = false;
             comboMultiplierText = UiFactory.CreateArcadeLabel(topBar.transform, "2x", 36, TextAnchor.MiddleCenter, ArcadeTheme.ComboYellow, FontStyle.Bold, new Vector2(0.4f, 0.68f), new Vector2(0.6f, 0.98f), Vector2.zero);
             comboMultiplierText.gameObject.SetActive(false);
             comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 17, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.38f, 0.36f), new Vector2(0.62f, 0.62f), Vector2.zero);
 
-            // Right side: shields, bombs, difficulty, stage progress
-            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■", 20, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.58f, 0.44f), new Vector2(0.96f, 0.78f), Vector2.zero);
-            bombCountText = UiFactory.CreateArcadeLabel(topBar.transform, "炸弹 ◇◇◇", 16, TextAnchor.MiddleRight, new Color(1f, 0.7f, 0.12f), FontStyle.Bold, new Vector2(0.62f, 0.22f), new Vector2(0.96f, 0.44f), Vector2.zero);
+            // Right side: bombs, fire level, shields, difficulty, stage progress
+            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■", 16, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.67f, 0.45f), new Vector2(0.94f, 0.72f), Vector2.zero);
+            bombIcon = UiFactory.CreatePanel(topBar.transform, "BombIcon", new Color(1f, 0.8f, 0.2f, 0.9f), new Vector2(0.67f, 0.18f), new Vector2(0.705f, 0.44f));
+            bombIcon.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.IconBomb);
+            bombIcon.preserveAspect = true;
+            bombIcon.raycastTarget = false;
+            bombCountText = UiFactory.CreateArcadeLabel(topBar.transform, "BOMB 03", 17, TextAnchor.MiddleLeft, new Color(1f, 0.7f, 0.12f), FontStyle.Bold, new Vector2(0.708f, 0.17f), new Vector2(0.80f, 0.45f), Vector2.zero);
+            fireLevelText = UiFactory.CreateArcadeLabel(topBar.transform, "FIRE LV.1", 17, TextAnchor.MiddleLeft, new Color(0.34f, 1f, 0.86f), FontStyle.Bold, new Vector2(0.80f, 0.17f), new Vector2(0.94f, 0.45f), Vector2.zero);
 
-            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 16, TextAnchor.MiddleRight, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.55f, 0.04f), new Vector2(0.88f, 0.26f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "击落 0/0", 14, TextAnchor.MiddleRight, new Color(0.9f, 0.92f, 1f, 0.65f), FontStyle.Bold, new Vector2(0.62f, 0.0f), new Vector2(0.92f, 0.12f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 14, TextAnchor.MiddleRight, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.48f, 0.0f), new Vector2(0.78f, 0.18f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "击落 0/0", 13, TextAnchor.MiddleRight, new Color(0.9f, 0.92f, 1f, 0.65f), FontStyle.Bold, new Vector2(0.78f, 0.0f), new Vector2(0.94f, 0.18f), Vector2.zero);
 
-            pauseButton = UiFactory.CreateButton(topBar.transform, "Ⅱ", ArcadeTheme.WarningRed, Color.white, new Vector2(48f, 48f), new Vector2(-28f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            pauseButton = UiFactory.CreateSciFiWideButton(topBar.transform, "Ⅱ", ArcadeTheme.ElectricBlue, new Vector2(54f, 48f), new Vector2(-28f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
             pauseButtonText.fontStyle = FontStyle.Bold;
             pauseButtonText.fontSize = 28;
 
+            // HUD bottom bar with sprite background
+            UiFactory.CreateSpritePanel(canvas.transform, "BottomHudBg", "UI/hud/hud_bottom_bar", new Color(1f, 1f, 1f, 0.25f), new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight));
             Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.06f, 0.06f, 0.14f, SessionState.VirtualButtonOpacity + 0.32f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight), new Vector2(6f, 6f));
             bottomBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(1);
             Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(4f, 4f));
+            weaponIcon = UiFactory.CreateSpritePanel(weaponSlot.transform, "WeaponIcon", "UI/icons/icon_scatter", Color.white, new Vector2(0.12f, 0.18f), new Vector2(0.36f, 0.82f));
+            weaponIcon.raycastTarget = false;
             powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
             UiFactory.ConfigureConstrainedText(powerupText, 11, 18);
             Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.2f), new Vector2(0.73f, 0.84f), new Vector2(4f, 4f));
@@ -256,14 +275,15 @@ namespace Wanwan.Runtime
                 UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
             }
             powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, string.Empty, 1, TextAnchor.MiddleCenter, Color.clear, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
-            upgradeButton = UiFactory.CreateButton(bottomBar.transform, "充能", ArcadeTheme.WarningRed, Color.white, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            upgradeButton = UiFactory.CreateSciFiWideButton(bottomBar.transform, "充能", ArcadeTheme.ElectricBlue, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
             upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
             upgradeButtonText.fontStyle = FontStyle.Bold;
             upgradeButtonText.fontSize = 24;
             CreateStageProgressThermometer(canvas.transform);
 
-            bossBarRoot = UiFactory.CreatePanel(canvas.transform, "BossBarRoot", new Color(0.14f, 0.03f, 0.08f, 0.82f), new Vector2(0.08f, 0.88f), new Vector2(0.92f, 0.92f));
+            // Boss bar with sprite background
+            bossBarRoot = UiFactory.CreateSpritePanel(canvas.transform, "BossBarRoot", "UI/hud/boss_bar_frame", new Color(1f, 0.2f, 0.15f, 0.5f), new Vector2(0.08f, 0.88f), new Vector2(0.92f, 0.92f));
             bossBarRoot.gameObject.SetActive(false);
             UiFactory.CreateDivider(bossBarRoot.transform, "BossBarBorder", new Color(0.14f, 0.88f, 1f, 0.75f), Vector2.zero, Vector2.one);
             Image bossTrack = UiFactory.CreatePanel(bossBarRoot.transform, "BossTrack", new Color(0.01f, 0.01f, 0.02f, 0.95f), new Vector2(0.02f, 0.15f), new Vector2(0.98f, 0.85f));
@@ -273,6 +293,7 @@ namespace Wanwan.Runtime
             bossBarLabel = UiFactory.CreateArcadeLabel(bossBarRoot.transform, "警报  敌方旗舰", 20, TextAnchor.MiddleCenter, new Color(1f, 0.96f, 0.94f), FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
             bossBarLabel.raycastTarget = false;
 
+            UiFactory.CreateSpritePanel(canvas.transform, "HealthBarBg", "UI/hud/health_bar_frame", new Color(0.3f, 0.8f, 1f, 0.3f), new Vector2(0.1f, 0.822f), new Vector2(0.9f, 0.852f)).raycastTarget = false;
             playerHealthRoot = UiFactory.CreatePixelPanel(canvas.transform, "PlayerHealthFocusBar", new Color(0.03f, 0.04f, 0.08f, 0.72f), new Color(0.2f, 0.9f, 1f, 0.7f), new Vector2(0.1f, 0.822f), new Vector2(0.9f, 0.852f), new Vector2(4f, 4f));
             Image healthTrack = UiFactory.CreatePanel(playerHealthRoot.transform, "PlayerHealthTrack", new Color(0.02f, 0.015f, 0.018f, 0.96f), new Vector2(0.02f, 0.28f), new Vector2(0.98f, 0.72f));
             playerHealthFill = UiFactory.CreatePanel(healthTrack.transform, "PlayerHealthFill", new Color(0.22f, 1f, 0.62f, 0.98f), Vector2.zero, Vector2.one);
@@ -298,6 +319,8 @@ namespace Wanwan.Runtime
             pauseOverlay.gameObject.SetActive(false);
             Image pauseCard = UiFactory.CreatePanel(pauseOverlay.transform, "PauseFrame", Color.clear, new Vector2(0.2f, 0.34f), new Vector2(0.8f, 0.66f));
             pauseCard.raycastTarget = false;
+            Image pauseSprite = UiFactory.CreateSpritePanel(pauseCard.transform, "PauseSpriteBg", "UI/hud/pause_panel", new Color(0.6f, 0.8f, 1f, 0.25f), Vector2.zero, Vector2.one);
+            pauseSprite.raycastTarget = false;
             UiFactory.CreateDivider(pauseCard.transform, "PauseTopNeon", ArcadeTheme.ElectricBlue, new Vector2(0f, 0.965f), Vector2.one);
             UiFactory.CreateDivider(pauseCard.transform, "PauseBottomNeon", ArcadeTheme.ElectricBlue, Vector2.zero, new Vector2(1f, 0.035f));
             UiFactory.CreateDivider(pauseCard.transform, "PauseLeftNeon", ArcadeTheme.ElectricBlue, Vector2.zero, new Vector2(0.035f, 1f));
@@ -307,14 +330,14 @@ namespace Wanwan.Runtime
             pauseOverlayTitle = UiFactory.CreateArcadeLabel(pauseCard.transform, "暂停菜单", 42, TextAnchor.MiddleCenter, new Color(0.92f, 0.97f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.76f), new Vector2(0.88f, 0.9f), Vector2.zero);
             pauseOverlayHighScore = UiFactory.CreateArcadeLabel(pauseCard.transform, "最高分 0000000", 22, TextAnchor.MiddleCenter, new Color(0.48f, 0.84f, 1f), FontStyle.Bold, new Vector2(0.16f, 0.08f), new Vector2(0.84f, 0.18f), Vector2.zero);
             pauseOverlayMission = UiFactory.CreateArcadeLabel(pauseCard.transform, string.Empty, 18, TextAnchor.MiddleCenter, new Color(0.88f, 0.92f, 1f, 0.78f), FontStyle.Bold, new Vector2(0.12f, 0.18f), new Vector2(0.88f, 0.28f), Vector2.zero);
-            Button resumeButton = UiFactory.CreateButton(pauseCard.transform, "继续游戏", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, 78f));
+            Button resumeButton = UiFactory.CreateSciFiWideButton(pauseCard.transform, "继续游戏", ArcadeTheme.ElectricBlue, new Vector2(420f, 68f), new Vector2(0f, 78f));
             resumeButton.onClick.AddListener(() => gameManager.TogglePause());
-            Button restartButton = UiFactory.CreateButton(pauseCard.transform, "重新开始", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -12f));
+            Button restartButton = UiFactory.CreateSciFiWideButton(pauseCard.transform, "重新开始", ArcadeTheme.ElectricBlue, new Vector2(420f, 68f), new Vector2(0f, -12f));
             restartButton.onClick.AddListener(SceneNavigator.LoadGame);
-            Button audioButton = UiFactory.CreateButton(pauseCard.transform, "设置", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -102f));
+            Button audioButton = UiFactory.CreateSciFiWideButton(pauseCard.transform, "设置", ArcadeTheme.ElectricBlue, new Vector2(420f, 68f), new Vector2(0f, -102f));
             pauseOverlayAudioText = audioButton.GetComponentInChildren<Text>();
             audioButton.onClick.AddListener(() => gameManager.ToggleAudio());
-            Button menuButton = UiFactory.CreateButton(pauseCard.transform, "退出", Color.clear, ArcadeTheme.White, new Vector2(420f, 68f), new Vector2(0f, -192f));
+            Button menuButton = UiFactory.CreateSciFiWideButton(pauseCard.transform, "退出", ArcadeTheme.ElectricBlue, new Vector2(420f, 68f), new Vector2(0f, -192f));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
 
             introOverlay = UiFactory.CreatePanel(canvas.transform, "LevelIntroOverlay", new Color(0.02f, 0.02f, 0.06f, 0.18f), Vector2.zero, Vector2.one);
@@ -358,6 +381,18 @@ namespace Wanwan.Runtime
                 : multiplier >= 3 ? ArcadeTheme.ComboOrange
                 : ArcadeTheme.ComboYellow;
             comboMultiplierText.fontSize = multiplier >= 5 ? 44 : multiplier >= 3 ? 36 : 30;
+        }
+
+        private void RefreshWeaponIcon()
+        {
+            if (weaponIcon == null || gameManager == null) return;
+            string[] iconPaths = { "UI/icons/icon_scatter", "UI/icons/icon_rapid", "UI/icons/icon_laser",
+                                   "UI/icons/icon_homing", "UI/icons/icon_burst", "UI/icons/icon_plasma" };
+            int index = (int)gameManager.CurrentWeaponType;
+            index = Mathf.Clamp(index, 0, iconPaths.Length - 1);
+            Texture2D tex = Resources.Load<Texture2D>(iconPaths[index]);
+            if (tex != null)
+                weaponIcon.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 128f);
         }
 
         private string BuildPowerupHudText()
@@ -410,6 +445,9 @@ namespace Wanwan.Runtime
 
         private void CreateStageProgressThermometer(Transform canvas)
         {
+            // Sprite background for stage progress thermometer
+            Image sprRail = UiFactory.CreateSpritePanel(canvas, "StageProgressSprite", "UI/hud/progress_track", new Color(0.5f, 0.8f, 1f, 0.25f), new Vector2(1f - RightStageProgressAnchorWidth - 0.008f, 0.16f), new Vector2(0.985f + 0.008f, 0.80f));
+            sprRail.raycastTarget = false;
             Image rail = UiFactory.CreatePixelPanel(canvas, "StageProgressThermometer", new Color(0.02f, 0.025f, 0.045f, 0.65f), new Color(0.22f, 0.86f, 1f, 0.65f), new Vector2(1f - RightStageProgressAnchorWidth, 0.18f), new Vector2(0.985f, 0.78f), new Vector2(3f, 5f));
             rail.raycastTarget = false;
 
@@ -472,16 +510,11 @@ namespace Wanwan.Runtime
             }
         }
 
-        private string BuildBombIcons()
+        private void UpdateBombDisplay()
         {
-            int active = Mathf.Clamp(gameManager.BombCount, 0, 3);
-            char[] icons = { '◇', '◇', '◇' };
-            for (int i = 0; i < active; i++)
-            {
-                icons[i] = '◆';
-            }
-
-            return $"炸弹 {new string(icons)}";
+            if (bombCountText == null || gameManager == null) return;
+            int count = Mathf.Clamp(gameManager.BombCount, 0, 99);
+            bombCountText.text = $"{TopHudStatLabels[2]} {count:00}";
         }
 
         private string BuildShieldIcons()

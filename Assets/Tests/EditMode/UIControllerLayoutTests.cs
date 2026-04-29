@@ -46,5 +46,11 @@ namespace Wanwan.Tests.EditMode
         {
             Assert.That(UIController.BottomHudTextUsesConstrainedWrapping, Is.True);
         }
+
+        [Test]
+        public void TopHud_UsesFourSciFiCombatStats()
+        {
+            Assert.That(UIController.TopHudStatLabels, Is.EqualTo(new[] { "SCORE", "COIN", "BOMB", "FIRE" }));
+        }
     }
 }

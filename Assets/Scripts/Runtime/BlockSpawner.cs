@@ -138,7 +138,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = fireballObject.GetComponent<SpriteRenderer>();
             if (renderer == null) renderer = fireballObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetBulletSprite(fromBoss ? AmmoPowerupType.Burst : AmmoPowerupType.Normal);
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiEnemyProjectileSprite();
             renderer.color = fromBoss ? Color.Lerp(color, gameManager.StageAccentColor, 0.26f) : color;
             renderer.sortingOrder = 14;
             fireballObject.transform.localScale = WeaponShotPresentation.GetEnemyScale(fromBoss);
@@ -238,7 +238,7 @@ namespace Wanwan.Runtime
                 SpriteRenderer renderer = coinObject.GetComponent<SpriteRenderer>();
                 if (renderer == null) renderer = coinObject.AddComponent<SpriteRenderer>();
 
-                renderer.sprite = RuntimeSpriteFactory.GetCoinSprite();
+                renderer.sprite = RuntimeSpriteFactory.GetSciFiCoinSprite();
                 renderer.color = Color.white;
                 renderer.sortingOrder = 18;
 
@@ -343,7 +343,7 @@ namespace Wanwan.Runtime
 
             SpriteRenderer renderer = bombObject.GetComponent<SpriteRenderer>();
             if (renderer == null) renderer = bombObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetBombPickupSprite();
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiBombSprite();
             renderer.sortingOrder = 19;
 
             CircleCollider2D collider = bombObject.GetComponent<CircleCollider2D>();
@@ -1511,6 +1511,13 @@ namespace Wanwan.Runtime
 
             AmmoPowerupType[] pool = gameManager.ElapsedTime < 32f && gameManager.CurrentStagePhase != StagePhase.Boss ? earlyPool : fullPool;
             return pool[Random.Range(0, pool.Length)];
+        }
+
+        private static Sprite LoadSprite(string resourcePath, Sprite fallback)
+        {
+            Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+            if (tex == null) return fallback;
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 128f);
         }
     }
 }

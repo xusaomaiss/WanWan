@@ -280,7 +280,7 @@ namespace Wanwan.Runtime
             blast.transform.position = center;
             blast.transform.localScale = Vector3.one * Mathf.Max(0.45f, explosionRadius);
             SpriteRenderer renderer = blast.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetExplosionSprite();
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiExplosionSprite();
             renderer.color = new Color(1f, 0.5f, 0.18f, 0.82f);
             renderer.sortingOrder = 16;
             DisposeRuntimeObject(blast, 0.18f);

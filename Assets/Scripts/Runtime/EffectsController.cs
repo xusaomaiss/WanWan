@@ -20,11 +20,17 @@ namespace Wanwan.Runtime
         private AudioClip bossAlarmClip;
         private VisualEffectsQuality EffectsQuality => SessionState.VisualEffectsQuality;
         private PoolCollection pools;
+        private ScreenShakeController screenShake;
+        private ExplosionFlashController explosionFlash;
 
         public void Initialize(Camera mainCamera)
         {
             targetCamera = mainCamera;
             pools = FindObjectOfType<GameBootstrap>()?.Pools;
+            screenShake = gameObject.AddComponent<ScreenShakeController>();
+            screenShake.Initialize(mainCamera);
+            explosionFlash = gameObject.AddComponent<ExplosionFlashController>();
+            explosionFlash.Initialize(pools);
             sfxSource = gameObject.AddComponent<AudioSource>();
             sfxSource.playOnAwake = false;
 
@@ -184,9 +190,15 @@ namespace Wanwan.Runtime
 
         private void StartShake(float duration, float magnitude)
         {
-            StartCoroutine(Shake(
-                VisualEffectsBudget.GetShakeDuration(EffectsQuality, duration),
-                VisualEffectsBudget.GetShakeMagnitude(EffectsQuality, magnitude)));
+            float budgetDuration = VisualEffectsBudget.GetShakeDuration(EffectsQuality, duration);
+            float budgetMagnitude = VisualEffectsBudget.GetShakeMagnitude(EffectsQuality, magnitude);
+            if (screenShake != null)
+            {
+                screenShake.Play(budgetDuration, budgetMagnitude);
+                return;
+            }
+
+            StartCoroutine(Shake(budgetDuration, budgetMagnitude));
         }
 
         private void EmitParticles(Vector3 position, Color color, int count, float duration, float radius)
@@ -211,11 +223,15 @@ namespace Wanwan.Runtime
             GameObject explosion = pools != null ? pools.RentParticle() : new GameObject("ExplosionImage");
             SpriteRenderer renderer = explosion.AddComponent<SpriteRenderer>();
             Sprite[] frames = RuntimeSpriteFactory.GetArcadeExplosionFrameSprites();
-            renderer.sprite = frames[0];
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiExplosionSprite();
             renderer.color = Color.white;
             renderer.sortingOrder = 24;
             explosion.transform.position = position;
             explosion.transform.localScale = Vector3.one * Random.Range(0.78f, 1.08f);
+            if (explosionFlash != null)
+            {
+                explosionFlash.PlayWorldFlash(position, 0.75f, new Color(0.62f, 0.95f, 1f, 0.46f));
+            }
             StartCoroutine(AnimateExplosionImage(explosion, renderer, frames));
         }
 
@@ -406,7 +422,7 @@ namespace Wanwan.Runtime
         {
             GameObject flash = pools != null ? pools.RentParticle() : new GameObject("BombFlash");
             SpriteRenderer renderer = flash.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+            renderer.sprite = RuntimeSpriteFactory.GetSciFiFlashSprite();
             renderer.color = new Color(0.72f, 0.95f, 1f, 0.58f);
             renderer.sortingOrder = 40;
             flash.transform.position = new Vector3(center.x, center.y, -0.5f);

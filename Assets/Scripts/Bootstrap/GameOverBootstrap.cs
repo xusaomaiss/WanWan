@@ -9,8 +9,8 @@ namespace Wanwan.Runtime
         public static readonly Vector2 LegacyResultActionButtonSize = new Vector2(390f, 118f);
         public const float VictoryActionButtonY = -660f;
         public const float DefaultActionButtonY = -480f;
-        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.08f, 0.22f);
-        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.92f, 0.38f);
+        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.05f, 0.20f);
+        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.95f, 0.44f);
 
         private Text nameText;
         private Text mountScoreText;
@@ -63,7 +63,7 @@ namespace Wanwan.Runtime
             Canvas canvas = UiFactory.CreateCanvas("GameOverCanvas");
             bool victory = SessionState.LastRunWasVictory;
             Image background = UiFactory.CreatePanel(canvas.transform, "Background", Color.white, Vector2.zero, Vector2.one);
-            background.sprite = RuntimeSpriteFactory.GetRaidenStageBackgroundSprite(SessionState.CurrentStageNumber);
+            background.sprite = RuntimeSpriteFactory.GetSciFiBackgroundSprite(victory ? SciFiBackgroundLayerKind.Nebula : SciFiBackgroundLayerKind.Deep);
             background.preserveAspect = false;
             BuildFloatingGameOver(background.transform, victory);
         }
@@ -78,6 +78,11 @@ namespace Wanwan.Runtime
                 ? $"第{SessionState.CurrentStageNumber}关突破"
                 : $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}";
 
+            // Result panel decoration
+            Color resultPanelTint = victory ? new Color(0.6f, 0.9f, 1f, 0.20f) : new Color(1f, 0.3f, 0.2f, 0.20f);
+            Image resultPanel = UiFactory.CreatePanel(background, "ResultPanelSprite", resultPanelTint, new Vector2(0.08f, 0.28f), new Vector2(0.92f, 0.72f));
+            resultPanel.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.ResultPanel);
+            resultPanel.raycastTarget = false;
             UiFactory.CreatePanel(background, "ResultDim", new Color(0.01f, 0.01f, 0.03f, victory ? 0.5f : 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
             UiFactory.CreatePanel(background, "ResultTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
 
@@ -113,9 +118,9 @@ namespace Wanwan.Runtime
             string primaryCopy = victory ? "继续下一关" : "重新挑战";
             Vector2 actionButtonSize = victory ? ResultActionButtonSize : LegacyResultActionButtonSize;
             float actionButtonY = victory ? VictoryActionButtonY : -480f;
-            Button primaryButton = UiFactory.CreatePixelButton(background, primaryCopy, victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed, actionButtonSize, new Vector2(-210f, actionButtonY));
+            Button primaryButton = UiFactory.CreateSciFiWideButton(background, primaryCopy, victory ? ArcadeTheme.ElectricBlue : ArcadeTheme.WarningRed, actionButtonSize, new Vector2(-210f, actionButtonY));
             primaryButton.onClick.AddListener(victory ? SceneNavigator.LoadNextStage : SceneNavigator.LoadGame);
-            Button menuButton = UiFactory.CreatePixelButton(background, "返回主页", ArcadeTheme.EnergyYellow, actionButtonSize, new Vector2(210f, actionButtonY));
+            Button menuButton = UiFactory.CreateSciFiWideButton(background, "返回主页", ArcadeTheme.EnergyYellow, actionButtonSize, new Vector2(210f, actionButtonY));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
 
             // Bottom shade must be created after buttons so it renders behind them
@@ -125,27 +130,57 @@ namespace Wanwan.Runtime
         private void BuildMountShop(Transform background, Color detailColor)
         {
             Image panel = UiFactory.CreatePixelPanel(background, "MountShopPanel", new Color(0.025f, 0.035f, 0.08f, 0.86f), ArcadeTheme.EnergyYellow, MountShopAnchorMin, MountShopAnchorMax, new Vector2(5f, 5f));
-            UiFactory.CreateArcadeLabel(panel.transform, "挂载补给", 24, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.035f, 0.68f), new Vector2(0.28f, 0.94f), Vector2.zero);
-            mountScoreText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 20, TextAnchor.MiddleRight, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.42f, 0.69f), new Vector2(0.96f, 0.93f), Vector2.zero);
-            mountStatusText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 18, TextAnchor.MiddleCenter, new Color(0.78f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.26f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(panel.transform, "挂载补给", 24, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.035f, 0.76f), new Vector2(0.28f, 0.94f), Vector2.zero);
+            mountScoreText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 20, TextAnchor.MiddleRight, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.42f, 0.77f), new Vector2(0.96f, 0.93f), Vector2.zero);
+            mountStatusText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 16, TextAnchor.MiddleCenter, new Color(0.78f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.18f), Vector2.zero);
 
             MountType[] mounts = MountConfig.GetPlayableMounts();
             for (int i = 0; i < mounts.Length; i++)
             {
                 MountType mount = mounts[i];
                 MountConfig config = MountConfig.Get(mount);
-                float start = 0.04f + (i * 0.31f);
-                float end = start + 0.29f;
-                Image card = UiFactory.CreatePixelPanel(panel.transform, config.DisplayName + "Card", new Color(0.02f, 0.025f, 0.055f, 0.92f), config.AccentColor, new Vector2(start, 0.31f), new Vector2(end, 0.68f), new Vector2(4f, 4f));
-                UiFactory.CreateArcadeLabel(card.transform, config.DisplayName, 18, TextAnchor.MiddleCenter, config.AccentColor, FontStyle.Bold, new Vector2(0.04f, 0.58f), new Vector2(0.96f, 0.94f), Vector2.zero);
-                UiFactory.CreateArcadeLabel(card.transform, config.Cost.ToString("00000") + " / +" + config.PurchaseUnits + config.UnitLabel, 13, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.04f, 0.3f), new Vector2(0.96f, 0.58f), Vector2.zero);
-                Button buyButton = UiFactory.CreateButton(card.transform, "购买", config.AccentColor, Color.white, new Vector2(116f, 36f), new Vector2(0f, -30f));
+                float start = 0.03f + (i * 0.315f);
+                float end = start + 0.30f;
+                // Card background
+                // Card dark background for readability
+                UiFactory.CreatePanel(panel.transform, config.DisplayName + "DarkBg", new Color(0.02f, 0.02f, 0.05f, 0.75f), new Vector2(start, 0.22f), new Vector2(end, 0.72f)).raycastTarget = false;
+                Image card = UiFactory.CreateSpritePanel(panel.transform, config.DisplayName + "Card", "UI/hud/mount_card", new Color(0.9f, 0.9f, 1f, 0.50f), new Vector2(start, 0.22f), new Vector2(end, 0.72f));
+                // Mount icon
+                Sprite iconSprite = GetMountIconSprite(mount);
+                if (iconSprite != null)
+                {
+                    Image icon = UiFactory.CreatePanel(card.transform, config.DisplayName + "Icon", config.AccentColor, new Vector2(0.25f, 0.58f), new Vector2(0.75f, 0.92f));
+                    icon.sprite = iconSprite;
+                    icon.preserveAspect = true;
+                    icon.raycastTarget = false;
+                }
+                // Name label
+                UiFactory.CreateArcadeLabel(card.transform, config.DisplayName, 20, TextAnchor.MiddleCenter, config.AccentColor, FontStyle.Bold, new Vector2(0.05f, 0.42f), new Vector2(0.95f, 0.58f), Vector2.zero);
+                // Cost and amount
+                UiFactory.CreateArcadeLabel(card.transform, config.Cost.ToString("00000") + " / +" + config.PurchaseUnits + config.UnitLabel, 14, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.05f, 0.24f), new Vector2(0.95f, 0.40f), Vector2.zero);
+                // Larger buy button
+                Button buyButton = UiFactory.CreateSpriteButton(card.transform, "购买", "UI/button/Button01", config.AccentColor, new Vector2(160f, 52f), new Vector2(0f, -16f));
                 int index = i;
                 buyButton.onClick.AddListener(() => PurchaseMount(mounts[index]));
                 mountButtons[i] = buyButton;
             }
 
             RefreshMountShop();
+        }
+
+        private static Sprite GetMountIconSprite(MountType mount)
+        {
+            switch (mount)
+            {
+                case MountType.MissilePod:
+                    return RuntimeSpriteFactory.GetMissileSprite();
+                case MountType.DefenseDrone:
+                    return RuntimeSpriteFactory.GetRaidenFighterJetSprite();
+                case MountType.ShieldEmitter:
+                    return RuntimeSpriteFactory.GetCircleSprite();
+                default:
+                    return null;
+            }
         }
 
         private void PurchaseMount(MountType mount)

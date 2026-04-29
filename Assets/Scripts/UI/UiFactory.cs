@@ -6,6 +6,40 @@ namespace Wanwan.Runtime
 {
     public static class UiFactory
     {
+        private static Sprite LoadUISprite(string resourcePath)
+        {
+            Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+            if (tex == null)
+            {
+                Debug.LogWarning("UI sprite not found: " + resourcePath);
+                return null;
+            }
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 128f);
+        }
+
+        private static Sprite TryLoadUISprite(string resourcePath)
+        {
+            Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+            return tex == null ? null : Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 128f);
+        }
+
+        public static Image CreateSpritePanel(Transform parent, string name, string resourcePath, Color tint, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
+            obj.transform.SetParent(parent, false);
+
+            RectTransform rect = obj.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            Image image = obj.GetComponent<Image>();
+            image.sprite = LoadUISprite(resourcePath);
+            image.color = tint;
+            image.type = Image.Type.Simple;
+            return image;
+        }
         public static Canvas CreateCanvas(string name)
         {
             EnsureEventSystem();
@@ -200,6 +234,39 @@ namespace Wanwan.Runtime
             return button;
         }
 
+        public static Button CreateSpriteButton(Transform parent, string label, string resourcePath, Color tint, Vector2 size, Vector2 anchoredPosition)
+        {
+            GameObject buttonObject = new GameObject(label + "SpriteBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+
+            RectTransform rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPosition;
+
+            Image image = buttonObject.GetComponent<Image>();
+            image.sprite = LoadUISprite(resourcePath);
+            image.color = tint;
+            image.type = Image.Type.Simple;
+
+            Button button = buttonObject.GetComponent<Button>();
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.Lerp(Color.white, tint, 0.3f);
+            colors.pressedColor = Color.Lerp(tint, Color.black, 0.4f);
+            colors.selectedColor = tint;
+            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.35f);
+            button.colors = colors;
+
+            Text text = CreateText(buttonObject.transform, label, 28, TextAnchor.MiddleCenter, Color.white, Vector2.zero, Vector2.one, Vector2.zero);
+            ConfigureSingleLine(text);
+            text.fontStyle = FontStyle.Bold;
+            text.resizeTextMinSize = 12;
+            text.resizeTextMaxSize = 28;
+            return button;
+        }
+
         public static Button CreatePixelButton(Transform parent, string label, Color accentColor, Vector2 size, Vector2 anchoredPosition)
         {
             Button button = CreateButton(parent, label, ArcadeTheme.PanelBase, ArcadeTheme.White, size, anchoredPosition);
@@ -310,6 +377,125 @@ namespace Wanwan.Runtime
 
             ArcadeButtonPressFeedback feedback = button.gameObject.AddComponent<ArcadeButtonPressFeedback>();
             feedback.Configure(iconImage, null, glow, accentColor);
+            return button;
+        }
+
+        public static Button CreateSpaceMenuButton(Transform parent, string label, string resourcePath, Color accentColor, Vector2 size, Vector2 anchoredPosition)
+        {
+            Button button = CreateSpriteButton(parent, label, resourcePath, Color.white, size, anchoredPosition);
+            Image image = button.GetComponent<Image>();
+            image.type = Image.Type.Simple;
+            button.targetGraphic = image;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.Lerp(Color.white, accentColor, 0.2f);
+            colors.pressedColor = Color.Lerp(accentColor, ArcadeTheme.InkBlack, 0.25f);
+            colors.selectedColor = Color.Lerp(Color.white, accentColor, 0.35f);
+            colors.disabledColor = new Color(0.4f, 0.4f, 0.45f, 0.35f);
+            button.colors = colors;
+
+            Image glow = CreatePanel(button.transform, "SpaceButtonGlow", accentColor, new Vector2(0.05f, 0.16f), new Vector2(0.95f, 0.84f));
+            glow.color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.13f);
+            glow.raycastTarget = false;
+            glow.transform.SetAsFirstSibling();
+
+            Text text = button.GetComponentInChildren<Text>();
+            text.fontStyle = FontStyle.Bold;
+            text.fontSize = 40;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 24;
+            text.resizeTextMaxSize = 40;
+            text.color = new Color(0.86f, 0.98f, 1f);
+            text.raycastTarget = false;
+            text.transform.SetAsLastSibling();
+
+            MenuButtonAnimator animator = button.gameObject.AddComponent<MenuButtonAnimator>();
+            animator.Configure(image, glow, accentColor, TryLoadUISprite(resourcePath + "_pressed"));
+            return button;
+        }
+
+        public static Button CreateSpaceIconButton(Transform parent, Sprite icon, string fallbackLabel, string resourcePath, Color accentColor, Vector2 size, Vector2 anchoredPosition, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Button button = CreateButton(parent, string.Empty, Color.clear, Color.clear, size, anchoredPosition, anchorMin, anchorMax);
+            Image image = button.GetComponent<Image>();
+            image.sprite = LoadUISprite(resourcePath);
+            image.color = Color.white;
+            image.type = Image.Type.Simple;
+            button.targetGraphic = image;
+
+            Image glow = CreatePanel(button.transform, "SpaceIconGlow", accentColor, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.92f));
+            glow.color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.14f);
+            glow.raycastTarget = false;
+            glow.transform.SetAsFirstSibling();
+
+            if (icon != null)
+            {
+                Image iconImage = CreatePanel(button.transform, "Icon", Color.white, new Vector2(0.23f, 0.23f), new Vector2(0.77f, 0.77f));
+                iconImage.sprite = icon;
+                iconImage.preserveAspect = true;
+                iconImage.raycastTarget = false;
+            }
+            else
+            {
+                Text text = CreateArcadeLabel(button.transform, fallbackLabel, 34, TextAnchor.MiddleCenter, Color.white, FontStyle.Bold, new Vector2(0.2f, 0.18f), new Vector2(0.8f, 0.82f), Vector2.zero);
+                text.raycastTarget = false;
+            }
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.Lerp(Color.white, accentColor, 0.2f);
+            colors.pressedColor = Color.Lerp(accentColor, ArcadeTheme.InkBlack, 0.25f);
+            colors.selectedColor = Color.Lerp(Color.white, accentColor, 0.35f);
+            colors.disabledColor = new Color(0.4f, 0.4f, 0.45f, 0.35f);
+            button.colors = colors;
+
+            MenuButtonAnimator animator = button.gameObject.AddComponent<MenuButtonAnimator>();
+            animator.Configure(image, glow, accentColor, TryLoadUISprite(resourcePath + "_pressed"));
+            return button;
+        }
+
+        public static Button CreateSciFiWideButton(Transform parent, string label, Color accentColor, Vector2 size, Vector2 anchoredPosition)
+        {
+            return CreateSciFiWideButton(parent, label, accentColor, size, anchoredPosition, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+        }
+
+        public static Button CreateSciFiWideButton(Transform parent, string label, Color accentColor, Vector2 size, Vector2 anchoredPosition, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Button button = CreateButton(parent, label, Color.white, new Color(0.86f, 0.98f, 1f), size, anchoredPosition, anchorMin, anchorMax);
+            Image image = button.GetComponent<Image>();
+            image.sprite = RuntimeSpriteFactory.GetSciFiButtonSprite(SciFiButtonSpriteKind.WideBlue);
+            image.type = Image.Type.Simple;
+            image.color = Color.white;
+            button.targetGraphic = image;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.Lerp(Color.white, accentColor, 0.2f);
+            colors.pressedColor = Color.Lerp(accentColor, ArcadeTheme.InkBlack, 0.28f);
+            colors.selectedColor = Color.Lerp(Color.white, accentColor, 0.34f);
+            colors.disabledColor = new Color(0.32f, 0.36f, 0.42f, 0.38f);
+            button.colors = colors;
+
+            Image glow = CreatePanel(button.transform, "SciFiButtonGlow", accentColor, new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.82f));
+            glow.color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.13f);
+            glow.raycastTarget = false;
+            glow.transform.SetAsFirstSibling();
+
+            Text text = button.GetComponentInChildren<Text>();
+            text.fontStyle = FontStyle.Bold;
+            text.fontSize = Mathf.Clamp(Mathf.RoundToInt(size.y * 0.44f), 18, 36);
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 14;
+            text.resizeTextMaxSize = text.fontSize;
+            text.color = new Color(0.86f, 0.98f, 1f);
+            text.raycastTarget = false;
+            text.transform.SetAsLastSibling();
+
+            ArcadeButtonPressFeedback feedback = button.gameObject.AddComponent<ArcadeButtonPressFeedback>();
+            feedback.Configure(image, null, glow, accentColor);
+            MenuButtonAnimator animator = button.gameObject.AddComponent<MenuButtonAnimator>();
+            animator.Configure(image, glow, accentColor, RuntimeSpriteFactory.GetSciFiButtonSprite(SciFiButtonSpriteKind.Disabled));
             return button;
         }
 
