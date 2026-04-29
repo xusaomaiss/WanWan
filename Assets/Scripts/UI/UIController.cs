@@ -10,6 +10,7 @@ namespace Wanwan.Runtime
         public const float BottomHudAnchorHeight = 0.105f;
         public const float RightStageProgressAnchorWidth = 0.045f;
         public const int PowerMeterSlotCount = 6;
+        public static readonly Vector2 UpgradeButtonSize = new Vector2(176f, 72f);
         public static readonly bool BottomHudTextUsesConstrainedWrapping = true;
         public static readonly string[] TopHudStatLabels = { "SCORE", "COIN", "BOMB", "FIRE" };
         private const float PowerMeterPulseDuration = 0.38f;
@@ -275,7 +276,7 @@ namespace Wanwan.Runtime
                 UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
             }
             powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, string.Empty, 1, TextAnchor.MiddleCenter, Color.clear, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
-            upgradeButton = UiFactory.CreateSciFiWideButton(bottomBar.transform, "充能", ArcadeTheme.ElectricBlue, new Vector2(116f, 54f), new Vector2(-88f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            upgradeButton = UiFactory.CreateSciFiWideButton(bottomBar.transform, "充能", ArcadeTheme.ElectricBlue, UpgradeButtonSize, new Vector2(-112f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
             upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
             upgradeButtonText.fontStyle = FontStyle.Bold;

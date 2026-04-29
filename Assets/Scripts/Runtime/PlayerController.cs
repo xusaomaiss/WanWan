@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Wanwan.Runtime.Pools;
 
 namespace Wanwan.Runtime
@@ -95,14 +96,31 @@ namespace Wanwan.Runtime
         {
             if (Input.touchCount > 0)
             {
-                targetPosition = ScreenToWorldPosition(Input.GetTouch(0).position);
+                for (int i = 0; i < Input.touchCount; i++)
+                {
+                    Touch touch = Input.GetTouch(i);
+                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled || IsPointerOverUi(touch.fingerId))
+                    {
+                        continue;
+                    }
+
+                    targetPosition = ScreenToWorldPosition(touch.position);
+                    return;
+                }
+
                 return;
             }
 
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && !IsPointerOverUi())
             {
                 targetPosition = ScreenToWorldPosition(Input.mousePosition);
             }
+        }
+
+        public static bool IsPointerOverUi(int pointerId = -1)
+        {
+            EventSystem eventSystem = EventSystem.current;
+            return eventSystem != null && eventSystem.IsPointerOverGameObject(pointerId);
         }
 
         private Vector2 ScreenToWorldPosition(Vector3 screenPosition)

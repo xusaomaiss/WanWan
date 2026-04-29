@@ -42,6 +42,13 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void UpgradeButton_IsLargeEnoughForMobileTouch()
+        {
+            Assert.That(UIController.UpgradeButtonSize.x, Is.GreaterThanOrEqualTo(160f));
+            Assert.That(UIController.UpgradeButtonSize.y, Is.GreaterThanOrEqualTo(64f));
+        }
+
+        [Test]
         public void BottomHudText_UsesConstrainedWrapping()
         {
             Assert.That(UIController.BottomHudTextUsesConstrainedWrapping, Is.True);

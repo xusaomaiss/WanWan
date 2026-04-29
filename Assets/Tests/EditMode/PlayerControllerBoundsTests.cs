@@ -21,5 +21,11 @@ namespace Wanwan.Tests.EditMode
 
             Object.DestroyImmediate(playerObject);
         }
+
+        [Test]
+        public void IsPointerOverUi_ReturnsFalseWithoutEventSystem()
+        {
+            Assert.That(PlayerController.IsPointerOverUi(), Is.False);
+        }
     }
 }
