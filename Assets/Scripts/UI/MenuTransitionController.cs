@@ -9,10 +9,11 @@ namespace Wanwan.Runtime
         public IEnumerator FadeGroup(Transform parent, float duration = 0.28f)
         {
             var graphics = parent.GetComponentsInChildren<Graphic>();
-            foreach (var g in graphics)
+            Color[] originalColors = new Color[graphics.Length];
+            for (int i = 0; i < graphics.Length; i++)
             {
-                var color = g.color;
-                g.color = new Color(color.r, color.g, color.b, 0f);
+                originalColors[i] = graphics[i].color;
+                graphics[i].color = WithScaledAlpha(originalColors[i], 0f);
             }
 
             float elapsed = 0f;
@@ -21,19 +22,22 @@ namespace Wanwan.Runtime
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
                 float eased = 1f - Mathf.Pow(1f - t, 3f);
-                foreach (var g in graphics)
+                for (int i = 0; i < graphics.Length; i++)
                 {
-                    var color = g.color;
-                    g.color = new Color(color.r, color.g, color.b, eased);
+                    graphics[i].color = WithScaledAlpha(originalColors[i], eased);
                 }
                 yield return null;
             }
 
-            foreach (var g in graphics)
+            for (int i = 0; i < graphics.Length; i++)
             {
-                var color = g.color;
-                g.color = new Color(color.r, color.g, color.b, 1f);
+                graphics[i].color = originalColors[i];
             }
+        }
+
+        private static Color WithScaledAlpha(Color color, float alphaScale)
+        {
+            return new Color(color.r, color.g, color.b, color.a * alphaScale);
         }
     }
 }
