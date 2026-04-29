@@ -27,5 +27,15 @@ namespace Wanwan.Tests.EditMode
 
             Assert.That(mounts, Is.EqualTo(new[] { MountType.MissilePod, MountType.DefenseDrone, MountType.ShieldEmitter }));
         }
+
+        [Test]
+        public void ShieldEmitter_DescribesHitAbsorption()
+        {
+            MountConfig config = MountConfig.Get(MountType.ShieldEmitter);
+
+            Assert.That(config.Description, Does.Contain("抵消一次受击"));
+            Assert.That(config.PurchaseUnits, Is.EqualTo(2));
+            Assert.That(config.UnitLabel, Is.EqualTo("层"));
+        }
     }
 }

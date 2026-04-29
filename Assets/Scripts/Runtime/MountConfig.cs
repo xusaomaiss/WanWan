@@ -41,7 +41,7 @@ namespace Wanwan.Runtime
                 case MountType.DefenseDrone:
                     return new MountConfig(type, 28000, "防卫机", "双侧辅助火力", new Color(0.38f, 0.9f, 1f), 0.34f, 40, "发");
                 case MountType.ShieldEmitter:
-                    return new MountConfig(type, 32000, "护盾发生器", "购买护盾层数", new Color(0.42f, 1f, 0.62f), 1f, 2, "层");
+                    return new MountConfig(type, 32000, "护盾发生器", "每层抵消一次受击", new Color(0.42f, 1f, 0.62f), 1f, 2, "层");
                 default:
                     return new MountConfig(MountType.None, 0, "无挂载", "不装备临时挂载", Color.gray, 1f, 0, string.Empty);
             }

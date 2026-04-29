@@ -164,12 +164,31 @@ namespace Wanwan.Tests.EditMode
             MountConfig drone = MountConfig.Get(MountType.DefenseDrone);
             SessionState.AddSpendableScore((missile.Cost * 2) + drone.Cost);
 
+            Assert.That(SessionState.CanPurchaseMount(MountType.MissilePod), Is.True);
             Assert.That(SessionState.TryPurchaseMount(MountType.MissilePod), Is.True);
             Assert.That(SessionState.TryPurchaseMount(MountType.MissilePod), Is.True);
             Assert.That(SessionState.TryPurchaseMount(MountType.DefenseDrone), Is.False);
 
             Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.MissilePod));
             Assert.That(SessionState.PendingMountUnits, Is.EqualTo(missile.PurchaseUnits * 2));
+        }
+
+        [Test]
+        public void TryPurchaseMount_StopsAtStoredUnitLimitWithoutSpending()
+        {
+            MountConfig drone = MountConfig.Get(MountType.DefenseDrone);
+            int purchaseCount = SessionState.MaxStoredPendingMountUnits / drone.PurchaseUnits;
+            SessionState.AddSpendableScore(drone.Cost * (purchaseCount + 1));
+
+            for (int i = 0; i < purchaseCount; i++)
+            {
+                Assert.That(SessionState.TryPurchaseMount(MountType.DefenseDrone), Is.True);
+            }
+
+            int remainingScore = SessionState.SpendableScore;
+            Assert.That(SessionState.CanPurchaseMount(MountType.DefenseDrone), Is.False);
+            Assert.That(SessionState.TryPurchaseMount(MountType.DefenseDrone), Is.False);
+            Assert.That(SessionState.SpendableScore, Is.EqualTo(remainingScore));
         }
 
         [Test]

@@ -11,6 +11,8 @@ namespace Wanwan.Runtime
         public const string EliteEnemyResourcePath = "RaidenArt/Ships/elite_enemy_ai";
         public const string BossFlagshipResourcePath = "RaidenArt/Ships/boss_flagship_ai";
         public const string CoinResourcePath = "RaidenArt/Pickups/coin_ai";
+        public const string MountMissilePodResourcePath = "RaidenArt/Mounts/mount_missile_pod_ai";
+        public const string MountShieldEmitterResourcePath = "RaidenArt/Mounts/mount_shield_emitter_ai";
         public const string LaunchWeatherIntroResourcePath = "RaidenArt/Cinematics/launch_weather_intro_ai";
         public const string MenuStormTitleResourcePath = "RaidenArt/Cinematics/menu_storm_title_ai";
         public const string BulletSpreadArcadeResourcePath = "RaidenArt/Effects/bullet_spread_arcade";
@@ -100,6 +102,16 @@ namespace Wanwan.Runtime
         }
 
         public static Sprite GetMissileSprite()
+        {
+            return GetResourceSpriteOrFallback("mount-missile-pod-ai", MountMissilePodResourcePath, GetGeneratedMissileSprite);
+        }
+
+        public static Sprite GetShieldEmitterSprite()
+        {
+            return GetResourceSpriteOrFallback("mount-shield-emitter-ai", MountShieldEmitterResourcePath, GetCircleSprite);
+        }
+
+        private static Sprite GetGeneratedMissileSprite()
         {
             return GetOrCreate("missile", BuildMissileTexture);
         }

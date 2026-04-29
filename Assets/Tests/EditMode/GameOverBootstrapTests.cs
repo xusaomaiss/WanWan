@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using Wanwan.Runtime;
@@ -56,6 +57,63 @@ namespace Wanwan.Tests.EditMode
             Assert.That(buttonTop, Is.LessThan(panelBottom - minGap));
         }
 
+        [Test]
+        public void VictoryScreen_UsesAiSupplyBackdropResource()
+        {
+            Assert.That(GameOverBootstrap.VictorySupplyScreenResourcePath, Is.EqualTo("RaidenArt/Cinematics/victory_supply_screen_ai"));
+            Assert.That(Resources.Load<Texture2D>(GameOverBootstrap.VictorySupplyScreenResourcePath), Is.Not.Null);
+        }
+
+        [Test]
+        public void VictoryMountShop_CreatesVerticalRows()
+        {
+            GameObject host = BuildVictoryGameOver();
+            try
+            {
+                RectTransform missile = GameObject.Find("导弹舱MountRow").GetComponent<RectTransform>();
+                RectTransform drone = GameObject.Find("防卫机MountRow").GetComponent<RectTransform>();
+                RectTransform shield = GameObject.Find("护盾发生器MountRow").GetComponent<RectTransform>();
+
+                Assert.That(missile.anchorMin.x, Is.EqualTo(drone.anchorMin.x).Within(0.001f));
+                Assert.That(drone.anchorMin.x, Is.EqualTo(shield.anchorMin.x).Within(0.001f));
+                Assert.That(missile.anchorMin.y, Is.GreaterThan(drone.anchorMin.y));
+                Assert.That(drone.anchorMin.y, Is.GreaterThan(shield.anchorMin.y));
+                Assert.That(GameObject.Find("导弹舱BuyButton"), Is.Not.Null);
+                Assert.That(GameObject.Find("防卫机BuyButton"), Is.Not.Null);
+                Assert.That(GameObject.Find("护盾发生器BuyButton"), Is.Not.Null);
+            }
+            finally
+            {
+                CleanupGameOver(host);
+            }
+        }
+
+        [Test]
+        public void VictoryMountShop_BuyButtonAddsMoreOfSameMount()
+        {
+            MountConfig missile = MountConfig.Get(MountType.MissilePod);
+            GameObject host = BuildVictoryGameOver(missile.Cost * 2);
+            try
+            {
+                Button buyButton = GameObject.Find("导弹舱BuyButton").GetComponent<Button>();
+
+                buyButton.onClick.Invoke();
+                Assert.That(SessionState.PendingMountUnits, Is.EqualTo(missile.PurchaseUnits));
+                Assert.That(SessionState.SpendableScore, Is.EqualTo(missile.Cost));
+                Assert.That(buyButton.GetComponentInChildren<Text>().text, Is.EqualTo("加购"));
+
+                buyButton.onClick.Invoke();
+                Assert.That(SessionState.PendingMount, Is.EqualTo(MountType.MissilePod));
+                Assert.That(SessionState.PendingMountUnits, Is.EqualTo(missile.PurchaseUnits * 2));
+                Assert.That(SessionState.SpendableScore, Is.EqualTo(0));
+                Assert.That(buyButton.interactable, Is.False);
+            }
+            finally
+            {
+                CleanupGameOver(host);
+            }
+        }
+
         private static void AssertSingleLineText(Button button, string expected)
         {
             Text text = button.GetComponentInChildren<Text>();
@@ -63,6 +121,37 @@ namespace Wanwan.Tests.EditMode
             Assert.That(text.text, Is.EqualTo(expected));
             Assert.That(text.horizontalOverflow, Is.EqualTo(HorizontalWrapMode.Overflow));
             Assert.That(text.verticalOverflow, Is.EqualTo(VerticalWrapMode.Overflow));
+        }
+
+        private static GameObject BuildVictoryGameOver(int spendableScore = 100000)
+        {
+            SessionState.ResetProgress();
+            SessionState.AddSpendableScore(spendableScore);
+            SessionState.CommitRunScore(0, true);
+            GameObject host = new GameObject("GameOverBootstrapHost");
+            GameOverBootstrap bootstrap = host.AddComponent<GameOverBootstrap>();
+            typeof(GameOverBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bootstrap, null);
+            return host;
+        }
+
+        private static void CleanupGameOver(GameObject host)
+        {
+            foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
+                Object.DestroyImmediate(canvas.gameObject);
+            }
+
+            foreach (Camera camera in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            {
+                Object.DestroyImmediate(camera.gameObject);
+            }
+
+            if (host != null)
+            {
+                Object.DestroyImmediate(host);
+            }
+
+            SessionState.ResetProgress();
         }
     }
 }

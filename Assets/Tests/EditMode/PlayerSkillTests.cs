@@ -47,6 +47,21 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void ShipDefinition_AllSelectableShipsHaveUiStats()
+        {
+            foreach (PlayerShipType shipType in MenuBootstrap.ShipSelectRoster)
+            {
+                var definition = ShipDefinition.Get(shipType);
+                Assert.That(definition.DisplayName, Is.Not.Empty, shipType.ToString());
+                Assert.That(definition.MainWeapon, Is.Not.Empty, shipType.ToString());
+                Assert.That(definition.PowerStars, Is.InRange(1, 5), shipType.ToString());
+                Assert.That(definition.AttackStars, Is.InRange(1, 5), shipType.ToString());
+                Assert.That(definition.DefenseStars, Is.InRange(1, 5), shipType.ToString());
+                Assert.That(definition.SpeedStars, Is.InRange(1, 5), shipType.ToString());
+            }
+        }
+
+        [Test]
         public void GameManager_HasApplyShipSkillMethod()
         {
             var method = typeof(GameManager).GetMethod("ApplyShipSkill",

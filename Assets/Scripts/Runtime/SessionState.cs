@@ -20,7 +20,7 @@ namespace Wanwan.Runtime
         private const string SpendableScoreKey = "wanwan.spendable_score";
         private const string PendingMountKey = "wanwan.pending_mount";
         private const string PendingMountUnitsKey = "wanwan.pending_mount_units";
-        private const int MaxPendingMountUnits = 99;
+        private const int MaxPendingMountUnits = 999;
 
         public static int LastScore { get; private set; }
         public static int HighScore => PlayerPrefs.GetInt(HighScoreKey, 0);
@@ -38,6 +38,7 @@ namespace Wanwan.Runtime
         public static int SpendableScore => PlayerPrefs.GetInt(SpendableScoreKey, 0);
         public static MountType PendingMount => (MountType)PlayerPrefs.GetInt(PendingMountKey, (int)MountType.None);
         public static int PendingMountUnits => PlayerPrefs.GetInt(PendingMountUnitsKey, 0);
+        public static int MaxStoredPendingMountUnits => MaxPendingMountUnits;
         public static bool LastRunWasVictory { get; private set; }
         public static string LastRunRating { get; private set; } = "乙";
         public static string LastRunSummary { get; private set; } = string.Empty;
@@ -142,6 +143,22 @@ namespace Wanwan.Runtime
 
         public static bool TryPurchaseMount(MountType type)
         {
+            if (!CanPurchaseMount(type))
+            {
+                return false;
+            }
+
+            MountConfig config = MountConfig.Get(type);
+
+            PlayerPrefs.SetInt(SpendableScoreKey, SpendableScore - config.Cost);
+            PlayerPrefs.SetInt(PendingMountKey, (int)type);
+            PlayerPrefs.SetInt(PendingMountUnitsKey, Mathf.Min(MaxPendingMountUnits, PendingMountUnits + config.PurchaseUnits));
+            PlayerPrefs.Save();
+            return true;
+        }
+
+        public static bool CanPurchaseMount(MountType type)
+        {
             MountConfig config = MountConfig.Get(type);
             MountType pendingMount = PendingMount;
             if (type == MountType.None || config.Cost <= 0 || config.PurchaseUnits <= 0 || SpendableScore < config.Cost)
@@ -154,11 +171,7 @@ namespace Wanwan.Runtime
                 return false;
             }
 
-            PlayerPrefs.SetInt(SpendableScoreKey, SpendableScore - config.Cost);
-            PlayerPrefs.SetInt(PendingMountKey, (int)type);
-            PlayerPrefs.SetInt(PendingMountUnitsKey, Mathf.Min(MaxPendingMountUnits, PendingMountUnits + config.PurchaseUnits));
-            PlayerPrefs.Save();
-            return true;
+            return PendingMountUnits + config.PurchaseUnits <= MaxPendingMountUnits;
         }
 
         public static MountType ConsumePendingMountForRun()

@@ -5,12 +5,13 @@ namespace Wanwan.Runtime
 {
     public class GameOverBootstrap : MonoBehaviour
     {
+        public const string VictorySupplyScreenResourcePath = "RaidenArt/Cinematics/victory_supply_screen_ai";
         public static readonly Vector2 ResultActionButtonSize = new Vector2(360f, 96f);
         public static readonly Vector2 LegacyResultActionButtonSize = new Vector2(390f, 118f);
-        public const float VictoryActionButtonY = -660f;
+        public const float VictoryActionButtonY = -720f;
         public const float DefaultActionButtonY = -480f;
-        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.05f, 0.20f);
-        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.95f, 0.44f);
+        public static readonly Vector2 MountShopAnchorMin = new Vector2(0.06f, 0.235f);
+        public static readonly Vector2 MountShopAnchorMax = new Vector2(0.94f, 0.61f);
 
         private Text nameText;
         private Text mountScoreText;
@@ -63,7 +64,9 @@ namespace Wanwan.Runtime
             Canvas canvas = UiFactory.CreateCanvas("GameOverCanvas");
             bool victory = SessionState.LastRunWasVictory;
             Image background = UiFactory.CreatePanel(canvas.transform, "Background", Color.white, Vector2.zero, Vector2.one);
-            background.sprite = RuntimeSpriteFactory.GetSciFiBackgroundSprite(victory ? SciFiBackgroundLayerKind.Nebula : SciFiBackgroundLayerKind.Deep);
+            background.sprite = victory
+                ? LoadResourceSprite(VictorySupplyScreenResourcePath, RuntimeSpriteFactory.GetSciFiBackgroundSprite(SciFiBackgroundLayerKind.Nebula))
+                : RuntimeSpriteFactory.GetSciFiBackgroundSprite(SciFiBackgroundLayerKind.Deep);
             background.preserveAspect = false;
             BuildFloatingGameOver(background.transform, victory);
         }
@@ -78,25 +81,37 @@ namespace Wanwan.Runtime
                 ? $"第{SessionState.CurrentStageNumber}关突破"
                 : $"第{SessionState.CurrentStageNumber}关 {SessionState.CurrentStage.Name}";
 
-            // Result panel decoration
-            Color resultPanelTint = victory ? new Color(0.6f, 0.9f, 1f, 0.20f) : new Color(1f, 0.3f, 0.2f, 0.20f);
-            Image resultPanel = UiFactory.CreatePanel(background, "ResultPanelSprite", resultPanelTint, new Vector2(0.08f, 0.28f), new Vector2(0.92f, 0.72f));
-            resultPanel.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.ResultPanel);
-            resultPanel.raycastTarget = false;
-            UiFactory.CreatePanel(background, "ResultDim", new Color(0.01f, 0.01f, 0.03f, victory ? 0.5f : 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
-            UiFactory.CreatePanel(background, "ResultTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
+            if (!victory)
+            {
+                Image resultPanel = UiFactory.CreatePanel(background, "ResultPanelSprite", new Color(1f, 0.3f, 0.2f, 0.20f), new Vector2(0.08f, 0.28f), new Vector2(0.92f, 0.72f));
+                resultPanel.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.ResultPanel);
+                resultPanel.raycastTarget = false;
+                UiFactory.CreatePanel(background, "ResultDim", new Color(0.01f, 0.01f, 0.03f, 0.58f), Vector2.zero, Vector2.one).raycastTarget = false;
+                UiFactory.CreatePanel(background, "ResultTopShade", new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, 0.56f), Vector2.one).raycastTarget = false;
+                UiFactory.CreatePanel(background, "ResultBottomShade", new Color(0f, 0f, 0f, 0.34f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
+            }
 
-            Text shadow = UiFactory.CreateArcadeLabel(background, titleText, 92, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.86f), FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), new Vector2(6f, -8f));
+            Vector2 titleMin = victory ? new Vector2(0.08f, 0.75f) : new Vector2(0.08f, 0.6f);
+            Vector2 titleMax = victory ? new Vector2(0.92f, 0.86f) : new Vector2(0.92f, 0.74f);
+            Vector2 stageMin = victory ? new Vector2(0.08f, 0.635f) : new Vector2(0.08f, 0.52f);
+            Vector2 stageMax = victory ? new Vector2(0.92f, 0.675f) : new Vector2(0.92f, 0.59f);
+            Vector2 scoreMin = victory ? new Vector2(0.12f, 0.575f) : new Vector2(0.12f, 0.48f);
+            Vector2 scoreMax = victory ? new Vector2(0.88f, 0.625f) : new Vector2(0.88f, 0.56f);
+            int titleSize = victory ? 84 : 92;
+            int stageSize = victory ? 30 : 34;
+            int scoreSize = victory ? 38 : 46;
+
+            Text shadow = UiFactory.CreateArcadeLabel(background, titleText, titleSize, TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 0.86f), FontStyle.Bold, titleMin, titleMax, new Vector2(6f, -8f));
             UiFactory.ConfigureSingleLine(shadow);
             shadow.raycastTarget = false;
-            Text title = UiFactory.CreateArcadeLabel(background, titleText, 92, TextAnchor.MiddleCenter, titleColor, FontStyle.Bold, new Vector2(0.08f, 0.6f), new Vector2(0.92f, 0.74f), Vector2.zero);
+            Text title = UiFactory.CreateArcadeLabel(background, titleText, titleSize, TextAnchor.MiddleCenter, titleColor, FontStyle.Bold, titleMin, titleMax, Vector2.zero);
             UiFactory.ConfigureSingleLine(title);
             title.raycastTarget = false;
             Outline titleOutline = title.gameObject.AddComponent<Outline>();
             titleOutline.effectColor = outlineColor;
             titleOutline.effectDistance = new Vector2(3f, -3f);
 
-            Text stage = UiFactory.CreateArcadeLabel(background, stageLine, 34, TextAnchor.MiddleCenter, detailColor, FontStyle.Bold, new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.59f), Vector2.zero);
+            Text stage = UiFactory.CreateArcadeLabel(background, stageLine, stageSize, TextAnchor.MiddleCenter, detailColor, FontStyle.Bold, stageMin, stageMax, Vector2.zero);
             UiFactory.ConfigureSingleLine(stage);
             stage.raycastTarget = false;
             Outline stageOutline = stage.gameObject.AddComponent<Outline>();
@@ -105,7 +120,7 @@ namespace Wanwan.Runtime
 
             scoreCounter = new ScoreCounter();
             scoreCounter.Start(SessionState.LastScore);
-            scoreCounterText = UiFactory.CreateArcadeLabel(background, "本局得分 0000000", 46, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.12f, 0.48f), new Vector2(0.88f, 0.56f), Vector2.zero);
+            scoreCounterText = UiFactory.CreateArcadeLabel(background, "本局得分 0000000", scoreSize, TextAnchor.MiddleCenter, new Color(0.95f, 0.98f, 1f), FontStyle.Bold, scoreMin, scoreMax, Vector2.zero);
             Outline scoreOutline = scoreCounterText.gameObject.AddComponent<Outline>();
             scoreOutline.effectColor = new Color(0f, 0f, 0f, 0.72f);
             scoreOutline.effectDistance = new Vector2(2f, -2f);
@@ -122,44 +137,53 @@ namespace Wanwan.Runtime
             primaryButton.onClick.AddListener(victory ? SceneNavigator.LoadNextStage : SceneNavigator.LoadGame);
             Button menuButton = UiFactory.CreateSciFiWideButton(background, "返回主页", ArcadeTheme.EnergyYellow, actionButtonSize, new Vector2(210f, actionButtonY));
             menuButton.onClick.AddListener(SceneNavigator.LoadMenu);
-
-            // Bottom shade must be created after buttons so it renders behind them
-            UiFactory.CreatePanel(background, "ResultBottomShade", new Color(0f, 0f, 0f, 0.34f), Vector2.zero, new Vector2(1f, 0.36f)).raycastTarget = false;
         }
 
         private void BuildMountShop(Transform background, Color detailColor)
         {
-            Image panel = UiFactory.CreatePixelPanel(background, "MountShopPanel", new Color(0.025f, 0.035f, 0.08f, 0.86f), ArcadeTheme.EnergyYellow, MountShopAnchorMin, MountShopAnchorMax, new Vector2(5f, 5f));
-            UiFactory.CreateArcadeLabel(panel.transform, "挂载补给", 24, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.035f, 0.76f), new Vector2(0.28f, 0.94f), Vector2.zero);
-            mountScoreText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 20, TextAnchor.MiddleRight, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.42f, 0.77f), new Vector2(0.96f, 0.93f), Vector2.zero);
-            mountStatusText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 16, TextAnchor.MiddleCenter, new Color(0.78f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.18f), Vector2.zero);
+            Image panel = UiFactory.CreatePanel(background, "MountShopPanel", Color.clear, MountShopAnchorMin, MountShopAnchorMax);
+            panel.raycastTarget = false;
+            UiFactory.CreateArcadeLabel(panel.transform, "挂载补给", 23, TextAnchor.MiddleLeft, detailColor, FontStyle.Bold, new Vector2(0.045f, 0.875f), new Vector2(0.32f, 0.98f), Vector2.zero).raycastTarget = false;
+            mountScoreText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 18, TextAnchor.MiddleRight, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.42f, 0.88f), new Vector2(0.94f, 0.98f), Vector2.zero);
+            mountStatusText = UiFactory.CreateArcadeLabel(panel.transform, string.Empty, 15, TextAnchor.MiddleCenter, new Color(0.78f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.04f, 0.015f), new Vector2(0.96f, 0.09f), Vector2.zero);
 
             MountType[] mounts = MountConfig.GetPlayableMounts();
             for (int i = 0; i < mounts.Length; i++)
             {
                 MountType mount = mounts[i];
                 MountConfig config = MountConfig.Get(mount);
-                float start = 0.03f + (i * 0.315f);
-                float end = start + 0.30f;
-                // Card background
-                // Card dark background for readability
-                UiFactory.CreatePanel(panel.transform, config.DisplayName + "DarkBg", new Color(0.02f, 0.02f, 0.05f, 0.75f), new Vector2(start, 0.22f), new Vector2(end, 0.72f)).raycastTarget = false;
-                Image card = UiFactory.CreateSpritePanel(panel.transform, config.DisplayName + "Card", "UI/hud/mount_card", new Color(0.9f, 0.9f, 1f, 0.50f), new Vector2(start, 0.22f), new Vector2(end, 0.72f));
-                // Mount icon
+                float top = 0.79f - (i * 0.245f);
+                float bottom = top - 0.205f;
+                Image row = UiFactory.CreatePanel(panel.transform, config.DisplayName + "MountRow", new Color(0.015f, 0.025f, 0.05f, 0.48f), new Vector2(0.055f, bottom), new Vector2(0.945f, top));
+                row.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+                row.type = Image.Type.Sliced;
+                row.raycastTarget = false;
+
+                Image accent = UiFactory.CreatePanel(row.transform, "Accent", config.AccentColor, Vector2.zero, new Vector2(0.012f, 1f));
+                accent.raycastTarget = false;
+
                 Sprite iconSprite = GetMountIconSprite(mount);
                 if (iconSprite != null)
                 {
-                    Image icon = UiFactory.CreatePanel(card.transform, config.DisplayName + "Icon", config.AccentColor, new Vector2(0.25f, 0.58f), new Vector2(0.75f, 0.92f));
+                    Image iconBack = UiFactory.CreatePanel(row.transform, config.DisplayName + "IconBack", new Color(0.02f, 0.08f, 0.12f, 0.66f), new Vector2(0.035f, 0.12f), new Vector2(0.205f, 0.88f));
+                    iconBack.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
+                    iconBack.type = Image.Type.Sliced;
+                    iconBack.raycastTarget = false;
+                    Image icon = UiFactory.CreatePanel(iconBack.transform, config.DisplayName + "Icon", config.AccentColor, new Vector2(0.14f, 0.10f), new Vector2(0.86f, 0.90f));
                     icon.sprite = iconSprite;
                     icon.preserveAspect = true;
                     icon.raycastTarget = false;
                 }
-                // Name label
-                UiFactory.CreateArcadeLabel(card.transform, config.DisplayName, 20, TextAnchor.MiddleCenter, config.AccentColor, FontStyle.Bold, new Vector2(0.05f, 0.42f), new Vector2(0.95f, 0.58f), Vector2.zero);
-                // Cost and amount
-                UiFactory.CreateArcadeLabel(card.transform, config.Cost.ToString("00000") + " / +" + config.PurchaseUnits + config.UnitLabel, 14, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.05f, 0.24f), new Vector2(0.95f, 0.40f), Vector2.zero);
-                // Larger buy button
-                Button buyButton = UiFactory.CreateSpriteButton(card.transform, "购买", "UI/button/Button01", config.AccentColor, new Vector2(160f, 52f), new Vector2(0f, -16f));
+
+                UiFactory.CreateArcadeLabel(row.transform, config.DisplayName, 23, TextAnchor.MiddleLeft, config.AccentColor, FontStyle.Bold, new Vector2(0.245f, 0.54f), new Vector2(0.49f, 0.88f), Vector2.zero).raycastTarget = false;
+                UiFactory.CreateArcadeLabel(row.transform, config.Description, 14, TextAnchor.MiddleLeft, new Color(0.78f, 0.94f, 1f), FontStyle.Bold, new Vector2(0.245f, 0.20f), new Vector2(0.55f, 0.54f), Vector2.zero).raycastTarget = false;
+                UiFactory.CreateArcadeLabel(row.transform, config.Cost.ToString("00000") + " / +" + config.PurchaseUnits + config.UnitLabel, 16, TextAnchor.MiddleLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.55f, 0.50f), new Vector2(0.76f, 0.80f), Vector2.zero).raycastTarget = false;
+                Text owned = UiFactory.CreateArcadeLabel(row.transform, string.Empty, 14, TextAnchor.MiddleLeft, new Color(0.72f, 1f, 0.72f), FontStyle.Bold, new Vector2(0.55f, 0.20f), new Vector2(0.76f, 0.50f), Vector2.zero);
+                owned.gameObject.name = config.DisplayName + "OwnedText";
+                owned.raycastTarget = false;
+
+                Button buyButton = UiFactory.CreateSpriteButton(row.transform, "购买", "UI/button/Button01", config.AccentColor, new Vector2(142f, 50f), new Vector2(315f, 0f));
+                buyButton.gameObject.name = config.DisplayName + "BuyButton";
                 int index = i;
                 buyButton.onClick.AddListener(() => PurchaseMount(mounts[index]));
                 mountButtons[i] = buyButton;
@@ -177,10 +201,18 @@ namespace Wanwan.Runtime
                 case MountType.DefenseDrone:
                     return RuntimeSpriteFactory.GetRaidenFighterJetSprite();
                 case MountType.ShieldEmitter:
-                    return RuntimeSpriteFactory.GetCircleSprite();
+                    return RuntimeSpriteFactory.GetShieldEmitterSprite();
                 default:
                     return null;
             }
+        }
+
+        private static Sprite LoadResourceSprite(string resourcePath, Sprite fallback)
+        {
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+            return texture == null
+                ? fallback
+                : Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 128f);
         }
 
         private void PurchaseMount(MountType mount)
@@ -212,12 +244,20 @@ namespace Wanwan.Runtime
 
                 MountConfig config = MountConfig.Get(mounts[i]);
                 bool selected = pendingMount == mounts[i];
-                bool canBuy = (pendingMount == MountType.None || selected) && SessionState.SpendableScore >= config.Cost;
+                bool canBuy = SessionState.CanPurchaseMount(mounts[i]);
                 mountButtons[i].interactable = canBuy;
                 Text text = mountButtons[i].GetComponentInChildren<Text>();
+                Text owned = FindMountOwnedText(mountButtons[i].transform.parent, config.DisplayName);
+                if (owned != null)
+                {
+                    owned.text = selected
+                        ? "已购 " + SessionState.PendingMountUnits + config.UnitLabel
+                        : "未加购";
+                }
+
                 if (selected)
                 {
-                    text.text = canBuy ? "加购" : "不足";
+                    text.text = canBuy ? "加购" : "已满";
                 }
                 else if (pendingMount != MountType.None)
                 {
@@ -228,6 +268,24 @@ namespace Wanwan.Runtime
                     text.text = canBuy ? "购买" : "不足";
                 }
             }
+        }
+
+        private static Text FindMountOwnedText(Transform row, string displayName)
+        {
+            if (row == null)
+            {
+                return null;
+            }
+
+            foreach (Text text in row.GetComponentsInChildren<Text>())
+            {
+                if (text.gameObject.name == displayName + "OwnedText")
+                {
+                    return text;
+                }
+            }
+
+            return null;
         }
 
         private void CycleInitial(int index, int delta)

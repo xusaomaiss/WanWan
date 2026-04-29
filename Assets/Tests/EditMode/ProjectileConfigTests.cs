@@ -82,6 +82,7 @@ namespace Wanwan.Tests.EditMode
                 Assert.That(manager.HasActiveMount, Is.True);
                 Assert.That(manager.TryConsumeMountUnits(4), Is.True);
                 Assert.That(manager.CurrentMountUnits, Is.EqualTo(0));
+                Assert.That(manager.CurrentMount, Is.EqualTo(MountType.None));
                 Assert.That(manager.HasActiveMount, Is.False);
                 Assert.That(manager.TryConsumeMountUnits(1), Is.False);
             }
@@ -106,6 +107,30 @@ namespace Wanwan.Tests.EditMode
                     .Invoke(manager, null);
 
                 Assert.That(manager.CurrentMountUnits, Is.EqualTo(12));
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
+
+        [Test]
+        public void DamageActiveMountAfterHit_ClearsMountWhenAmmoRunsOut()
+        {
+            GameObject gameObject = new GameObject("GameManager");
+            try
+            {
+                GameManager manager = gameObject.AddComponent<GameManager>();
+                typeof(GameManager).GetField("currentMount", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, MountType.MissilePod);
+                typeof(GameManager).GetField("currentMountUnits", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, 1);
+
+                typeof(GameManager)
+                    .GetMethod("DamageActiveMountAfterHit", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(manager, null);
+
+                Assert.That(manager.CurrentMountUnits, Is.EqualTo(0));
+                Assert.That(manager.CurrentMount, Is.EqualTo(MountType.None));
+                Assert.That(manager.HasActiveMount, Is.False);
             }
             finally
             {

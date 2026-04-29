@@ -59,6 +59,22 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void MountSupportResources_UseAiGeneratedSprites()
+        {
+            Texture2D missile = Resources.Load<Texture2D>(RuntimeSpriteFactory.MountMissilePodResourcePath);
+            Texture2D shield = Resources.Load<Texture2D>(RuntimeSpriteFactory.MountShieldEmitterResourcePath);
+
+            Assert.That(missile, Is.Not.Null);
+            Assert.That(shield, Is.Not.Null);
+            Assert.That(missile.width, Is.EqualTo(256));
+            Assert.That(missile.height, Is.EqualTo(512));
+            Assert.That(shield.width, Is.EqualTo(512));
+            Assert.That(shield.height, Is.EqualTo(512));
+            Assert.That(RuntimeSpriteFactory.GetMissileSprite().texture, Is.SameAs(missile));
+            Assert.That(RuntimeSpriteFactory.GetShieldEmitterSprite().texture, Is.SameAs(shield));
+        }
+
+        [Test]
         public void VisualEffectsBudget_ReducesWorkInBatterySaverMode()
         {
             Assert.That(VisualEffectsBudget.GetGroundDetailTileLimit(VisualEffectsQuality.Full), Is.GreaterThan(VisualEffectsBudget.GetGroundDetailTileLimit(VisualEffectsQuality.BatterySaver)));

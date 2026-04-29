@@ -42,8 +42,17 @@ def main() -> None:
         "Assets/Resources/RaidenArt/Backgrounds/stage_07_space_station.png",
         "Assets/Resources/RaidenArt/Backgrounds/stage_08_alien_base.png",
         "Assets/Resources/RaidenArt/Cinematics/menu_storm_title_ai.png",
+        "Assets/Resources/MainMenu/Backgrounds/bg_start_screen_ai.png",
+        "Assets/Resources/MainMenu/Buttons/button_start_game.png",
+        "Assets/Resources/MainMenu/Buttons/button_exit.png",
+        "Assets/Resources/MainMenu/Icons/icon_settings_large.png",
+        "Assets/Resources/MainMenu/Icons/icon_leaderboard_large.png",
+        "Assets/Resources/MainMenu/Icons/icon_ship_select_large.png",
+        "Assets/Resources/RaidenArt/Cinematics/victory_supply_screen_ai.png",
         "Assets/Resources/RaidenArt/Cinematics/launch_weather_intro_ai.png",
         "Assets/Resources/RaidenArt/Ships/fighter_jet_128.png",
+        "Assets/Resources/RaidenArt/Mounts/mount_missile_pod_ai.png",
+        "Assets/Resources/RaidenArt/Mounts/mount_shield_emitter_ai.png",
         "Assets/Resources/RaidenArt/Effects/bullet_spread_arcade.png",
         "Assets/Resources/RaidenArt/Effects/bullet_laser_arcade.png",
         "Assets/Resources/RaidenArt/Effects/bullet_homing_arcade.png",
@@ -97,12 +106,16 @@ def main() -> None:
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
 
     runtime_sprite_factory = (ROOT / "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs").read_text(encoding="utf-8")
-    for token in ("MenuStormTitleResourcePath", "RaidenFighterJetResourcePath", "GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
+    for token in ("MenuStormTitleResourcePath", "RaidenFighterJetResourcePath", "MountMissilePodResourcePath", "MountShieldEmitterResourcePath", "GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
         check(token in runtime_sprite_factory, f"RuntimeSpriteFactory.cs missing token: {token}")
 
     session_state = (ROOT / "Assets/Scripts/Runtime/SessionState.cs").read_text(encoding="utf-8")
     for token in ("VisualEffectsQuality", "SetVisualEffectsQuality", "wanwan.visual_effects_quality"):
         check(token in session_state, f"SessionState.cs missing token: {token}")
+
+    game_over_bootstrap = (ROOT / "Assets/Scripts/Bootstrap/GameOverBootstrap.cs").read_text(encoding="utf-8")
+    for token in ("VictorySupplyScreenResourcePath", "victory_supply_screen_ai"):
+        check(token in game_over_bootstrap, f"GameOverBootstrap.cs missing token: {token}")
 
     print("Unity project validation passed.")
 

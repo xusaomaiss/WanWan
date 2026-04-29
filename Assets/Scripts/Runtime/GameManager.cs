@@ -361,6 +361,7 @@ namespace Wanwan.Runtime
             {
                 currentMountUnits = 0;
                 ShowStageBanner(MountConfig.Get(currentMount).DisplayName + " 弹药耗尽");
+                currentMount = MountType.None;
             }
 
             if (uiController != null)
@@ -385,9 +386,16 @@ namespace Wanwan.Runtime
             if (shieldCharges > 0)
             {
                 shieldCharges--;
+                if (currentMount == MountType.ShieldEmitter && shieldCharges <= 0)
+                {
+                    currentMount = MountType.None;
+                }
                 invulnerabilityState.Trigger(0.45f);
                 ShowStageBanner("护盾吸收");
-                uiController.RefreshHud();
+                if (uiController != null)
+                {
+                    uiController.RefreshHud();
+                }
                 return;
             }
 
@@ -450,7 +458,16 @@ namespace Wanwan.Runtime
 
             int lostUnits = Mathf.Clamp(Mathf.CeilToInt(currentMountUnits * 0.25f), 1, currentMountUnits);
             currentMountUnits -= lostUnits;
-            ShowStageBanner(MountConfig.Get(currentMount).DisplayName + " 受损 -" + lostUnits + MountConfig.Get(currentMount).UnitLabel);
+            MountConfig config = MountConfig.Get(currentMount);
+            if (currentMountUnits <= 0)
+            {
+                currentMountUnits = 0;
+                ShowStageBanner(config.DisplayName + " 弹药耗尽");
+                currentMount = MountType.None;
+                return;
+            }
+
+            ShowStageBanner(config.DisplayName + " 受损 -" + lostUnits + config.UnitLabel);
         }
 
         public void SetStageState(StagePhase phase, string label)
