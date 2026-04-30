@@ -86,7 +86,7 @@ namespace Wanwan.Runtime
             PlayerShipType.Azure
         };
 
-        private static readonly Vector2 ShipPreviewSize = new Vector2(205f, 168f);
+        private static readonly Vector2 ShipPreviewSize = new Vector2(138f, 112f);
 
         private Canvas canvas;
         private MenuUiState state;
@@ -587,6 +587,8 @@ namespace Wanwan.Runtime
             image.color = Color.Lerp(Color.white, tint, 0.62f);
             image.preserveAspect = true;
             image.raycastTarget = false;
+            image.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            image.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             image.rectTransform.sizeDelta = ShipPreviewSize;
             image.rectTransform.anchoredPosition = new Vector2(rank % 2 == 0 ? -8f : 8f, rank == 5 ? -10f : 0f);
             image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, rank == 3 ? -8f : rank == 4 ? 7f : rank == 5 ? -14f : 0f);
