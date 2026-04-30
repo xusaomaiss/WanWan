@@ -374,7 +374,7 @@ namespace Wanwan.Runtime
 
             Sprite sprite = gameManager.CurrentMount == MountType.MissilePod
                 ? RuntimeSpriteFactory.GetMissileSprite()
-                : RuntimeSpriteFactory.GetRaidenFighterJetSprite();
+                : RuntimeSpriteFactory.GetDefenseDroneSprite();
             Color color = MountConfig.Get(gameManager.CurrentMount).AccentColor;
             CreateMountVisual(0, "LeftMount", new Vector3(-0.72f, -0.08f, 0f), sprite, color);
             CreateMountVisual(1, "RightMount", new Vector3(0.72f, -0.08f, 0f), sprite, color);
@@ -392,8 +392,8 @@ namespace Wanwan.Runtime
             renderer.color = Color.Lerp(Color.white, color, 0.64f);
             renderer.sortingOrder = 11;
             Vector2 size = renderer.sprite.bounds.size;
-            float targetWidth = gameManager.CurrentMount == MountType.MissilePod ? 0.32f : 0.54f;
-            float targetHeight = gameManager.CurrentMount == MountType.MissilePod ? 0.68f : 0.54f;
+            float targetWidth = gameManager.CurrentMount == MountType.MissilePod ? 0.32f : 0.42f;
+            float targetHeight = gameManager.CurrentMount == MountType.MissilePod ? 0.68f : 0.42f;
             mountObject.transform.localScale = new Vector3(targetWidth / size.x, targetHeight / size.y, 1f);
             mountRenderers[index] = renderer;
         }

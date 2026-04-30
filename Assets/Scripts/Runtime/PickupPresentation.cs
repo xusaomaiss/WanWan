@@ -10,5 +10,8 @@ namespace Wanwan.Runtime
         public const float AmmoPackColliderRadius = 0.46f;
         public const float PowerCapsuleColliderRadius = 0.46f;
         public const float HealthPickupColliderRadius = 0.46f;
+        public const float PickupMagnetRadiusWorld = 1.35f;
+        public const float PickupCollectRadiusWorld = 0.34f;
+        public const float PickupMagnetSpeedWorldPerSecond = 7.5f;
     }
 }

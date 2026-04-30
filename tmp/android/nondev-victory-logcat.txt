@@ -1,0 +1,361 @@
+--------- beginning of main
+04-30 14:17:03.797 E/Zygote  (10170): process_name_ptr:10170 com.mark.wanwan.dropblaster
+04-30 14:17:03.797 E/Zygote  (10170): SetMemoryProtected process_name_ptr:10170 com.mark.wanwan.dropblaster
+04-30 14:17:03.811 I/wan.dropblaster(10170): Using CollectorTypeCC GC.
+04-30 14:17:03.814 E/wan.dropblaster(10170): Not starting debugger since process cannot load the jdwp agent.
+04-30 14:17:03.821 D/nativeloader(10170): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+04-30 14:17:03.840 I/MessageMonitor(10170): Load libmiui_runtime
+--------- beginning of system
+04-30 14:17:03.849 D/MiuiDownscaleImpl(10170): set override inverted scale : 1.0
+04-30 14:17:03.850 I/JavaheapMonitor(10170): Java heap monitor start.
+04-30 14:17:03.850 D/MiuiMonitorThread(10170): Shared singleton Thread for stability monitor start
+04-30 14:17:03.852 D/AppScoutStateMachine(10170): 10170-ScoutStateMachinecreated
+04-30 14:17:03.858 D/ActivityThread(10170): setEmbeddedParam packageName=com.mark.wanwan.dropblaster processName=com.mark.wanwan.dropblaster isEmbedded=false isIsolated=false
+04-30 14:17:03.861 D/nativeloader(10170): Configuring clns-7 for other apk /data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/lib/arm64:/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.mark.wanwan.dropblaster
+04-30 14:17:03.863 I/Perf    (10170): Connecting to perf service.
+04-30 14:17:03.864 V/GraphicsEnvironment(10170): Currently set values for:
+04-30 14:17:03.864 V/GraphicsEnvironment(10170):   angle_gl_driver_selection_pkgs=[]
+04-30 14:17:03.864 V/GraphicsEnvironment(10170):   angle_gl_driver_selection_values=[]
+04-30 14:17:03.864 V/GraphicsEnvironment(10170): Global.Settings values are invalid: number of packages: 0, number of values: 0
+04-30 14:17:03.864 V/GraphicsEnvironment(10170): App is not on the allowlist for updatable production driver.
+04-30 14:17:03.866 I/ActivityThread(10170): TrafficStats init done
+04-30 14:17:03.868 I/ForceDarkHelperStubImpl(10170): initialize for com.mark.wanwan.dropblaster , ForceDarkOrigin
+04-30 14:17:03.869 D/nativeloader(10170): Load libforcedarkimpl.so using system ns (caller=/system_ext/framework/miui-framework.jar): ok
+04-30 14:17:03.869 D/HWUI    (10170): JNI_OnLoad success
+04-30 14:17:03.869 I/MiuiForceDarkConfig(10170): setConfig density:2.750000, mainRule:0, secondaryRule:0, tertiaryRule:0
+04-30 14:17:03.871 I/ActivityThread(10170): Miui Feature Init done
+04-30 14:17:03.879 D/nativeloader(10170): Load /data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/lib/arm64/libgame.so using ns clns-7 from class loader (caller=/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk): ok
+04-30 14:17:03.881 D/AppCompatDelegate(10170): Checking for metadata for AppLocalesMetadataHolderService : Service not found
+04-30 14:17:03.889 D/MiuiMultiWindowUtils(10170): freeform resolution args raw data:{  "wide_default":{    "freeform_args": {        "vertical_portrait":{"aspect_ratio":0.626, "original_ratio":0.5643,"original_scale":0.74,"top_margin":0.168,"left_margin":0.484},        "horizontal_portrait":{"aspect_ratio":0.626, "original_ratio":0.5643,"original_scale":0.74,"top_margin":0.1222,"left_margin":0.59745},        "vertical_landscape":{"aspect_ratio":1.6, "original_ratio":1,"original_scale":0.604,"top_margin":0.2596,"left_margin":0.2624},        "horizontal_landscape":{"aspect_ratio":1.6, "original_ratio":1,"original_scale":0.604,"top_margin":0.213,"left_margin":0.3758}    },    "mini_freeform_args":{        "vertical_portrait":{"original_ratio":0.147},        "horizontal_portrait":{"original_ratio":0.147},        "vertical_landscape":{"original_ratio":0.165},        "horizontal_landscape":{"original_ratio":0.165}    }  },  "narrow_default": {    "freeform_args": {        "vertical_portrait":{"aspect_ratio":0.626, "original_ratio":1,"original_scale":0.74,"top_margin":0.0753,"left_margin":-1},        "horizontal_portrait":{"aspect_ratio":0.626, "original_ratio":1,"original_scale":0.5756,"top_margin":-1,"left_margin":0.0753},        "vertical_landscape":{"aspect_ratio":1.6, "original_ratio":0.6847,"original_scale":0.587,"top_margin":0.0753,"left_margin":-1},        "horizontal_landscape":{"aspect_ratio":1.6, "original_ratio":0.6847,"original_scale":0.587,"top_margin":-1,"left_margin":0.0753}    },    "mini_freeform_args":{        "vertical_portrait":{"original_ratio":0.26},        "horizontal_portrait":{"original_ratio":0.26},        "vertical_landscape":{"original_ratio":0.293},        "horizontal_landscape":{"original_ratio":0.293}    }  },  "regular_default": {    "freeform_args": {      "vertical_portrait":{"aspect_ratio":0.625, "original_ratio":1,"original_scale":0.7,"top_margin":0.109,"left_margin":-1},      "horizontal_portrait":{"aspect_ratio":0.6667, "original_ratio":1,"original_scale":0.6102,"top_margin":-1,"left_margin":0.026},      "vertical_landscape":{"aspect_ratio":1.6, "original_ratio":1,"original_scale":0.4244,"top_margin":0.109,"left_margin":-1},      "horizontal_landscape":{"aspect_ratio":1.6, "original_ratio":1,"original_scale":0.4244,"top_margin":-1,"left_margin":0.026}    },    "mini_freeform_args":{      "vertical_portrait":{"original_ratio":0.25},      "horizontal_portrait":{"original_ratio":0.25},      "vertical_landscape":{"original_ratio":0.25},      "horizontal_landscape":{"original_ratio":0.25}    }  },  "pad_default": {    "freeform_args": {      "vertical_portrait":{"aspect_ratio":0.5625, "original_ratio":0.375,"original_scale":0.835,"top_margin":0.049,"left_margin":0.2775},      "horizontal_portrait":{"aspect_ratio":0.5625, "original_ratio":0.375,"original_scale":0.835,"top_margin":-1,"left_margin":0.6525},      "vertical_landscape":{"aspect_ratio":-1, "original_ratio":1,"original_scale":0.468,"top_margin":0.049,"left_margin":-1},      "horizontal_landscape":{"aspect_ratio":-1, "original_ratio":1,"original_scale":0.468,"top_margin":-1,"left_margin":0.4976}    },    "mini_freeform_args":{      "vertical_portrait":{"original_ratio":0.144},      "horizontal_portrait":{"original_ratio":0.144},      "vertical_landscape":{"original_ratio":0.2},      "horizontal_landscape":{"original_ratio":0.2}    }  }}
+04-30 14:17:03.889 D/MiuiMultiWindowUtils(10170): initFreeFormResolutionArgs failed, device is fuxi
+04-30 14:17:03.889 D/IS_CTS_MODE(10170): false
+04-30 14:17:03.889 D/MULTI_WINDOW_SWITCH_ENABLED(10170): false
+04-30 14:17:03.890 D/gti.InputConnection(10170): InputConnection created
+04-30 14:17:03.896 D/nativeloader(10170): Load /data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/lib/arm64/libmain.so using ns clns-7 from class loader (caller=/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk): ok
+04-30 14:17:03.910 I/IL2CPP  (10170): JNI_OnLoad
+04-30 14:17:03.910 V/Unity   (10170): Context Type: GameActivity
+04-30 14:17:03.916 I/GameActivity(10170): Looking for library libgame.so
+04-30 14:17:03.916 I/GameActivity(10170): Found library libgame.so. Loading...
+04-30 14:17:03.917 D/GameActivity(10170): GameActivity_register
+04-30 14:17:03.917 D/GameActivity(10170): SDK version: 35
+04-30 14:17:03.917 I/Unity   (10170): UnityApplication::CreateInstance
+04-30 14:17:03.917 I/Unity   (10170): GameActivity Package Version '3.0.5'
+04-30 14:17:03.918 I/Unity   (10170): Starting Game Loop
+04-30 14:17:03.924 I/Unity   (10170): Handle cmd APP_CMD_START(11)
+04-30 14:17:03.921 W/wan.dropblaster(10170): type=1400 audit(0.0:55355): avc:  denied  { read } for  name="u:object_r:vendor_displayfeature_prop:s0" dev="tmpfs" ino=476 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:vendor_displayfeature_prop:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:03.928 W/libc    (10170): Access denied finding property "ro.vendor.df.effect.conflict"
+04-30 14:17:03.928 D/nativeloader(10170): Configuring clns-8 for other apk /system_ext/app/miuisystem/miuisystem.apk. target_sdk_version=34, uses_libraries=ALL, library_path=/product/app/ContentCatcherOS2/lib/arm64:/product/app/ContentCatcherOS2/ContentCatcherOS2.apk!/lib/arm64-v8a:/system_ext/priv-app/RtMiCloudSDK/RtMiCloudSDK.apk!/lib/arm64-v8a:/system_ext/app/miuisystem/miuisystem.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+04-30 14:17:03.928 D/nativeloader(10170): Extending system_exposed_libraries: libbinauralrenderer_wrapper.qti.so:libhoaeffects.qti.so:libmisys_jni.xiaomi.so:libpag.hyperos.so:libffavc.hyperos.so:libxiaomi_modemdumpsdx55_jni.modem.so:libxiaomi_modemdump_jni.modem.so:libmodemsmartengine_jni.modem.so:libupdateprof.qti.so:libthermalclient.qti.so:libdiag_system.qti.so:libqape.qti.so:libqesdk_ndk_platform.qti.so:liblistenjni.qti.so
+04-30 14:17:03.930 D/nativeloader(10170): Configuring clns-9 for other apk /system_ext/priv-app/RtMiCloudSDK/RtMiCloudSDK.apk. target_sdk_version=34, uses_libraries=ALL, library_path=/product/app/ContentCatcherOS2/lib/arm64:/product/app/ContentCatcherOS2/ContentCatcherOS2.apk!/lib/arm64-v8a:/system_ext/priv-app/RtMiCloudSDK/RtMiCloudSDK.apk!/lib/arm64-v8a:/system_ext/app/miuisystem/miuisystem.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand
+04-30 14:17:03.930 D/nativeloader(10170): Extending system_exposed_libraries: libbinauralrenderer_wrapper.qti.so:libhoaeffects.qti.so:libmisys_jni.xiaomi.so:libpag.hyperos.so:libffavc.hyperos.so:libxiaomi_modemdumpsdx55_jni.modem.so:libxiaomi_modemdump_jni.modem.so:libmodemsmartengine_jni.modem.so:libupdateprof.qti.so:libthermalclient.qti.so:libdiag_system.qti.so:libqape.qti.so:libqesdk_ndk_platform.qti.so:liblistenjni.qti.so
+04-30 14:17:03.930 D/ApplicationLoaders(10170): Returning zygote-cached class loader: /system/framework/org.apache.http.legacy.jar
+04-30 14:17:03.930 D/ApplicationLoaders(10170): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+04-30 14:17:03.930 D/ApplicationLoaders(10170): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+04-30 14:17:03.932 D/SecurityManager(10170): checkAccessControl flag0
+04-30 14:17:03.932 I/Unity   (10170): Handle cmd APP_CMD_RESUME(12)
+04-30 14:17:03.932 D/nativeloader(10170): InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-aarch64-android.so:libclang_rt.asan-arm-android.so:libclang_rt.hwasan-aarch64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
+04-30 14:17:03.932 D/nativeloader(10170): Configuring product-clns-10 for unbundled product apk /product/app/ContentCatcherOS2/ContentCatcherOS2.apk. target_sdk_version=34, uses_libraries=, library_path=/product/app/ContentCatcherOS2/lib/arm64:/product/app/ContentCatcherOS2/ContentCatcherOS2.apk!/lib/arm64-v8a:/system_ext/priv-app/RtMiCloudSDK/RtMiCloudSDK.apk!/lib/arm64-v8a:/system_ext/app/miuisystem/miuisystem.apk!/lib/arm64-v8a:/product/lib64:/system/product/lib64, permitted_path=/data:/mnt/expand:/product/lib64:/system/product/lib64
+04-30 14:17:03.933 D/nativeloader(10170): InitVndkspLibrariesProduct: VNDK is deprecated with product
+04-30 14:17:03.934 D/ViewContentFactory(10170): initViewContentFetcherClass
+04-30 14:17:03.934 D/ViewContentFactory(10170): getInterceptorPackageInfo
+04-30 14:17:03.934 D/ViewContentFactory(10170): getInitialApplication took 0ms
+04-30 14:17:03.934 D/ViewContentFactory(10170): packageInfo.packageName: com.miui.contentcatcher
+04-30 14:17:03.935 D/ViewContentFactory(10170): initViewContentFetcherClass took 0ms
+04-30 14:17:03.935 I/ContentCatcher(10170): ViewContentFetcher : ViewContentFetcher
+04-30 14:17:03.935 D/ViewContentFactory(10170): createInterceptor took 0ms
+04-30 14:17:03.935 E/ContentCatcherManager(10170): failed to get ContentCatcherService.
+04-30 14:17:03.935 E/ContentCatcherManager(10170): failed to get ContentCatcherService.
+04-30 14:17:03.935 W/ziparchive(10170): Unable to open '/system/framework/QXPerformance.dm': No such file or directory
+04-30 14:17:03.935 W/ziparchive(10170): Unable to open '/system/framework/QXPerformance.dm': No such file or directory
+04-30 14:17:03.936 I/ContentCatcher(10170): SettingTrigger : register screen QA status observer com.unity3d.player.UnityPlayerGameActivity
+04-30 14:17:03.937 I/ContentCatcher(10170): SettingTrigger : register global collect status observer com.unity3d.player.UnityPlayerGameActivity
+04-30 14:17:03.937 D/FramePredict(10170): FramePredict init: false
+04-30 14:17:03.937 D/FramePredict(10170): init success
+04-30 14:17:03.938 W/libc    (10170): Access denied finding property "vendor.boostfwk.frameprefetcher"
+04-30 14:17:03.939 I/ViewRootImpl(10170): com.mark.wanwan.dropblaster/com.unity3d.player.UnityPlayerGameActivity use first frame acceleration
+04-30 14:17:03.939 E/FramePredict(10170): registerContentObserver fail
+04-30 14:17:03.937 W/wan.dropblaster(10170): type=1400 audit(0.0:55356): avc:  denied  { read write } for  name="mi_exception_log" dev="tmpfs" ino=1537 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:device:s0 tclass=chr_file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:03.943 E/FileUtils(10170): err open mi_exception_log errno=13
+04-30 14:17:03.943 E/FileUtils(10170): err write to mi_exception_log
+04-30 14:17:03.944 D/DecorViewImmersiveImpl(10170): onAttachedToWindow:com.mark.wanwan.dropblaster/com.unity3d.player.UnityPlayerGameActivity
+04-30 14:17:03.945 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.945 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.945 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:03.952 D/AChoreographer(10170): Attaching thread to JVM for AChoreographer
+04-30 14:17:03.952 W/libc    (10170): Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+04-30 14:17:03.952 W/libc    (10170): Access denied finding property "vendor.gpp.create_frc_extension"
+04-30 14:17:03.952 I/wan.dropblaster(10170): 【MiuiBoosterUtils】checkUtil disable.
+04-30 14:17:03.952 I/wan.dropblaster(10170): 【MiuiBoosterUtils】package permission check disable.
+04-30 14:17:03.952 I/wan.dropblaster(10170): 【MiuiBoosterUtils】get Service disable.
+04-30 14:17:03.952 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.952 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.952 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:03.953 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.953 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.953 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.953 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.953 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:03.953 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:03.953 I/Unity   (10170): Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
+04-30 14:17:03.953 D/VRI[UnityPlayerGameActivity](10170): vri.reportNextDraw android.view.ViewRootImpl.performTraversals:4972 android.view.ViewRootImpl.doTraversal:3560 android.view.ViewRootImpl$TraversalRunnable.run:11601 android.view.Choreographer$CallbackRecord.run:1747 android.view.Choreographer$CallbackRecord.run:1756 
+04-30 14:17:03.953 D/SurfaceView(10170): UPDATE null, mIsCastMode = false
+04-30 14:17:03.955 W/libc    (10170): Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+04-30 14:17:03.955 W/libc    (10170): Access denied finding property "vendor.gpp.create_frc_extension"
+04-30 14:17:03.955 I/wan.dropblaster(10170): 【MiuiBoosterUtils】checkUtil disable.
+04-30 14:17:03.955 I/wan.dropblaster(10170): 【MiuiBoosterUtils】package permission check disable.
+04-30 14:17:03.955 I/wan.dropblaster(10170): 【MiuiBoosterUtils】get Service disable.
+04-30 14:17:03.955 I/Unity   (10170): Handle cmd APP_CMD_INIT_WINDOW(1)
+04-30 14:17:03.956 D/VRI[UnityPlayerGameActivity](10170): vri.Setup new sync=wmsSync-VRI[UnityPlayerGameActivity]#1
+04-30 14:17:03.963 I/Unity   (10170): MemoryManager: Using 'Dynamic Heap' Allocator.
+04-30 14:17:03.972 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:03.972 D/VRI[UnityPlayerGameActivity](10170): vri.reportDrawFinished
+04-30 14:17:03.972 I/NativeTurboSchedManager(10170): Load libmiui_runtime
+04-30 14:17:03.973 I/Choreographer(10170): first vsync insert message into MessageQueue Head
+04-30 14:17:03.973 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.973 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.973 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.973 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.973 D/SurfaceView(10170): UPDATE Surface(name=SurfaceView[com.mark.wanwan.dropblaster/com.unity3d.player.UnityPlayerGameActivity]#14667)/@0x1a31b0a, mIsProjectionMode = false
+04-30 14:17:03.974 D/ViewRootImplStubImpl(10170): requestedTypes: 3
+04-30 14:17:03.974 D/VRI[UnityPlayerGameActivity](10170): vri.reportNextDraw android.view.ViewRootImpl.handleResized:2773 android.view.ViewRootImpl.-$$Nest$mhandleResized:0 android.view.ViewRootImpl$W.resized:12759 android.app.servertransaction.WindowStateResizeItem.execute:64 android.app.servertransaction.WindowStateTransactionItem.execute:59 
+04-30 14:17:03.977 I/Unity   (10170): SystemInfo CPU = ARM64 FP ASIMD AES, Cores = 8, Memory = 7200mb
+04-30 14:17:03.977 I/Unity   (10170): SystemInfo ARM big.LITTLE configuration: 5 big (mask: 0xf8), 3 little (mask: 0x7)
+04-30 14:17:03.977 I/Unity   (10170): ApplicationInfo 'com.mark.wanwan.dropblaster', Version '1.0.1', Min API Level '25', Target API Level '36'
+04-30 14:17:03.977 I/Unity   (10170): Built from '6000.3/staging' branch, Version '6000.3.7f1 (696ec25a53d1)', Build type 'Release', Scripting Backend 'il2cpp', CPU 'arm64-v8a', Stripping 'Enabled'
+04-30 14:17:03.977 I/Unity   (10170): Device Model 'Xiaomi 2211133C', OS 'Android OS 15 (API 35)'
+04-30 14:17:03.984 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.984 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.984 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:03.984 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:03.984 D/VRI[UnityPlayerGameActivity](10170): vri.Setup new sync=wmsSync-VRI[UnityPlayerGameActivity]#3
+04-30 14:17:03.988 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:03.989 D/VRI[UnityPlayerGameActivity](10170): vri.reportDrawFinished
+04-30 14:17:03.992 I/HandWritingStubImpl(10170): refreshLastKeyboardType: 1
+04-30 14:17:03.992 I/HandWritingStubImpl(10170): getCurrentKeyboardType: 1
+04-30 14:17:03.996 I/HandWritingStubImpl(10170): getCurrentKeyboardType: 1
+04-30 14:17:04.019 I/Unity   (10170): Company Name: Mark
+04-30 14:17:04.020 I/Unity   (10170): Product Name: Wanwan Drop Blaster
+04-30 14:17:04.023 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:04.023 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:04.025 W/libc    (10170): Access denied finding property "vendor.mivk.log.debug"
+04-30 14:17:04.025 D/vulkan  (10170): searching for layers in '/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/lib/arm64'
+04-30 14:17:04.025 D/vulkan  (10170): searching for layers in '/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk!/lib/arm64-v8a'
+04-30 14:17:04.028 I/AdrenoVK-0(10170): ===== BEGIN DUMP OF OVERRIDDEN SETTINGS =====
+04-30 14:17:04.028 I/AdrenoVK-0(10170): ===== END DUMP OF OVERRIDDEN SETTINGS =====
+04-30 14:17:04.029 I/AdrenoVK-0(10170): QUALCOMM build          : a6844907d4, Ie667bba6d9
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Build Date              : 12/10/24
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Shader Compiler Version : E031.41.03.58
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Local Branch            : 
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Remote Branch           : NONE
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Reconstruct Branch      : NOTHING
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Build Config            : S P 14.1.4 AArch64
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Driver Version          : 0676.67
+04-30 14:17:04.029 I/AdrenoVK-0(10170): PFP                     : 0x01740168
+04-30 14:17:04.029 I/AdrenoVK-0(10170): ME                      : 0x00000000
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Application Name    : Wanwan Drop Blaster
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Application Version : 0x00000001
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Engine Name         : Unity
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Engine Version      : 0x00000001
+04-30 14:17:04.029 I/AdrenoVK-0(10170): Api Version         : 0x00401000
+04-30 14:17:04.030 I/AdrenoVK-0(10170): QUALCOMM build          : a6844907d4, Ie667bba6d9
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Build Date              : 12/10/24
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Shader Compiler Version : E031.41.03.58
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Local Branch            : 
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Remote Branch           : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.13.2.0.11.00.00.855.856
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Remote Branch           : NONE
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Reconstruct Branch      : NOTHING
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Build Config            : S P 14.1.4 AArch64
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Driver Path             : /vendor/lib64/hw/vulkan.adreno.so
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Driver Version          : 0676.67
+04-30 14:17:04.030 I/AdrenoVK-0(10170): PFP                     : 0x01740168
+04-30 14:17:04.030 I/AdrenoVK-0(10170): ME                      : 0x00000000
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Application Name    : Wanwan Drop Blaster
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Application Version : 0x00000001
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Engine Name         : Unity
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Engine Version      : 0x00000001
+04-30 14:17:04.030 I/AdrenoVK-0(10170): Api Version         : 0x00401000
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.031 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.032 D/nativeloader(10170): Load liblibswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk): dlopen failed: library "liblibswappywrapper.so" not found
+04-30 14:17:04.032 D/nativeloader(10170): Load /data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/lib/arm64/libswappywrapper.so using ns clns-7 from class loader (caller=/data/app/~~8MScvBKUfwERoJgqIfH7uw==/com.mark.wanwan.dropblaster-2JgAPHPw5tSvVRBZ4q7MPA==/base.apk): ok
+04-30 14:17:04.032 I/SwappyWrapper(10170): SwappyWrapperInit() succeeded. Build: Thu Apr 30 14:12:44 2026
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3b9ff250 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.033 I/AdrenoVK-0(10170): Unknown struct with type 0x3ba17508 provided to vkGetPhysicalDeviceFeatures2
+04-30 14:17:04.039 I/AdrenoUtils(10170): <ReadGpuID:407>: Reading chip ID through GSL
+04-30 14:17:04.039 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:04.039 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:04.039 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:04.039 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:04.039 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:04.039 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:04.039 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:04.039 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:04.039 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:04.039 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:04.039 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:04.039 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:04.041 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.042 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.043 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.043 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.047 E/SwappyDisplayManager(10170): dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376638164375408, -5476376637895803280]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+04-30 14:17:04.047 I/SwappyDisplayManager(10170): Starting looper thread
+04-30 14:17:04.053 V/MediaRouter(10170): Selecting route: RouteInfo{ name=手机, description=null, status=null, category=RouteCategory{ name=系统 types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+04-30 14:17:04.053 I/MediaRouter(10170): Skip setBluetoothA2dpOn(): types=8388615, isPlaybackActive()=false, BT route=null
+04-30 14:17:04.060 I/AAudio  (10170): AAudioStreamBuilder_openStream() called ----------------------------------------
+04-30 14:17:04.060 I/AudioStreamBuilder(10170): rate   =  24000, channels  = 2, channelMask = 0x80000003, format   = 5, sharing = SH, dir = OUTPUT
+04-30 14:17:04.060 I/AudioStreamBuilder(10170): device =      0, sessionId = 0, perfMode = 12, callback: ON with frames = 512
+04-30 14:17:04.060 I/AudioStreamBuilder(10170): usage  =      0, contentType = 0, inputPreset = 0, allowedCapturePolicy = 0
+04-30 14:17:04.060 I/AudioStreamBuilder(10170): privacy sensitive = false, opPackageName = (null), attributionTag = (null)
+04-30 14:17:04.060 D/AudioStreamBuilder(10170): build() uid=10249 clientName=com.mark.wanwan.dropblaster
+04-30 14:17:04.060 D/AudioStreamBuilder(10170): UseAAudioApp mClientName :com.mark.wanwan.dropblaster()
+04-30 14:17:04.060 D/AudioStreamBuilder(10170): build() MMAP not used because sessionId specified.
+04-30 14:17:04.060 D/wan.dropblaster(10170): PlayerBase::PlayerBase()
+04-30 14:17:04.060 D/AudioStreamTrack(10170): open(), request notificationFrames = 0, frameCount = 8192
+04-30 14:17:04.060 D/AudioTrackStub(10170): AudioTrackStub() create
+04-30 14:17:04.061 I/AudioTrackImpl(10170): initAudioTrackImpl()
+04-30 14:17:04.061 D/AudioTrackImpl(10170): binder call: getPackageName com.mark.wanwan.dropblaster for uid 10249
+04-30 14:17:04.061 D/AudioTrack(10170): set(): (sessionId=0), mcallback is 1, streamType -1, sampleRate 24000, format 0x5, channelMask 0x3, frameCount 8192, flags 0x4, notificationFrames 0,transferType 1, mClientAttributionSource AttributionSourceState{pid: -1, uid: -1, deviceId: 0, packageName: com.mark.wanwan.dropblaster, attributionTag: (null), token: (null), renouncedPermissions: (null), next: []}
+04-30 14:17:04.066 E/libprocessgroup(10170): set_timerslack_ns write failed: Operation not permitted
+04-30 14:17:04.067 V/xlog_client(10170): xlog_check_permission event name audio_track_message level 0
+04-30 14:17:04.067 I/AudioTrackImpl(10170): before scaleVolumeForVideo L:1.000000 R:1.000000 and the pakage is com.mark.wanwan.dropblaster
+04-30 14:17:04.067 I/AudioTrack(10170): AudioTrack::setVolume L:1.000000 R:1.000000 sessionid=3825
+04-30 14:17:04.067 D/AudioStreamTrack(10170): open() flags changed from 0x00000004 to 0x00000000
+04-30 14:17:04.067 D/AudioStreamTrack(10170): open() perfMode changed from 12 to 10
+04-30 14:17:04.067 D/AAudioStream(10170): setState(s#1) from 0 to 2
+04-30 14:17:04.067 I/AAudio  (10170): AAudioStreamBuilder_openStream() returns 0 = AAUDIO_OK for s#1 ----------------
+04-30 14:17:04.068 D/AAudio  (10170): AAudioStream_requestStart(s#1) called --------------
+04-30 14:17:04.068 D/AAudioStream(10170): setState(s#1) from 2 to 3
+04-30 14:17:04.068 I/AudioTrack(10170): start(632): prior state:STATE_STOPPED packageName: com.mark.wanwan.dropblaster
+04-30 14:17:04.073 D/AAudio  (10170): AAudioStream_requestStart(s#1) returned 0 ---------
+04-30 14:17:04.075 D/MediaRouter(10170): onRestoreRoute() : route=RouteInfo{ name=手机, description=null, status=null, category=RouteCategory{ name=系统 types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+04-30 14:17:04.075 V/MediaRouter(10170): Selecting route: RouteInfo{ name=手机, description=null, status=null, category=RouteCategory{ name=系统 types=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO  groupable=false }, supportedTypes=ROUTE_TYPE_LIVE_AUDIO ROUTE_TYPE_LIVE_VIDEO , presentationDisplay=null }
+04-30 14:17:04.083 D/AudioStreamLegacy(10170): onAudioDeviceUpdate(deviceId = 3)
+04-30 14:17:04.084 D/AAudioStream(10170): setState(s#1) from 3 to 4
+04-30 14:17:04.118 I/IL2CPP  (10170): Locale zh-CN
+04-30 14:17:04.138 I/Unity   (10170):     HasWindow = 1, HasFocus = 0
+04-30 14:17:04.138 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_RESIZED(3)
+04-30 14:17:04.138 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+04-30 14:17:04.138 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.139 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.139 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.139 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.139 I/Unity   (10170): Handle cmd APP_CMD_GAINED_FOCUS(7)
+04-30 14:17:04.139 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.141 I/SwappyDisplayManager(10170): Terminating looper thread
+04-30 14:17:04.141 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:04.141 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:04.141 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:04.141 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:04.142 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:04.142 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:04.142 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:04.142 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:04.142 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:04.142 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:04.142 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:04.142 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:04.143 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.144 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.146 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.147 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:04.150 E/SwappyDisplayManager(10170): dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376638164416944, -5476376637895813360]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+04-30 14:17:04.151 I/SwappyDisplayManager(10170): Starting looper thread
+04-30 14:17:04.226 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.258 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.293 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.329 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.332 W/InteractionJankMonitor(10170): Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.mark.wanwan.dropblaster
+04-30 14:17:04.338 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:04.338 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:04.338 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:04.338 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:04.343 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.344 D/InsetsController(10170): cancelAnimation of types: 3, animType: 1, host: com.mark.wanwan.dropblaster/com.unity3d.player.UnityPlayerGameActivity invokeCallback=false reason=android.view.InsetsController.notifyFinished:1793 android.view.InsetsAnimationThreadControlRunner$1.lambda$notifyFinished$0:84 android.view.InsetsAnimationThreadControlRunner$1.$r8$lambda$cDFF0h4Ncq-8EXdGszv69jrUu7c:0 android.view.InsetsAnimationThreadControlRunner$1$$ExternalSyntheticLambda1.run:0 android.os.Handler.handleCallback:959 android.os.Handler.dispatchMessage:100 android.os.Looper.loopOnce:249 android.os.Looper.loop:337 android.app.ActivityThread.main:9608 java.lang.reflect.Method.invoke:-2 
+04-30 14:17:04.362 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.363 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.363 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:04.395 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.425 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.456 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.488 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.522 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.556 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.591 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.625 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.657 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.689 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.721 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.754 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.787 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.821 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.817 W/UnityGfxDeviceW(10170): type=1400 audit(0.0:55380): avc:  denied  { getattr } for  path="/sys/module/metis/parameters/minor_window_app" dev="sysfs" ino=78234 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:sysfs_migt:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:04.855 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.853 W/UnityGfxDeviceW(10170): type=1400 audit(0.0:55381): avc:  denied  { getattr } for  path="/sys/module/metis/parameters/minor_window_app" dev="sysfs" ino=78234 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:sysfs_migt:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:04.888 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.885 W/UnityGfxDeviceW(10170): type=1400 audit(0.0:55382): avc:  denied  { getattr } for  path="/sys/module/metis/parameters/minor_window_app" dev="sysfs" ino=78234 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:sysfs_migt:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:04.921 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.917 W/UnityGfxDeviceW(10170): type=1400 audit(0.0:55383): avc:  denied  { getattr } for  path="/sys/module/metis/parameters/minor_window_app" dev="sysfs" ino=78234 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:sysfs_migt:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:04.953 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:04.949 W/UnityGfxDeviceW(10170): type=1400 audit(0.0:55384): avc:  denied  { getattr } for  path="/sys/module/metis/parameters/minor_window_app" dev="sysfs" ino=78234 scontext=u:r:untrusted_app:s0:c249,c256,c512,c768 tcontext=u:object_r:sysfs_migt:s0 tclass=file permissive=0 app=com.mark.wanwan.dropblaster
+04-30 14:17:04.986 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:05.019 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:05.052 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:05.083 D/AudioTrackImpl(10170): [audioTrackData][zero] 1s(f:0 m:0 s:0 k:0 z:1010) : pid 10170 uid 10249 sessionId 3825 sr 24000 ch 2 fmt 5
+04-30 14:17:05.085 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:05.119 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:05.119 E/LB      (10170): fail to open node: No such file or directory
+04-30 14:17:06.083 D/AudioTrackImpl(10170): [audioTrackData][zero] 2s(f:0 m:0 s:0 k:0 z:2010) : pid 10170 uid 10249 sessionId 3825 sr 24000 ch 2 fmt 5
+04-30 14:17:06.275 D/GameActivity(10170): ************** mainWorkCallback *********
+04-30 14:17:06.277 I/ImeTracker(10170): com.mark.wanwan.dropblaster:d65e10c8: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+04-30 14:17:06.288 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:06.288 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:06.288 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:06.288 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:06.297 D/GameActivity(10170): ************** mainWorkCallback *********
+04-30 14:17:06.298 I/ImeTracker(10170): com.mark.wanwan.dropblaster:b0dd8fb2: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+04-30 14:17:06.430 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:06.430 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:06.438 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:06.438 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:06.438 D/gti.InputConnection(10170): onApplyWindowInsetsfalse
+04-30 14:17:06.438 V/GameActivity(10170): onImeInsetsChanged from Text Listener
+04-30 14:17:06.440 I/SwappyDisplayManager(10170): Terminating looper thread
+04-30 14:17:06.441 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:06.441 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:06.441 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:06.441 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:06.441 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:06.441 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:06.441 E/qdgralloc(10170): GetSize: Unrecognized pixel format: 0x3b
+04-30 14:17:06.441 W/qdgralloc(10170): gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+04-30 14:17:06.441 E/Gralloc4(10170): isSupported(1, 1, 59, 1, ...) failed with 7
+04-30 14:17:06.441 I/AHardwareBuffer(10170): proc name :com.mark.wanwan.dropblaster
+04-30 14:17:06.441 E/GraphicBufferAllocator(10170): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 7
+04-30 14:17:06.441 E/AHardwareBuffer(10170): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 14:17:06.444 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:06.445 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:06.446 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:06.447 W/qdgralloc(10170): getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+04-30 14:17:06.450 E/SwappyDisplayManager(10170): dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376638164452496, -5476376637895797456]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+04-30 14:17:06.451 I/SwappyDisplayManager(10170): Starting looper thread
+04-30 14:17:06.459 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:06.459 I/Unity   (10170): Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 14:17:06.985 I/wan.dropblaster(10170): DynamicFPS DF top: com.mark.wanwan.dropblaster : 0.000000
+04-30 14:17:06.985 I/wan.dropblaster(10170): DF com.mark.wanwan.dropblaster Support DynamicFPS.
+04-30 14:17:07.083 D/AudioTrackImpl(10170): [audioTrackData][zero] 3s(f:0 m:0 s:0 k:0 z:3010) : pid 10170 uid 10249 sessionId 3825 sr 24000 ch 2 fmt 5
+04-30 14:17:08.083 D/AudioTrackImpl(10170): [audioTrackData][zero] 4s(f:0 m:0 s:0 k:0 z:4009) : pid 10170 uid 10249 sessionId 3825 sr 24000 ch 2 fmt 5

@@ -40,10 +40,15 @@ namespace Wanwan.Tests.EditMode
             Assert.That(MenuBootstrap.TitleExitButtonSliceResourcePath, Is.EqualTo("MainMenu/Buttons/button_exit"));
             Assert.That(MenuBootstrap.ShipSelectSlicedResourcePaths, Does.Contain("MainMenu/ShipSelect/panel_frame"));
             Assert.That(MenuBootstrap.ShipSelectSlicedResourcePaths, Does.Contain("MainMenu/ShipSelect/card_selected_frame"));
+            Assert.That(MenuBootstrap.SettingsSlicedResourcePaths, Does.Contain("MainMenu/Settings/panel_frame"));
+            Assert.That(MenuBootstrap.SettingsSlicedResourcePaths, Does.Contain("MainMenu/Settings/icon_ship"));
+            Assert.That(MenuBootstrap.LeaderboardSlicedResourcePaths, Does.Contain("MainMenu/Leaderboard/panel_frame"));
+            Assert.That(MenuBootstrap.LeaderboardSlicedResourcePaths, Does.Contain("MainMenu/Leaderboard/row_frame_gold"));
             Assert.That(MenuBootstrap.TitleStarfieldResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_space_far"));
             Assert.That(MenuBootstrap.TitleSparkleOverlayResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_space_front_stars"));
             Assert.That(MenuBootstrap.TitleLogoBackplateResourcePath, Is.EqualTo("MainMenu/Titles/title_raiden"));
             Assert.That(RuntimeSpriteFactory.RaidenFighterJetResourcePath, Is.EqualTo("RaidenArt/Ships/fighter_jet_128"));
+            Assert.That(RuntimeSpriteFactory.GetPlayerShipResourcePath(PlayerShipType.Green), Is.EqualTo("RaidenArt/Ships/player_ship_red"));
             Assert.That(RuntimeSpriteFactory.MenuStormTitleResourcePath, Is.EqualTo("RaidenArt/Cinematics/menu_storm_title_ai"));
         }
 
@@ -86,6 +91,18 @@ namespace Wanwan.Tests.EditMode
             foreach (string path in MenuBootstrap.ShipSelectSlicedResourcePaths)
             {
                 Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+            foreach (string path in MenuBootstrap.SettingsSlicedResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+            foreach (string path in MenuBootstrap.LeaderboardSlicedResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+            foreach (PlayerShipType shipType in MenuBootstrap.ShipSelectRoster)
+            {
+                Assert.That(Resources.Load<Texture2D>(RuntimeSpriteFactory.GetPlayerShipResourcePath(shipType)), Is.Not.Null, shipType.ToString());
             }
         }
 
@@ -212,6 +229,9 @@ namespace Wanwan.Tests.EditMode
 
                 int rowCount = 0;
                 int statTrackCount = 0;
+                int badgeCount = 0;
+                int shipImageCount = 0;
+                var shipTextures = new System.Collections.Generic.HashSet<Texture2D>();
                 foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
                 {
                     if (button.gameObject.name.EndsWith("ShipRow"))
@@ -226,10 +246,26 @@ namespace Wanwan.Tests.EditMode
                     {
                         statTrackCount++;
                     }
+
+                    if (image.gameObject.name == "RankBadgeOuter")
+                    {
+                        badgeCount++;
+                        Assert.That(Mathf.Abs(image.rectTransform.sizeDelta.x - image.rectTransform.sizeDelta.y), Is.LessThanOrEqualTo(0.1f), image.transform.parent.name);
+                    }
+
+                    if (image.gameObject.name == "ShipImage")
+                    {
+                        shipImageCount++;
+                        Assert.That(image.sprite, Is.Not.Null);
+                        shipTextures.Add(image.sprite.texture);
+                    }
                 }
 
                 Assert.That(rowCount, Is.EqualTo(5));
                 Assert.That(statTrackCount, Is.EqualTo(20));
+                Assert.That(badgeCount, Is.EqualTo(5));
+                Assert.That(shipImageCount, Is.EqualTo(5));
+                Assert.That(shipTextures.Count, Is.EqualTo(5));
                 Assert.That(FindTextByContent("赤焰战机"), Is.Not.Null);
                 Assert.That(FindTextByContent("蓝翼A1"), Is.Not.Null);
                 Assert.That(FindTextByContent("黄蜂战机"), Is.Not.Null);
@@ -259,18 +295,173 @@ namespace Wanwan.Tests.EditMode
             }
         }
 
+        [Test]
+        public void ShipSelectConfirm_ReturnsToTitleWithoutDifficultyScreen()
+        {
+            GameObject host = new GameObject("MenuBootstrapShipSelectConfirmHost");
+            try
+            {
+                MenuBootstrap menu = host.AddComponent<MenuBootstrap>();
+                typeof(MenuBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+                typeof(MenuBootstrap).GetMethod("ShowShipSelect", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+
+                Button confirm = FindButtonByLabel("确认");
+                Assert.That(confirm, Is.Not.Null);
+
+                confirm.onClick.Invoke();
+
+                Assert.That(FindTextByContent("选择难度"), Is.Null);
+                Assert.That(GameObject.Find("ArcadeStartButton"), Is.Not.Null);
+            }
+            finally
+            {
+                foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(canvas.gameObject);
+                }
+
+                foreach (Camera camera in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(camera.gameObject);
+                }
+
+                foreach (EventSystem eventSystem in Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(eventSystem.gameObject);
+                }
+
+                Object.DestroyImmediate(host);
+            }
+        }
+
+        [Test]
+        public void TitleBottomIconSlices_AreEqualAspectSquares()
+        {
+            AssertSquareAnchors(MenuBootstrap.TitleSettingsSliceAnchorMin, MenuBootstrap.TitleSettingsSliceAnchorMax);
+            AssertSquareAnchors(MenuBootstrap.TitleLeaderboardSliceAnchorMin, MenuBootstrap.TitleLeaderboardSliceAnchorMax);
+            AssertSquareAnchors(MenuBootstrap.TitleShipSelectSliceAnchorMin, MenuBootstrap.TitleShipSelectSliceAnchorMax);
+        }
+
+        [Test]
+        public void Settings_CreatesUnifiedHudOptionsAndColorIcons()
+        {
+            GameObject host = new GameObject("MenuBootstrapSettingsHost");
+            try
+            {
+                MenuBootstrap menu = host.AddComponent<MenuBootstrap>();
+                typeof(MenuBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+                typeof(MenuBootstrap).GetMethod("ShowSettings", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+
+                Assert.That(GameObject.Find("SettingsPanel")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(FindTextByContent("音乐音量"), Is.Not.Null);
+                Assert.That(FindTextByContent("音效音量"), Is.Not.Null);
+                Assert.That(FindTextByContent("默认战机"), Is.Not.Null);
+                Assert.That(FindTextByContent(ShipDefinition.Get(SessionState.SelectedShip).DisplayName), Is.Not.Null);
+                Assert.That(FindTextByContent("默认难度"), Is.Not.Null);
+                Assert.That(FindTextByContent("灵敏度"), Is.Not.Null);
+                Assert.That(FindTextByContent("榜名"), Is.Not.Null);
+                Assert.That(FindTextByContent(SessionState.LeaderboardName), Is.Not.Null);
+                Assert.That(FindButtonByLabel("恢复默认"), Is.Not.Null);
+                Assert.That(FindButtonByLabel("返回标题"), Is.Not.Null);
+                Assert.That(FindButtonByLabel("保存设置"), Is.Not.Null);
+
+                string[] iconNames =
+                {
+                    "SettingsSoundIcon",
+                    "音乐音量Icon",
+                    "音效音量Icon",
+                    "OptionIcon"
+                };
+
+                foreach (string iconName in iconNames)
+                {
+                    Assert.That(GameObject.Find(iconName)?.GetComponent<Image>()?.sprite, Is.Not.Null, iconName);
+                }
+            }
+            finally
+            {
+                foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(canvas.gameObject);
+                }
+
+                foreach (Camera camera in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(camera.gameObject);
+                }
+
+                foreach (EventSystem eventSystem in Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(eventSystem.gameObject);
+                }
+
+                Object.DestroyImmediate(host);
+            }
+        }
+
+        [Test]
+        public void Leaderboard_CreatesHudRowsAndBackButton()
+        {
+            GameObject host = new GameObject("MenuBootstrapLeaderboardHost");
+            try
+            {
+                SessionState.ResetProgress();
+                SessionState.SelectDifficulty(GameDifficulty.Low);
+                SessionState.CommitRunScore(148815, true);
+                MenuBootstrap menu = host.AddComponent<MenuBootstrap>();
+                typeof(MenuBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+                typeof(MenuBootstrap).GetMethod("ShowLeaderboard", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+
+                Assert.That(GameObject.Find("LeaderboardPanel")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(GameObject.Find("LeaderboardHeaderRow")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(GameObject.Find("LeaderboardEntryRow0")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(GameObject.Find("MedalIcon")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(FindTextByContent("本地排行榜"), Is.Not.Null);
+                Assert.That(FindButtonByLabel("返回"), Is.Not.Null);
+            }
+            finally
+            {
+                foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(canvas.gameObject);
+                }
+
+                foreach (Camera camera in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(camera.gameObject);
+                }
+
+                foreach (EventSystem eventSystem in Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
+                {
+                    Object.DestroyImmediate(eventSystem.gameObject);
+                }
+
+                Object.DestroyImmediate(host);
+                SessionState.ResetProgress();
+            }
+        }
+
         private static Button FindButtonByLabel(string label)
         {
             foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
             {
-                Text text = button.GetComponentInChildren<Text>();
-                if (text != null && text.text == label)
+                foreach (Text text in button.GetComponentsInChildren<Text>(true))
                 {
-                    return button;
+                    if (text.text == label)
+                    {
+                        return button;
+                    }
                 }
             }
 
             return null;
+        }
+
+        private static void AssertSquareAnchors(Vector2 min, Vector2 max)
+        {
+            float width = max.x - min.x;
+            float height = max.y - min.y;
+            Assert.That(width / height, Is.EqualTo(16f / 9f).Within(0.08f));
         }
 
         private static Text FindTextByContent(string content)
@@ -278,6 +469,19 @@ namespace Wanwan.Tests.EditMode
             foreach (Text text in Object.FindObjectsByType<Text>(FindObjectsSortMode.None))
             {
                 if (text.text == content)
+                {
+                    return text;
+                }
+            }
+
+            return null;
+        }
+
+        private static Text FindTextStartingWith(string prefix)
+        {
+            foreach (Text text in Object.FindObjectsByType<Text>(FindObjectsSortMode.None))
+            {
+                if (text.text.StartsWith(prefix))
                 {
                     return text;
                 }

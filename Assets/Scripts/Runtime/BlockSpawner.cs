@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Wanwan.Runtime.Pools;
 
@@ -26,6 +27,20 @@ namespace Wanwan.Runtime
         private int powerCapsulesSpawned;
         private int guaranteedAmmoPackIndex;
         private int medicalPacksSpawned;
+        private readonly Queue<Vector3> pendingCoinDrops = new Queue<Vector3>();
+        private readonly Queue<PendingAmmoDrop> pendingAmmoDrops = new Queue<PendingAmmoDrop>();
+
+        private readonly struct PendingAmmoDrop
+        {
+            public PendingAmmoDrop(AmmoPowerupType guaranteedDrop, Vector3 position)
+            {
+                GuaranteedDrop = guaranteedDrop;
+                Position = position;
+            }
+
+            public AmmoPowerupType GuaranteedDrop { get; }
+            public Vector3 Position { get; }
+        }
 
         public void Initialize(GameManager manager, EffectsController effects, Camera camera, float minX, float maxX, float topY)
         {
@@ -42,6 +57,8 @@ namespace Wanwan.Runtime
 
         private void Update()
         {
+            ProcessPendingRewardSpawns();
+
             if (!spawningEnabled || !gameManager.IsPlaying || currentWave == null)
             {
                 return;
@@ -217,6 +234,16 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            pendingCoinDrops.Enqueue(position);
+        }
+
+        private void SpawnCoinsAtPositionImmediately(Vector3 position)
+        {
+            if (pools == null || gameManager == null)
+            {
+                return;
+            }
+
             int count = Mathf.CeilToInt(gameManager.RewardConfig.CoinsPerEnemy * GetCoinDropMultiplier());
             for (int i = 0; i < count; i++)
             {
@@ -259,6 +286,16 @@ namespace Wanwan.Runtime
                 return;
             }
 
+            pendingAmmoDrops.Enqueue(new PendingAmmoDrop(guaranteedDrop, position));
+        }
+
+        private void SpawnEnemyAmmoPackDropImmediately(AmmoPowerupType guaranteedDrop, Vector3 position)
+        {
+            if (gameManager == null)
+            {
+                return;
+            }
+
             TrySpawnPowerCapsule(position);
             if (TrySpawnGuaranteedStagePickup(position))
             {
@@ -295,6 +332,27 @@ namespace Wanwan.Runtime
             if (Random.value <= 0.36f)
             {
                 SpawnAmmoPackAtPosition(GetRandomPowerupType(), position);
+            }
+        }
+
+        private void ProcessPendingRewardSpawns()
+        {
+            if (gameManager == null || !gameManager.IsPlaying)
+            {
+                pendingCoinDrops.Clear();
+                pendingAmmoDrops.Clear();
+                return;
+            }
+
+            while (pendingCoinDrops.Count > 0)
+            {
+                SpawnCoinsAtPositionImmediately(pendingCoinDrops.Dequeue());
+            }
+
+            while (pendingAmmoDrops.Count > 0)
+            {
+                PendingAmmoDrop drop = pendingAmmoDrops.Dequeue();
+                SpawnEnemyAmmoPackDropImmediately(drop.GuaranteedDrop, drop.Position);
             }
         }
 
@@ -394,7 +452,7 @@ namespace Wanwan.Runtime
 
             HealthPickupController pickup = healthObject.GetComponent<HealthPickupController>();
             if (pickup == null) pickup = healthObject.AddComponent<HealthPickupController>();
-            pickup.Initialize(gameManager, this);
+            pickup.Initialize(gameManager, this, DifficultyProgression.GetAmmoPackSpeed(gameManager.ElapsedTime) * 0.78f, gameManager.BottomBound - 1.25f);
             effectsController.PlayPowerupSpawn(position, new Color(0.35f, 1f, 0.62f));
         }
 

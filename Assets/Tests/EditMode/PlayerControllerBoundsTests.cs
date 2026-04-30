@@ -23,6 +23,20 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void GameplayBottomBound_KeepsPlayerAboveReferenceHud()
+        {
+            float worldBottom = -10f;
+            float gameplayStartInset = CarrierLaunchIntroConfig.Default.GameplayStartYInset;
+
+            float playableBottom = GameBootstrap.GetPlayerGameplayBottomBound(worldBottom, gameplayStartInset);
+            float gameplayStartY = GameBootstrap.GetPlayerGameplayStartY(worldBottom, gameplayStartInset);
+
+            Assert.That(playableBottom, Is.GreaterThanOrEqualTo(worldBottom + 4.7f));
+            Assert.That(gameplayStartY, Is.GreaterThanOrEqualTo(worldBottom + GameBootstrap.PlayerHudSafeCenterInset));
+            Assert.That(playableBottom, Is.LessThan(gameplayStartY));
+        }
+
+        [Test]
         public void IsPointerOverUi_ReturnsFalseWithoutEventSystem()
         {
             Assert.That(PlayerController.IsPointerOverUi(), Is.False);

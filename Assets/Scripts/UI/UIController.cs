@@ -6,13 +6,24 @@ namespace Wanwan.Runtime
 {
     public class UIController : MonoBehaviour
     {
-        public const float TopHudAnchorHeight = 0.1f;
-        public const float BottomHudAnchorHeight = 0.105f;
+        public const float TopHudAnchorHeight = 0.125f;
+        public const float BottomHudAnchorHeight = 0.178f;
         public const float RightStageProgressAnchorWidth = 0.045f;
         public const int PowerMeterSlotCount = 6;
-        public static readonly Vector2 UpgradeButtonSize = new Vector2(176f, 72f);
+        public static readonly Vector2 UpgradeButtonSize = new Vector2(270f, 196f);
         public static readonly bool BottomHudTextUsesConstrainedWrapping = true;
+        public static readonly bool PowerMeterSlotsUseDedicatedChargeBars = true;
+        public static readonly bool ComboHudUsesReferenceStack = true;
+        public static readonly bool PowerMeterSlotsUseBottomPips = true;
+        public static readonly bool PowerMeterCardsPreserveReferenceArt = true;
+        public static readonly bool PowerMeterCardsUseCenterIcons = true;
         public static readonly string[] TopHudStatLabels = { "SCORE", "COIN", "BOMB", "FIRE" };
+        public static readonly string[] PowerMeterActionLabels = { "能量", "立即升级" };
+        public const string ReferenceTopHudResourcePath = "RaidenArt/HUD/hud_top_full_reference";
+        public const string ReferenceBottomHudResourcePath = "RaidenArt/HUD/hud_bottom_full_reference";
+        public const string ReferenceEnergyButtonResourcePath = "RaidenArt/HUD/hud_energy_button_reference";
+        public const string ReferencePowerModuleResourcePath = "RaidenArt/HUD/hud_module_card_reference";
+        public const string ReferencePowerModuleActiveResourcePath = "RaidenArt/HUD/hud_module_card_active_reference";
         private const float PowerMeterPulseDuration = 0.38f;
 
         private GameManager gameManager;
@@ -27,6 +38,8 @@ namespace Wanwan.Runtime
         private Text stageProgressText;
         private Text stageProgressPercentText;
         private Text comboText;
+        private Text comboNumberText;
+        private Text comboUnitText;
         private Text comboMultiplierText;
         private Text powerupText;
         private Text powerMeterText;
@@ -48,9 +61,15 @@ namespace Wanwan.Runtime
         private Text pauseOverlayAudioText;
         private Image stageProgressFill;
         private Image stageProgressGlow;
+        private Sprite inactivePowerMeterSlotSprite;
+        private Sprite activePowerMeterSlotSprite;
         private readonly Image[] powerMeterSlotFills = new Image[PowerMeterSlotCount];
         private readonly Image[] powerMeterSlotGlows = new Image[PowerMeterSlotCount];
+        private readonly Image[] powerMeterSlotChargeBars = new Image[PowerMeterSlotCount];
+        private readonly Image[,] powerMeterSlotPips = new Image[PowerMeterSlotCount, 4];
+        private readonly Image[] comboPips = new Image[10];
         private readonly Text[] powerMeterSlotLabels = new Text[PowerMeterSlotCount];
+        private readonly Image[] powerMeterSlotIcons = new Image[PowerMeterSlotCount];
         private int displayedPowerMeterCapsules = -1;
         private int pulsingPowerMeterSlot = -1;
         private float powerMeterPulseTimer;
@@ -95,9 +114,17 @@ namespace Wanwan.Runtime
                 fireLevelText.text = $"{TopHudStatLabels[3]} LV.{gameManager.FireLevel}";
             }
             RefreshPlayerHealthBar();
-            highScoreText.text = $"最高分 {SessionState.HighScore:0000000}";
+            highScoreText.text = $"BEST {SessionState.HighScore:0000000}";
             difficultyText.text = $"第{gameManager.LoopNumber}轮-{gameManager.StageNumber}关 {gameManager.StageName}";
-            comboText.text = gameManager.GetComboDisplayText();
+            comboText.text = "连击";
+            if (comboNumberText != null)
+            {
+                comboNumberText.text = gameManager.CurrentCombo.ToString("000");
+            }
+            if (comboUnitText != null)
+            {
+                comboUnitText.text = "倍";
+            }
             RefreshComboDisplay();
             stageProgressText.text = $"{gameManager.EnemiesDestroyed}/{gameManager.RequiredKillsToClear}";
             if (stageProgressFill != null)
@@ -133,7 +160,9 @@ namespace Wanwan.Runtime
             if (upgradeButton != null)
             {
                 upgradeButton.interactable = gameManager.CanActivatePowerMeter;
-                upgradeButtonText.text = gameManager.CanActivatePowerMeter ? "升级" : "充能";
+                upgradeButtonText.text = gameManager.CanActivatePowerMeter
+                    ? $"{PowerMeterActionLabels[0]}\n{PowerMeterSlotCount}/{PowerMeterSlotCount}\n{PowerMeterActionLabels[1]}"
+                    : $"{PowerMeterActionLabels[0]}\n{gameManager.PowerMeterCollectedCapsules}/{PowerMeterSlotCount}\n满格升级";
             }
             pauseHintText.text = gameManager.IsPaused ? "已暂停" : string.Empty;
             string banner = gameManager.StageBannerText ?? string.Empty;
@@ -226,61 +255,77 @@ namespace Wanwan.Runtime
             Canvas canvas = UiFactory.CreateCanvas("GameCanvas");
             canvas.transform.SetParent(transform, false);
 
-            Image topBar = UiFactory.CreatePanel(canvas.transform, "TopHud", new Color(0.015f, 0.018f, 0.035f, 0.65f), new Vector2(0f, 1f - TopHudAnchorHeight), Vector2.one);
-            topBar.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.TopFrame);
-            UiFactory.CreateDivider(topBar.transform, "HudBottomLine", new Color(0.14f, 0.88f, 1f, 0.65f), Vector2.zero, new Vector2(1f, 0.03f));
+            Image topBar = UiFactory.CreateSpritePanel(canvas.transform, "TopHud", ReferenceTopHudResourcePath, Color.white, new Vector2(0f, 1f - TopHudAnchorHeight), Vector2.one);
 
-            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "SCORE 0000000", 25, TextAnchor.MiddleLeft, new Color(0.08f, 0.92f, 1f), FontStyle.Bold, new Vector2(0.018f, 0.54f), new Vector2(0.32f, 0.92f), Vector2.zero);
-            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "BEST 0000000", 15, TextAnchor.MiddleLeft, new Color(0.3f, 0.65f, 0.95f), FontStyle.Bold, new Vector2(0.018f, 0.16f), new Vector2(0.32f, 0.48f), Vector2.zero);
-            coinCountText = UiFactory.CreateArcadeLabel(topBar.transform, "COIN 000", 18, TextAnchor.MiddleLeft, new Color(1f, 0.85f, 0.1f, 0.88f), FontStyle.Bold, new Vector2(0.335f, 0.54f), new Vector2(0.48f, 0.9f), Vector2.zero);
+            Image leftCell = UiFactory.CreatePanel(topBar.transform, "ScoreCellGlow", new Color(0.04f, 0.48f, 0.72f, 0.08f), new Vector2(0.015f, 0.10f), new Vector2(0.333f, 0.92f));
+            leftCell.raycastTarget = false;
+            Image centerCell = UiFactory.CreatePanel(topBar.transform, "ComboCellGlow", new Color(1f, 0.78f, 0.08f, 0.06f), new Vector2(0.343f, 0.10f), new Vector2(0.633f, 0.92f));
+            centerCell.raycastTarget = false;
+            Image rightCell = UiFactory.CreatePanel(topBar.transform, "StatusCellGlow", new Color(0.04f, 0.48f, 0.72f, 0.08f), new Vector2(0.643f, 0.10f), new Vector2(0.985f, 0.92f));
+            rightCell.raycastTarget = false;
+
+            scoreText = UiFactory.CreateArcadeLabel(topBar.transform, "SCORE 0000000", 29, TextAnchor.MiddleLeft, new Color(0.18f, 0.96f, 1f), FontStyle.Bold, new Vector2(0.035f, 0.58f), new Vector2(0.32f, 0.90f), Vector2.zero);
+            highScoreText = UiFactory.CreateArcadeLabel(topBar.transform, "BEST 0000000", 22, TextAnchor.MiddleLeft, new Color(0.54f, 0.9f, 1f), FontStyle.Bold, new Vector2(0.035f, 0.22f), new Vector2(0.32f, 0.50f), Vector2.zero);
+            coinCountText = UiFactory.CreateArcadeLabel(topBar.transform, "COIN 000", 25, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.1f, 0.98f), FontStyle.Bold, new Vector2(0.36f, 0.66f), new Vector2(0.63f, 0.91f), Vector2.zero);
 
             // Center: combo display
-            Image comboBadge = UiFactory.CreateSpritePanel(topBar.transform, "ComboBadge", "UI/hud/combo_badge", new Color(1f, 0.4f, 0.2f, 0.25f), new Vector2(0.38f, 0.6f), new Vector2(0.62f, 0.94f));
-            comboBadge.raycastTarget = false;
-            comboMultiplierText = UiFactory.CreateArcadeLabel(topBar.transform, "2x", 36, TextAnchor.MiddleCenter, ArcadeTheme.ComboYellow, FontStyle.Bold, new Vector2(0.4f, 0.68f), new Vector2(0.6f, 0.98f), Vector2.zero);
+            Image comboBackdrop = UiFactory.CreatePanel(topBar.transform, "ComboReferenceBackdrop", new Color(0.01f, 0.025f, 0.04f, 0.18f), new Vector2(0.345f, 0.10f), new Vector2(0.633f, 0.92f));
+            comboBackdrop.raycastTarget = false;
+            Image comboInnerGlow = UiFactory.CreatePanel(topBar.transform, "ComboInnerGlow", new Color(1f, 0.68f, 0.04f, 0.12f), new Vector2(0.365f, 0.17f), new Vector2(0.605f, 0.72f));
+            comboInnerGlow.raycastTarget = false;
+            comboMultiplierText = UiFactory.CreateArcadeLabel(topBar.transform, "2x", 28, TextAnchor.MiddleCenter, ArcadeTheme.ComboYellow, FontStyle.Bold, new Vector2(0.56f, 0.45f), new Vector2(0.63f, 0.68f), Vector2.zero);
             comboMultiplierText.gameObject.SetActive(false);
-            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击 0  倍率 1倍", 17, TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.32f), FontStyle.Bold, new Vector2(0.38f, 0.36f), new Vector2(0.62f, 0.62f), Vector2.zero);
+            comboText = UiFactory.CreateArcadeLabel(topBar.transform, "连击", 21, TextAnchor.MiddleRight, new Color(0.94f, 0.98f, 1f, 0.98f), FontStyle.Bold, new Vector2(0.355f, 0.35f), new Vector2(0.435f, 0.64f), Vector2.zero);
+            comboNumberText = UiFactory.CreateArcadeLabel(topBar.transform, "000", 52, TextAnchor.MiddleCenter, ArcadeTheme.ComboYellow, FontStyle.Bold, new Vector2(0.435f, 0.25f), new Vector2(0.565f, 0.72f), Vector2.zero);
+            comboUnitText = UiFactory.CreateArcadeLabel(topBar.transform, "倍", 21, TextAnchor.MiddleLeft, new Color(1f, 0.88f, 0.32f, 0.98f), FontStyle.Bold, new Vector2(0.57f, 0.35f), new Vector2(0.625f, 0.64f), Vector2.zero);
+            for (int i = 0; i < comboPips.Length; i++)
+            {
+                float x0 = Mathf.Lerp(0.37f, 0.58f, i / (float)comboPips.Length);
+                float x1 = x0 + 0.018f;
+                Image pip = UiFactory.CreatePanel(topBar.transform, "ComboPip" + i, new Color(1f, 0.76f, 0.08f, 0.58f), new Vector2(x0, 0.13f), new Vector2(x1, 0.28f));
+                pip.raycastTarget = false;
+                comboPips[i] = pip;
+            }
 
             // Right side: bombs, fire level, shields, difficulty, stage progress
-            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■", 16, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.67f, 0.45f), new Vector2(0.94f, 0.72f), Vector2.zero);
-            bombIcon = UiFactory.CreatePanel(topBar.transform, "BombIcon", new Color(1f, 0.8f, 0.2f, 0.9f), new Vector2(0.67f, 0.18f), new Vector2(0.705f, 0.44f));
+            livesText = UiFactory.CreateArcadeLabel(topBar.transform, "装甲 ■■■■■■■■■■", 20, TextAnchor.MiddleRight, new Color(0.96f, 0.98f, 1f), FontStyle.Bold, new Vector2(0.665f, 0.60f), new Vector2(0.955f, 0.88f), Vector2.zero);
+            bombIcon = UiFactory.CreatePanel(topBar.transform, "BombIcon", new Color(1f, 0.8f, 0.2f, 0.95f), new Vector2(0.665f, 0.24f), new Vector2(0.705f, 0.52f));
             bombIcon.sprite = RuntimeSpriteFactory.GetSciFiHudSprite(SciFiHudSpriteKind.IconBomb);
             bombIcon.preserveAspect = true;
             bombIcon.raycastTarget = false;
-            bombCountText = UiFactory.CreateArcadeLabel(topBar.transform, "BOMB 03", 17, TextAnchor.MiddleLeft, new Color(1f, 0.7f, 0.12f), FontStyle.Bold, new Vector2(0.708f, 0.17f), new Vector2(0.80f, 0.45f), Vector2.zero);
-            fireLevelText = UiFactory.CreateArcadeLabel(topBar.transform, "FIRE LV.1", 17, TextAnchor.MiddleLeft, new Color(0.34f, 1f, 0.86f), FontStyle.Bold, new Vector2(0.80f, 0.17f), new Vector2(0.94f, 0.45f), Vector2.zero);
+            bombCountText = UiFactory.CreateArcadeLabel(topBar.transform, "BOMB 03", 21, TextAnchor.MiddleLeft, new Color(1f, 0.76f, 0.1f), FontStyle.Bold, new Vector2(0.71f, 0.24f), new Vector2(0.81f, 0.52f), Vector2.zero);
+            fireLevelText = UiFactory.CreateArcadeLabel(topBar.transform, "FIRE LV.1", 21, TextAnchor.MiddleLeft, new Color(0.34f, 1f, 0.86f), FontStyle.Bold, new Vector2(0.82f, 0.24f), new Vector2(0.955f, 0.52f), Vector2.zero);
 
-            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 14, TextAnchor.MiddleRight, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.48f, 0.0f), new Vector2(0.78f, 0.18f), Vector2.zero);
-            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "击落 0/0", 13, TextAnchor.MiddleRight, new Color(0.9f, 0.92f, 1f, 0.65f), FontStyle.Bold, new Vector2(0.78f, 0.0f), new Vector2(0.94f, 0.18f), Vector2.zero);
+            difficultyText = UiFactory.CreateArcadeLabel(topBar.transform, "第1轮-1关 乡村", 18, TextAnchor.MiddleRight, new Color(0.78f, 0.88f, 1f), FontStyle.Bold, new Vector2(0.58f, 0.02f), new Vector2(0.80f, 0.22f), Vector2.zero);
+            stageProgressText = UiFactory.CreateArcadeLabel(topBar.transform, "击落 0/0", 18, TextAnchor.MiddleRight, new Color(0.9f, 0.92f, 1f, 0.88f), FontStyle.Bold, new Vector2(0.80f, 0.02f), new Vector2(0.955f, 0.22f), Vector2.zero);
 
-            pauseButton = UiFactory.CreateSciFiWideButton(topBar.transform, "Ⅱ", ArcadeTheme.ElectricBlue, new Vector2(54f, 48f), new Vector2(-28f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            pauseButton = UiFactory.CreateSciFiWideButton(topBar.transform, "Ⅱ", ArcadeTheme.ElectricBlue, new Vector2(54f, 74f), new Vector2(-26f, -2f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
             pauseButton.onClick.AddListener(() => gameManager.TogglePause());
             pauseButtonText = pauseButton.GetComponentInChildren<Text>();
             pauseButtonText.fontStyle = FontStyle.Bold;
             pauseButtonText.fontSize = 28;
 
             // HUD bottom bar with sprite background
-            UiFactory.CreateSpritePanel(canvas.transform, "BottomHudBg", "UI/hud/hud_bottom_bar", new Color(1f, 1f, 1f, 0.25f), new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight));
-            Image bottomBar = UiFactory.CreatePixelPanel(canvas.transform, "BottomHud", new Color(0.06f, 0.06f, 0.14f, SessionState.VirtualButtonOpacity + 0.32f), ArcadeTheme.DimGray, new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight), new Vector2(6f, 6f));
-            bottomBar.sprite = RuntimeSpriteFactory.GetHudDecorSprite(1);
-            Image weaponSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "WeaponSlot", new Color(0.04f, 0.04f, 0.1f, 0.95f), ArcadeTheme.MilitaryGreen, new Vector2(0.025f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(4f, 4f));
-            weaponIcon = UiFactory.CreateSpritePanel(weaponSlot.transform, "WeaponIcon", "UI/icons/icon_scatter", Color.white, new Vector2(0.12f, 0.18f), new Vector2(0.36f, 0.82f));
+            Image bottomBar = UiFactory.CreateSpritePanel(canvas.transform, "BottomHud", ReferenceBottomHudResourcePath, Color.white, new Vector2(0f, 0f), new Vector2(1f, BottomHudAnchorHeight));
+            Image weaponSlot = UiFactory.CreatePanel(bottomBar.transform, "WeaponSlot", new Color(0.02f, 0.06f, 0.10f, 0.24f), new Vector2(0.035f, 0.10f), new Vector2(0.230f, 0.91f));
+            weaponSlot.raycastTarget = false;
+            weaponIcon = UiFactory.CreateSpritePanel(weaponSlot.transform, "WeaponIcon", "UI/icons/icon_scatter", Color.white, new Vector2(0.18f, 0.40f), new Vector2(0.82f, 0.95f));
             weaponIcon.raycastTarget = false;
-            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 18, TextAnchor.MiddleCenter, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.03f, 0f), new Vector2(0.97f, 1f), Vector2.zero);
+            powerupText = UiFactory.CreateArcadeLabel(weaponSlot.transform, "武器 扇形弹 1级", 22, TextAnchor.LowerLeft, ArcadeTheme.White, FontStyle.Bold, new Vector2(0.10f, 0.04f), new Vector2(0.96f, 0.41f), Vector2.zero);
             UiFactory.ConfigureConstrainedText(powerupText, 11, 18);
-            Image meterSlot = UiFactory.CreatePixelPanel(bottomBar.transform, "PowerMeterSlot", new Color(0.035f, 0.035f, 0.08f, 0.95f), ArcadeTheme.EnergyYellow, new Vector2(0.27f, 0.2f), new Vector2(0.73f, 0.84f), new Vector2(4f, 4f));
+            Image meterSlot = UiFactory.CreatePanel(bottomBar.transform, "PowerMeterSlot", Color.clear, new Vector2(0.252f, 0.13f), new Vector2(0.735f, 0.90f));
             CreatePowerMeterVisuals(meterSlot.transform);
-            for (int i = 1; i < PowerMeterSlotCount; i++)
-            {
-                float x = i / (float)PowerMeterSlotCount;
-                UiFactory.CreateDivider(meterSlot.transform, "PowerMeterDivider" + i, new Color(1f, 0.88f, 0.18f, 0.28f), new Vector2(x - 0.003f, 0.12f), new Vector2(x + 0.003f, 0.88f));
-            }
             powerMeterText = UiFactory.CreateArcadeLabel(meterSlot.transform, string.Empty, 1, TextAnchor.MiddleCenter, Color.clear, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
-            upgradeButton = UiFactory.CreateSciFiWideButton(bottomBar.transform, "充能", ArcadeTheme.ElectricBlue, UpgradeButtonSize, new Vector2(-112f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            upgradeButton = UiFactory.CreateSpriteButton(bottomBar.transform, PowerMeterActionLabels[0] + "\n0/6", ReferenceEnergyButtonResourcePath, Color.white, UpgradeButtonSize, new Vector2(-142f, -2f));
+            RectTransform upgradeRect = upgradeButton.GetComponent<RectTransform>();
+            upgradeRect.anchorMin = new Vector2(1f, 0.5f);
+            upgradeRect.anchorMax = new Vector2(1f, 0.5f);
             upgradeButton.onClick.AddListener(() => gameManager.TryActivatePowerMeter());
             upgradeButtonText = upgradeButton.GetComponentInChildren<Text>();
             upgradeButtonText.fontStyle = FontStyle.Bold;
-            upgradeButtonText.fontSize = 24;
+            upgradeButtonText.fontSize = 34;
+            upgradeButtonText.color = new Color(0.86f, 0.98f, 1f);
+            UiFactory.ConfigureConstrainedText(upgradeButtonText, 14, 34);
             CreateStageProgressThermometer(canvas.transform);
 
             // Boss bar with sprite background
@@ -368,6 +413,20 @@ namespace Wanwan.Runtime
         {
             if (comboMultiplierText == null) return;
 
+            int litPips = Mathf.Clamp(gameManager.CurrentCombo, 0, comboPips.Length);
+            for (int i = 0; i < comboPips.Length; i++)
+            {
+                if (comboPips[i] == null)
+                {
+                    continue;
+                }
+
+                bool lit = i < litPips;
+                comboPips[i].color = lit
+                    ? new Color(1f, 0.78f, 0.10f, 0.96f)
+                    : new Color(0.34f, 0.34f, 0.32f, 0.44f);
+            }
+
             int multiplier = gameManager.CurrentComboMultiplier;
             if (multiplier <= 1)
             {
@@ -423,25 +482,52 @@ namespace Wanwan.Runtime
 
         private void CreatePowerMeterVisuals(Transform meterSlot)
         {
+            inactivePowerMeterSlotSprite = LoadReferenceHudSprite(ReferencePowerModuleResourcePath);
+            activePowerMeterSlotSprite = LoadReferenceHudSprite(ReferencePowerModuleActiveResourcePath);
             for (int i = 0; i < PowerMeterSlotCount; i++)
             {
                 float start = i / (float)PowerMeterSlotCount;
                 float end = (i + 1) / (float)PowerMeterSlotCount;
-                Vector2 anchorMin = new Vector2(start + 0.012f, 0.18f);
-                Vector2 anchorMax = new Vector2(end - 0.012f, 0.82f);
+                Vector2 anchorMin = new Vector2(start + 0.010f, 0.04f);
+                Vector2 anchorMax = new Vector2(end - 0.010f, 0.96f);
 
                 Image glow = UiFactory.CreatePanel(meterSlot, "PowerMeterGlow" + i, new Color(1f, 0.92f, 0.18f, 0f), anchorMin, anchorMax);
+                glow.sprite = activePowerMeterSlotSprite;
                 glow.raycastTarget = false;
                 powerMeterSlotGlows[i] = glow;
 
-                Image fill = UiFactory.CreatePanel(meterSlot, "PowerMeterFill" + i, new Color(1f, 0.84f, 0.12f, 0.1f), anchorMin, anchorMax);
+                Image fill = UiFactory.CreatePanel(meterSlot, "PowerMeterFill" + i, Color.white, anchorMin, anchorMax);
+                fill.sprite = inactivePowerMeterSlotSprite;
                 fill.raycastTarget = false;
                 powerMeterSlotFills[i] = fill;
 
-                Text label = UiFactory.CreateArcadeLabel(meterSlot, PowerMeterState.SlotLabels[i], 13, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, anchorMin, anchorMax, Vector2.zero);
-                UiFactory.ConfigureConstrainedText(label, 8, 13);
+                Image chargeBar = UiFactory.CreatePanel(meterSlot, "PowerMeterChargeBar" + i, new Color(1f, 0.84f, 0.12f, 0f), new Vector2(start + 0.046f, 0.30f), new Vector2(end - 0.046f, 0.34f));
+                chargeBar.raycastTarget = false;
+                powerMeterSlotChargeBars[i] = chargeBar;
+                for (int pipIndex = 0; pipIndex < 4; pipIndex++)
+                {
+                    float pipStart = Mathf.Lerp(start + 0.042f, end - 0.060f, pipIndex / 4f);
+                    Image pip = UiFactory.CreatePanel(meterSlot, "PowerMeterPip" + i + "_" + pipIndex, new Color(1f, 0.78f, 0.10f, 0.35f), new Vector2(pipStart, 0.075f), new Vector2(pipStart + 0.026f, 0.170f));
+                    pip.raycastTarget = false;
+                    powerMeterSlotPips[i, pipIndex] = pip;
+                }
+
+                Text label = UiFactory.CreateArcadeLabel(meterSlot, PowerMeterState.SlotLabels[i], 16, TextAnchor.MiddleCenter, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(start + 0.014f, 0.56f), new Vector2(end - 0.014f, 0.82f), Vector2.zero);
+                UiFactory.ConfigureConstrainedText(label, 9, 16);
                 powerMeterSlotLabels[i] = label;
+
+                Image icon = UiFactory.CreatePanel(meterSlot, "PowerMeterIcon" + i, new Color(1f, 0.86f, 0.15f, 0.84f), new Vector2(start + 0.034f, 0.31f), new Vector2(end - 0.034f, 0.58f));
+                icon.sprite = RuntimeSpriteFactory.GetPowerMeterIconSprite(i);
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                powerMeterSlotIcons[i] = icon;
             }
+        }
+
+        private static Sprite LoadReferenceHudSprite(string resourcePath)
+        {
+            Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+            return tex == null ? null : Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 128f);
         }
 
         private void CreateStageProgressThermometer(Transform canvas)
@@ -486,27 +572,55 @@ namespace Wanwan.Runtime
 
                 if (powerMeterSlotFills[i] != null)
                 {
-                    Color fill = gameManager.CanActivatePowerMeter
-                        ? new Color(1f, 0.34f, 0.18f, 0.98f)
-                        : new Color(1f, 0.84f, 0.12f, 0.92f);
-                    fill.a = filled ? Mathf.Clamp01(fill.a + pulseWave * 0.08f) : 0.08f;
+                    Color fill = filled
+                        ? new Color(1f, 1f, 1f, Mathf.Clamp01(0.96f + pulseWave * 0.04f))
+                        : new Color(1f, 1f, 1f, 0.54f);
                     powerMeterSlotFills[i].color = fill;
-                    powerMeterSlotFills[i].rectTransform.localScale = Vector3.one * (pulsing ? 1f + (pulseWave * 0.08f) : 1f);
+                    powerMeterSlotFills[i].sprite = filled ? activePowerMeterSlotSprite : inactivePowerMeterSlotSprite;
+                    powerMeterSlotFills[i].rectTransform.localScale = Vector3.one * (pulsing ? 1f + (pulseWave * 0.035f) : 1f);
                 }
 
                 if (powerMeterSlotGlows[i] != null)
                 {
                     Color glow = gameManager.CanActivatePowerMeter
-                        ? new Color(1f, 0.12f, 0.08f, 0.5f)
-                        : new Color(1f, 0.92f, 0.18f, 0.32f);
-                    glow.a = filled ? (gameManager.CanActivatePowerMeter ? 0.38f : 0.18f) + (pulseWave * 0.5f) : 0f;
+                        ? new Color(1f, 0.28f, 0.08f, 0.58f)
+                        : new Color(1f, 0.86f, 0.12f, 0.42f);
+                    glow.a = filled ? (gameManager.CanActivatePowerMeter ? 0.48f : 0.28f) + (pulseWave * 0.48f) : 0.04f;
                     powerMeterSlotGlows[i].color = glow;
+                }
+
+                if (powerMeterSlotChargeBars[i] != null)
+                {
+                    Color charge = filled
+                        ? new Color(1f, 0.88f, 0.12f, 0.72f)
+                        : new Color(0.18f, 0.15f, 0.06f, 0.28f);
+                    powerMeterSlotChargeBars[i].color = charge;
+                    powerMeterSlotChargeBars[i].rectTransform.localScale = new Vector3(filled ? 1f : 0.72f, pulsing ? 1f + pulseWave * 0.55f : 1f, 1f);
+                }
+
+                for (int pipIndex = 0; pipIndex < 4; pipIndex++)
+                {
+                    Image pip = powerMeterSlotPips[i, pipIndex];
+                    if (pip == null)
+                    {
+                        continue;
+                    }
+
+                    pip.color = filled
+                        ? new Color(1f, 0.86f, 0.12f, 1f)
+                        : new Color(0.36f, 0.32f, 0.16f, 0.56f);
                 }
 
                 if (powerMeterSlotLabels[i] != null)
                 {
                     powerMeterSlotLabels[i].text = PowerMeterState.SlotLabels[i];
-                    powerMeterSlotLabels[i].color = filled ? ArcadeTheme.InkBlack : new Color(1f, 0.88f, 0.24f, 0.82f);
+                    powerMeterSlotLabels[i].color = filled ? new Color(1f, 0.90f, 0.18f, 0.98f) : new Color(1f, 0.88f, 0.24f, 0.78f);
+                }
+
+                if (powerMeterSlotIcons[i] != null)
+                {
+                    powerMeterSlotIcons[i].sprite = RuntimeSpriteFactory.GetPowerMeterIconSprite(i);
+                    powerMeterSlotIcons[i].color = filled ? new Color(1f, 0.86f, 0.12f, 0.98f) : new Color(0.72f, 0.62f, 0.20f, 0.62f);
                 }
             }
         }

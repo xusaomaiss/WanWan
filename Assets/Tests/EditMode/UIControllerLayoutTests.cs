@@ -44,8 +44,8 @@ namespace Wanwan.Tests.EditMode
         [Test]
         public void UpgradeButton_IsLargeEnoughForMobileTouch()
         {
-            Assert.That(UIController.UpgradeButtonSize.x, Is.GreaterThanOrEqualTo(160f));
-            Assert.That(UIController.UpgradeButtonSize.y, Is.GreaterThanOrEqualTo(64f));
+            Assert.That(UIController.UpgradeButtonSize.x, Is.GreaterThanOrEqualTo(220f));
+            Assert.That(UIController.UpgradeButtonSize.y, Is.GreaterThanOrEqualTo(88f));
         }
 
         [Test]
@@ -58,6 +58,55 @@ namespace Wanwan.Tests.EditMode
         public void TopHud_UsesFourSciFiCombatStats()
         {
             Assert.That(UIController.TopHudStatLabels, Is.EqualTo(new[] { "SCORE", "COIN", "BOMB", "FIRE" }));
+        }
+
+        [Test]
+        public void PowerMeterButtonLabels_ExplainStateAndAction()
+        {
+            Assert.That(UIController.PowerMeterActionLabels, Is.EqualTo(new[] { "能量", "立即升级" }));
+        }
+
+        [Test]
+        public void PowerMeterSlots_UseDedicatedChargeFillBars()
+        {
+            Assert.That(UIController.PowerMeterSlotsUseDedicatedChargeBars, Is.True);
+        }
+
+        [Test]
+        public void CombatHud_UsesReferenceComboAndModuleTreatment()
+        {
+            Assert.That(UIController.ComboHudUsesReferenceStack, Is.True);
+            Assert.That(UIController.PowerMeterSlotsUseBottomPips, Is.True);
+            Assert.That(UIController.PowerMeterCardsPreserveReferenceArt, Is.True);
+            Assert.That(UIController.PowerMeterCardsUseCenterIcons, Is.True);
+            Assert.That(RuntimeSpriteFactory.PowerMeterIconResourcePaths.Length, Is.EqualTo(UIController.PowerMeterSlotCount));
+        }
+
+        [Test]
+        public void PowerMeterIcons_UseDedicatedGraphicSprites()
+        {
+            foreach (string path in RuntimeSpriteFactory.PowerMeterIconResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+
+            for (int i = 0; i < UIController.PowerMeterSlotCount; i++)
+            {
+                Sprite sprite = RuntimeSpriteFactory.GetPowerMeterIconSprite(i);
+                Assert.That(sprite, Is.Not.Null);
+                Assert.That(sprite.texture.width, Is.EqualTo(128));
+                Assert.That(sprite.texture.height, Is.EqualTo(128));
+            }
+        }
+
+        [Test]
+        public void HudReferenceArt_UsesDedicatedFullFrameResources()
+        {
+            Assert.That(Resources.Load<Texture2D>(UIController.ReferenceTopHudResourcePath), Is.Not.Null);
+            Assert.That(Resources.Load<Texture2D>(UIController.ReferenceBottomHudResourcePath), Is.Not.Null);
+            Assert.That(Resources.Load<Texture2D>(UIController.ReferenceEnergyButtonResourcePath), Is.Not.Null);
+            Assert.That(Resources.Load<Texture2D>(UIController.ReferencePowerModuleResourcePath), Is.Not.Null);
+            Assert.That(Resources.Load<Texture2D>(UIController.ReferencePowerModuleActiveResourcePath), Is.Not.Null);
         }
     }
 }

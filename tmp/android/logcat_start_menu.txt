@@ -1,0 +1,44 @@
+04-30 07:44:31.064  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.064  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.064  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.064  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.064  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.064  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.078  7969  8687 E PowerKeeper.Thermal: ProcessInfo java.lang.NumberFormatException: For input string: "CPU usage from 247239ms to 106617ms ago (2026-04-30 07"
+04-30 07:44:31.265  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.265  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.266  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.266  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.266  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:31.266  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:31.275  7969  8687 E PowerKeeper.Thermal: ProcessInfo java.lang.NumberFormatException: For input string: "CPU usage from 247437ms to 106815ms ago (2026-04-30 07"
+04-30 07:44:32.523 24995 31173 D Unity   : UnloadTime: 0.560260 ms
+04-30 07:44:32.527 24995 24995 I ImeTracker: com.mark.wanwan.dropblaster:2a85830d: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+04-30 07:44:32.529  2771  4189 I ImeTracker: com.mark.wanwan.dropblaster:2a85830d: onCancelled at PHASE_SERVER_SHOULD_HIDE
+04-30 07:44:32.534  2771  7617 I WindowManagerService: MIUILOG- Show when locked PermissionDenied pkg : com.mark.wanwan.dropblaster uid : 10249
+04-30 07:44:32.626 24995 31173 I Unity   : SetGameState: isLoading: false, mode: UNKNOWN, label: 0, quality: 2
+04-30 07:44:32.630 24995 31173 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 07:44:32.630 24995 31173 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 07:44:32.633  2771  7617 I WindowManagerService: MIUILOG- Show when locked PermissionDenied pkg : com.mark.wanwan.dropblaster uid : 10249
+04-30 07:44:32.634 24995 31173 D Unity   : InitializeOrResetSwapChain 1080x2400 hdr=0 samples=0
+04-30 07:44:32.638 24995 31173 I AHardwareBuffer: proc name :com.mark.wanwan.dropblaster
+04-30 07:44:32.638 24995 31173 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 07:44:32.638 24995 31173 I AHardwareBuffer: proc name :com.mark.wanwan.dropblaster
+04-30 07:44:32.638 24995 31173 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -7), handle=0x0
+04-30 07:44:32.649 24995 31173 D Unity   : Sensor :        Accelerometer ( 1) ; 0.004786 / 0.00s ; bmi26x Accelerometer Non-wakeup / BOSCH 
+04-30 07:44:32.649 24995 31173 D Unity   : Using NDK Choreographer.
+04-30 07:44:32.650 24995 31173 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 07:44:32.650 24995 31173 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+04-30 07:44:32.735  7757  8927 D AppPredictService: start doPredict com.mark.wanwan.dropblaster
+04-30 07:44:32.739  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:32.739  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:32.739  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:32.739  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:32.739  7969  8687 E FileUtil: java.io.FileNotFoundException: sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq: open failed: EACCES (Permission denied)
+04-30 07:44:32.739  7969  8687 E FileUtil: Caused by: android.system.ErrnoException: open failed: EACCES (Permission denied)
+04-30 07:44:32.751  7969  8687 E PowerKeeper.Thermal: ProcessInfo java.lang.NumberFormatException: For input string: "CPU usage from 248912ms to 108290ms ago (2026-04-30 07"
+04-30 07:44:32.892 24995 31223 I wan.dropblaster: DynamicFPS DF top: com.mark.wanwan.dropblaster : 0.000000
+04-30 07:44:32.892 24995 31223 I wan.dropblaster: DF com.mark.wanwan.dropblaster Support DynamicFPS.
+04-30 07:44:33.264  2771  4366 W Process : Unable to open /proc/31779/status
+04-30 07:44:33.264  2771  4366 W Process : Unable to open /proc/31779/status
+04-30 07:44:33.347  2771  7617 D IntervalStats: Unable to parse usage stats packages: [356]

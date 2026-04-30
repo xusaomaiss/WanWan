@@ -7,6 +7,25 @@ namespace Wanwan.Tests.EditMode
     public class RaidenEnemySpriteTests
     {
         [Test]
+        public void PlayerShipSprites_UseDistinctAiGeneratedResources()
+        {
+            var textures = new System.Collections.Generic.HashSet<Texture2D>();
+
+            foreach (PlayerShipType shipType in MenuBootstrap.ShipSelectRoster)
+            {
+                Texture2D resource = Resources.Load<Texture2D>(RuntimeSpriteFactory.GetPlayerShipResourcePath(shipType));
+
+                Assert.That(resource, Is.Not.Null, shipType.ToString());
+                Assert.That(resource.width, Is.EqualTo(512));
+                Assert.That(resource.height, Is.EqualTo(512));
+                Assert.That(RuntimeSpriteFactory.GetPlayerShipSprite(shipType).texture, Is.SameAs(resource));
+                textures.Add(resource);
+            }
+
+            Assert.That(textures.Count, Is.EqualTo(5));
+        }
+
+        [Test]
         public void EnemyInterceptorSprite_UsesRaidenEnemyJetResource()
         {
             Texture2D resource = Resources.Load<Texture2D>(RuntimeSpriteFactory.RaidenEnemyJetResourcePath);

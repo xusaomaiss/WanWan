@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1777289637581,
+  "lastScanned": 1777441451500,
   "projectRoot": "/Users/mark/work/wanwan",
   "techStack": {
     "languages": [],
@@ -37,7 +37,7 @@
       "path": "Assets",
       "purpose": "Static assets",
       "fileCount": 7,
-      "lastAccessed": 1777289637458,
+      "lastAccessed": 1777441451422,
       "keyFiles": [
         "Art.meta",
         "Editor.meta",
@@ -49,9 +49,11 @@
     "Builds": {
       "path": "Builds",
       "purpose": null,
-      "fileCount": 1,
-      "lastAccessed": 1777289637485,
+      "fileCount": 3,
+      "lastAccessed": 1777441451423,
       "keyFiles": [
+        "editmode-detailed-results.xml",
+        "editmode-native-results.xml",
         "editmode-results.xml"
       ]
     },
@@ -59,7 +61,7 @@
       "path": "Kimi_Agent_雷电手游UI方案",
       "purpose": null,
       "fileCount": 5,
-      "lastAccessed": 1777289637493,
+      "lastAccessed": 1777441451423,
       "keyFiles": [
         "ref_background_countryside.png",
         "ref_fighter_jet.png",
@@ -71,8 +73,8 @@
     "Library": {
       "path": "Library",
       "purpose": null,
-      "fileCount": 23,
-      "lastAccessed": 1777289637515,
+      "fileCount": 25,
+      "lastAccessed": 1777441451424,
       "keyFiles": [
         "AnnotationManager",
         "ArtifactDB",
@@ -85,10 +87,10 @@
       "path": "Logs",
       "purpose": null,
       "fileCount": 4,
-      "lastAccessed": 1777289637516,
+      "lastAccessed": 1777441451424,
       "keyFiles": [
-        "AssetImportWorker0.log",
-        "AssetImportWorker1.log",
+        "AssetImportWorker0-prev.log",
+        "AssetImportWorker1-prev.log",
         "Packages-Update.log",
         "shadercompiler-UnityShaderCompiler-0.log"
       ]
@@ -97,7 +99,7 @@
       "path": "Packages",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1777289637516,
+      "lastAccessed": 1777441451424,
       "keyFiles": [
         "manifest.json",
         "packages-lock.json"
@@ -107,7 +109,7 @@
       "path": "ProjectSettings",
       "purpose": null,
       "fileCount": 20,
-      "lastAccessed": 1777289637519,
+      "lastAccessed": 1777441451425,
       "keyFiles": [
         "AudioManager.asset",
         "ClusterInputManager.asset",
@@ -120,7 +122,7 @@
       "path": "UserSettings",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1777289637529,
+      "lastAccessed": 1777441451425,
       "keyFiles": [
         "EditorUserSettings.asset",
         "Search.index",
@@ -130,16 +132,23 @@
     "artifacts": {
       "path": "artifacts",
       "purpose": null,
-      "fileCount": 0,
-      "lastAccessed": 1777289637564,
-      "keyFiles": []
+      "fileCount": 22,
+      "lastAccessed": 1777441451425,
+      "keyFiles": [
+        "screen_01_title.png",
+        "screen_02_title_fixed.png",
+        "screen_03_debug.png",
+        "screen_04_clear_bg.png",
+        "screen_05_sprite.png"
+      ]
     },
     "docs": {
       "path": "docs",
       "purpose": "Documentation",
-      "fileCount": 2,
-      "lastAccessed": 1777289637567,
+      "fileCount": 3,
+      "lastAccessed": 1777441451425,
       "keyFiles": [
+        "game-analysis-and-improvement-plan.md",
         "gameplay-features.md"
       ]
     },
@@ -147,7 +156,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 7,
-      "lastAccessed": 1777289637567,
+      "lastAccessed": 1777441451425,
       "keyFiles": [
         "android_smoke_test.sh",
         "build_android.sh",
@@ -160,7 +169,7 @@
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 1,
-      "lastAccessed": 1777289637572,
+      "lastAccessed": 1777441451426,
       "keyFiles": [
         "test_automation_files.py"
       ]
@@ -169,7 +178,7 @@
       "path": "tmp",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1777289637573,
+      "lastAccessed": 1777441451426,
       "keyFiles": []
     }
   },

@@ -35,7 +35,7 @@ namespace Wanwan.Editor
                 scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray(),
                 locationPathName = ApkPath,
                 target = BuildTarget.Android,
-                options = BuildOptions.Development
+                options = BuildOptions.None
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
@@ -44,7 +44,7 @@ namespace Wanwan.Editor
                 throw new BuildFailedException("Android build failed: " + report.summary.result);
             }
 
-            Debug.Log("Android debug build created at " + ApkPath);
+            Debug.Log("Android device build created at " + ApkPath);
         }
 
         public static void BuildAndroidRelease()

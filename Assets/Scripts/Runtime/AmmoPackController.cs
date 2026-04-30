@@ -156,6 +156,18 @@ namespace Wanwan.Runtime
         private void ApplyMotionStep(float deltaSeconds)
         {
             float dt = Mathf.Max(0f, deltaSeconds);
+            Vector3 playerPosition = gameManager != null ? gameManager.PlayerPosition : Vector3.zero;
+            if (gameManager != null && PickupMagnet.TryMoveTowardPlayer(transform.position, playerPosition, dt, out Vector3 magnetPosition))
+            {
+                transform.position = ClampWithinBounds(magnetPosition);
+                if (PickupMagnet.IsInCollectRange(transform.position, playerPosition))
+                {
+                    Collect();
+                }
+
+                return;
+            }
+
             velocity.x *= Mathf.Pow(Drag, dt * 8f);
             velocity.y = Mathf.Max(-MaxFallSpeed, velocity.y - (DownwardAcceleration * dt));
 
@@ -163,6 +175,18 @@ namespace Wanwan.Runtime
             Vector3 position = transform.position;
             position += new Vector3((velocity.x + drift) * dt, velocity.y * dt, 0f);
 
+            position = ClampWithinBounds(position);
+
+            transform.position = position;
+            if (position.y < bottomDespawnY)
+            {
+                resolved = true;
+                ReturnOrDispose();
+            }
+        }
+
+        private Vector3 ClampWithinBounds(Vector3 position)
+        {
             float minX = leftBound + SidePadding;
             float maxX = rightBound - SidePadding;
             if (position.x < minX)
@@ -183,12 +207,7 @@ namespace Wanwan.Runtime
                 velocity.y = -Mathf.Abs(velocity.y) * BounceDamping;
             }
 
-            transform.position = position;
-            if (position.y < bottomDespawnY)
-            {
-                resolved = true;
-                ReturnOrDispose();
-            }
+            return position;
         }
 
         private void ReturnOrDispose()

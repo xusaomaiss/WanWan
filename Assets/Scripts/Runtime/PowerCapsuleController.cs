@@ -39,7 +39,21 @@ namespace Wanwan.Runtime
             }
 
             age += Time.deltaTime;
-            transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
+            Vector3 playerPosition = gameManager.PlayerPosition;
+            if (PickupMagnet.TryMoveTowardPlayer(transform.position, playerPosition, Time.deltaTime, out Vector3 magnetPosition))
+            {
+                transform.position = magnetPosition;
+                if (PickupMagnet.IsInCollectRange(transform.position, playerPosition))
+                {
+                    Collect();
+                    return;
+                }
+            }
+            else
+            {
+                transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
+            }
+
             float pulse = 1f + (Mathf.Sin(age * 7.5f) * 0.1f);
             transform.localScale = baseScale * pulse;
             transform.rotation = Quaternion.Euler(0f, 0f, age * 90f);
@@ -59,6 +73,16 @@ namespace Wanwan.Runtime
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (consumed || other.GetComponent<PlayerController>() == null)
+            {
+                return;
+            }
+
+            Collect();
+        }
+
+        private void Collect()
+        {
+            if (consumed)
             {
                 return;
             }

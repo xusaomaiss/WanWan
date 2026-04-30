@@ -8,6 +8,7 @@ namespace Wanwan.Runtime
     public class GameBootstrap : MonoBehaviour
     {
         public const float PlayerShipWorldSize = 2f;
+        public const float PlayerHudSafeCenterInset = 4.9f;
 
         public static GameBootstrap Instance { get; private set; }
         public PoolCollection Pools { get; private set; }
@@ -28,7 +29,8 @@ namespace Wanwan.Runtime
             float leftBound = -horizontalExtent;
             float rightBound = horizontalExtent;
             CarrierLaunchIntroConfig introConfig = CarrierLaunchIntroConfig.Default;
-            Vector3 gameplayPlayerPosition = new Vector3(0f, bottomBound + introConfig.GameplayStartYInset, 0f);
+            float playerBottomBound = GetPlayerGameplayBottomBound(bottomBound, introConfig.GameplayStartYInset);
+            Vector3 gameplayPlayerPosition = new Vector3(0f, GetPlayerGameplayStartY(bottomBound, introConfig.GameplayStartYInset), 0f);
 
             Pools = new PoolCollection(SessionState.VisualEffectsQuality);
 
@@ -46,7 +48,7 @@ namespace Wanwan.Runtime
 
             manager.Initialize(ui, effects, spawner, player, leftBound, rightBound, topBound, bottomBound);
             CreateAchievementPopup(manager, ui);
-            player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, bottomBound, topBound);
+            player.Initialize(manager, effects, cameraComponent, leftBound, rightBound, playerBottomBound, topBound);
             spawner.Initialize(manager, effects, cameraComponent, leftBound, rightBound, topBound);
             manager.BeginIntro();
 
@@ -72,6 +74,16 @@ namespace Wanwan.Runtime
             cameraObject.AddComponent<AudioListener>();
             cameraObject.transform.position = new Vector3(0f, 0f, -10f);
             return cameraComponent;
+        }
+
+        public static float GetPlayerGameplayBottomBound(float worldBottomBound, float gameplayStartYInset)
+        {
+            return GetPlayerGameplayStartY(worldBottomBound, gameplayStartYInset) - 0.08f;
+        }
+
+        public static float GetPlayerGameplayStartY(float worldBottomBound, float gameplayStartYInset)
+        {
+            return worldBottomBound + Mathf.Max(gameplayStartYInset, PlayerHudSafeCenterInset);
         }
 
         private static ScrollingBackgroundLayer[] CreateScrollingBattlefieldBackdrop(float orthographicSize, float horizontalExtent, StageDefinition stage)
@@ -201,8 +213,8 @@ namespace Wanwan.Runtime
             playerObject.transform.position = new Vector3(0f, y, 0f);
 
             SpriteRenderer renderer = playerObject.AddComponent<SpriteRenderer>();
-            renderer.sprite = RuntimeSpriteFactory.GetRaidenFighterJetSprite();
-            renderer.color = Color.Lerp(Color.white, ShipDefinition.Get(SessionState.SelectedShip).AccentColor, 0.45f);
+            renderer.sprite = RuntimeSpriteFactory.GetPlayerShipSprite(SessionState.SelectedShip);
+            renderer.color = Color.white;
             renderer.sortingOrder = 12;
             Vector2 spriteSize = renderer.sprite.bounds.size;
             playerObject.transform.localScale = new Vector3(PlayerShipWorldSize / spriteSize.x, PlayerShipWorldSize / spriteSize.y, 1f);

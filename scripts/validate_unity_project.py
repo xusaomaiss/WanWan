@@ -51,7 +51,13 @@ def main() -> None:
         "Assets/Resources/RaidenArt/Cinematics/victory_supply_screen_ai.png",
         "Assets/Resources/RaidenArt/Cinematics/launch_weather_intro_ai.png",
         "Assets/Resources/RaidenArt/Ships/fighter_jet_128.png",
+        "Assets/Resources/RaidenArt/Ships/player_ship_red.png",
+        "Assets/Resources/RaidenArt/Ships/player_ship_blue_a1.png",
+        "Assets/Resources/RaidenArt/Ships/player_ship_yellow.png",
+        "Assets/Resources/RaidenArt/Ships/player_ship_purple.png",
+        "Assets/Resources/RaidenArt/Ships/player_ship_azure.png",
         "Assets/Resources/RaidenArt/Mounts/mount_missile_pod_ai.png",
+        "Assets/Resources/RaidenArt/Mounts/mount_defense_drone_ai.png",
         "Assets/Resources/RaidenArt/Mounts/mount_shield_emitter_ai.png",
         "Assets/Resources/RaidenArt/Effects/bullet_spread_arcade.png",
         "Assets/Resources/RaidenArt/Effects/bullet_laser_arcade.png",
@@ -75,6 +81,50 @@ def main() -> None:
         "Assets/Resources/RaidenArt/HUD/hud_boss_warning.png",
         "Assets/Resources/RaidenArt/HUD/hud_warning_edge.png",
         "Assets/Resources/RaidenArt/HUD/hud_meter_glow.png",
+        "Assets/Resources/MainMenu/ShipSelect/panel_frame.png",
+        "Assets/Resources/MainMenu/ShipSelect/card_frame.png",
+        "Assets/Resources/MainMenu/ShipSelect/card_selected_frame.png",
+        "Assets/Resources/MainMenu/ShipSelect/button_back.png",
+        "Assets/Resources/MainMenu/ShipSelect/button_confirm.png",
+        "Assets/Resources/MainMenu/ShipSelect/badge_frame.png",
+        "Assets/Resources/MainMenu/ShipSelect/stat_track.png",
+        "Assets/Resources/MainMenu/ShipSelect/stat_fill.png",
+        "Assets/Resources/MainMenu/ShipSelect/star_full.png",
+        "Assets/Resources/MainMenu/ShipSelect/star_empty.png",
+        "Assets/Resources/MainMenu/Settings/panel_frame.png",
+        "Assets/Resources/MainMenu/Settings/option_frame.png",
+        "Assets/Resources/MainMenu/Settings/option_frame_gold.png",
+        "Assets/Resources/MainMenu/Settings/button_back.png",
+        "Assets/Resources/MainMenu/Settings/button_save.png",
+        "Assets/Resources/MainMenu/Settings/slider_track.png",
+        "Assets/Resources/MainMenu/Settings/slider_fill.png",
+        "Assets/Resources/MainMenu/Settings/toggle_on.png",
+        "Assets/Resources/MainMenu/Settings/toggle_off.png",
+        "Assets/Resources/MainMenu/Settings/icon_sound.png",
+        "Assets/Resources/MainMenu/Settings/icon_music.png",
+        "Assets/Resources/MainMenu/Settings/icon_sfx.png",
+        "Assets/Resources/MainMenu/Settings/icon_ship.png",
+        "Assets/Resources/MainMenu/Settings/icon_difficulty.png",
+        "Assets/Resources/MainMenu/Settings/icon_sensitivity.png",
+        "Assets/Resources/MainMenu/Settings/icon_rank.png",
+        "Assets/Resources/MainMenu/Settings/icon_vibration.png",
+        "Assets/Resources/MainMenu/Settings/icon_damage.png",
+        "Assets/Resources/MainMenu/Settings/icon_effects.png",
+        "Assets/Resources/MainMenu/Settings/icon_reset.png",
+        "Assets/Resources/MainMenu/Leaderboard/panel_frame.png",
+        "Assets/Resources/MainMenu/Leaderboard/row_frame.png",
+        "Assets/Resources/MainMenu/Leaderboard/row_frame_gold.png",
+        "Assets/Resources/MainMenu/Leaderboard/button_back.png",
+        "Assets/Resources/MainMenu/Leaderboard/button_clear.png",
+        "Assets/Resources/MainMenu/Leaderboard/medal_gold.png",
+        "Assets/Resources/MainMenu/Leaderboard/medal_silver.png",
+        "Assets/Resources/MainMenu/Leaderboard/medal_bronze.png",
+        "Assets/Resources/GameOver/Victory/title_frame.png",
+        "Assets/Resources/GameOver/Victory/stage_frame.png",
+        "Assets/Resources/GameOver/Victory/supply_panel_frame.png",
+        "Assets/Resources/GameOver/Victory/supply_row_frame.png",
+        "Assets/Resources/GameOver/Victory/button_next.png",
+        "Assets/Resources/GameOver/Victory/button_menu.png",
         "Assets/Scripts/UI/UIController.cs",
         "Assets/Editor/BuildAutomation.cs",
         "scripts/install_unity_editor.sh",
@@ -104,18 +154,26 @@ def main() -> None:
     build_automation = (ROOT / "Assets/Editor/BuildAutomation.cs").read_text(encoding="utf-8")
     for token in ("BuildAndroidDebug", "BuildAndroidRelease", "BuildIOSXcodeProject", "RunEditModeTests", "SetApplicationIdentifier", "UIOrientation.Portrait"):
         check(token in build_automation, f"BuildAutomation.cs missing token: {token}")
+    check("options = BuildOptions.Development" not in build_automation, "Android device build must not be a Development Build")
 
     runtime_sprite_factory = (ROOT / "Assets/Scripts/Runtime/RuntimeSpriteFactory.cs").read_text(encoding="utf-8")
-    for token in ("MenuStormTitleResourcePath", "RaidenFighterJetResourcePath", "MountMissilePodResourcePath", "MountShieldEmitterResourcePath", "GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths"):
+    for token in ("MenuStormTitleResourcePath", "RaidenFighterJetResourcePath", "GetPlayerShipSprite", "GetPlayerShipResourcePath", "MountMissilePodResourcePath", "MountDefenseDroneResourcePath", "MountShieldEmitterResourcePath", "GetGroundDetailResourcePaths", "GetArcadeExplosionFrameSprites", "HudDecorResourcePaths", "PowerMeterIconResourcePaths", "GetPowerMeterIconSprite"):
         check(token in runtime_sprite_factory, f"RuntimeSpriteFactory.cs missing token: {token}")
+    for icon in ("speed", "missile", "double", "laser", "option", "shield"):
+        rel_path = f"Assets/Resources/RaidenArt/HUD/Modules/module_icon_{icon}.png"
+        check((ROOT / rel_path).exists(), f"missing required file: {rel_path}")
 
     session_state = (ROOT / "Assets/Scripts/Runtime/SessionState.cs").read_text(encoding="utf-8")
     for token in ("VisualEffectsQuality", "SetVisualEffectsQuality", "wanwan.visual_effects_quality"):
         check(token in session_state, f"SessionState.cs missing token: {token}")
 
     game_over_bootstrap = (ROOT / "Assets/Scripts/Bootstrap/GameOverBootstrap.cs").read_text(encoding="utf-8")
-    for token in ("VictorySupplyScreenResourcePath", "victory_supply_screen_ai"):
+    for token in ("VictorySupplyScreenResourcePath", "victory_supply_screen_ai", "VictorySlicedResourcePaths", "VictorySupplyPanelFrameResourcePath"):
         check(token in game_over_bootstrap, f"GameOverBootstrap.cs missing token: {token}")
+
+    menu_bootstrap = (ROOT / "Assets/Scripts/Bootstrap/MenuBootstrap.cs").read_text(encoding="utf-8")
+    for token in ("LeaderboardSlicedResourcePaths", "LeaderboardPanelFrameResourcePath", "CreateLeaderboardEntryRow"):
+        check(token in menu_bootstrap, f"MenuBootstrap.cs missing token: {token}")
 
     print("Unity project validation passed.")
 

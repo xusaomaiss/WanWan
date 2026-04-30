@@ -6,12 +6,18 @@ namespace Wanwan.Runtime
     public static class RuntimeSpriteFactory
     {
         public const string RaidenFighterJetResourcePath = "RaidenArt/Ships/fighter_jet_128";
+        public const string PlayerShipRedResourcePath = "RaidenArt/Ships/player_ship_red";
+        public const string PlayerShipBlueA1ResourcePath = "RaidenArt/Ships/player_ship_blue_a1";
+        public const string PlayerShipYellowResourcePath = "RaidenArt/Ships/player_ship_yellow";
+        public const string PlayerShipPurpleResourcePath = "RaidenArt/Ships/player_ship_purple";
+        public const string PlayerShipAzureResourcePath = "RaidenArt/Ships/player_ship_azure";
         public const string RaidenEnemyJetResourcePath = "RaidenArt/Ships/enemy_jet_128";
         public const string ToughEnemyResourcePath = "RaidenArt/Ships/tough_enemy_ai";
         public const string EliteEnemyResourcePath = "RaidenArt/Ships/elite_enemy_ai";
         public const string BossFlagshipResourcePath = "RaidenArt/Ships/boss_flagship_ai";
         public const string CoinResourcePath = "RaidenArt/Pickups/coin_ai";
         public const string MountMissilePodResourcePath = "RaidenArt/Mounts/mount_missile_pod_ai";
+        public const string MountDefenseDroneResourcePath = "RaidenArt/Mounts/mount_defense_drone_ai";
         public const string MountShieldEmitterResourcePath = "RaidenArt/Mounts/mount_shield_emitter_ai";
         public const string LaunchWeatherIntroResourcePath = "RaidenArt/Cinematics/launch_weather_intro_ai";
         public const string MenuStormTitleResourcePath = "RaidenArt/Cinematics/menu_storm_title_ai";
@@ -59,6 +65,16 @@ namespace Wanwan.Runtime
             "RaidenArt/HUD/hud_meter_glow"
         };
 
+        public static readonly string[] PowerMeterIconResourcePaths =
+        {
+            "RaidenArt/HUD/Modules/module_icon_speed",
+            "RaidenArt/HUD/Modules/module_icon_missile",
+            "RaidenArt/HUD/Modules/module_icon_double",
+            "RaidenArt/HUD/Modules/module_icon_laser",
+            "RaidenArt/HUD/Modules/module_icon_option",
+            "RaidenArt/HUD/Modules/module_icon_shield"
+        };
+
         private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
 
         public static Sprite GetRoundedSquareSprite()
@@ -101,6 +117,12 @@ namespace Wanwan.Runtime
             return GetOrCreate("question-icon", BuildQuestionIconTexture);
         }
 
+        public static Sprite GetPowerMeterIconSprite(int slotIndex)
+        {
+            int safeIndex = Mathf.Clamp(slotIndex, 0, PowerMeterIconResourcePaths.Length - 1);
+            return GetResourceSpriteOrFallback("power-meter-icon-" + safeIndex, PowerMeterIconResourcePaths[safeIndex], GetQuestionIconSprite);
+        }
+
         public static Sprite GetMissileSprite()
         {
             return GetResourceSpriteOrFallback("mount-missile-pod-ai", MountMissilePodResourcePath, GetGeneratedMissileSprite);
@@ -109,6 +131,11 @@ namespace Wanwan.Runtime
         public static Sprite GetShieldEmitterSprite()
         {
             return GetResourceSpriteOrFallback("mount-shield-emitter-ai", MountShieldEmitterResourcePath, GetCircleSprite);
+        }
+
+        public static Sprite GetDefenseDroneSprite()
+        {
+            return GetResourceSpriteOrFallback("mount-defense-drone-ai", MountDefenseDroneResourcePath, GetRaidenFighterJetSprite);
         }
 
         private static Sprite GetGeneratedMissileSprite()
@@ -149,6 +176,30 @@ namespace Wanwan.Runtime
         public static Sprite GetRaidenFighterJetSprite()
         {
             return GetResourceSpriteOrFallback("raiden-fighter-jet", RaidenFighterJetResourcePath, GetFighterJetSprite);
+        }
+
+        public static string GetPlayerShipResourcePath(PlayerShipType type)
+        {
+            switch (type)
+            {
+                case PlayerShipType.Blue:
+                    return PlayerShipBlueA1ResourcePath;
+                case PlayerShipType.Yellow:
+                    return PlayerShipYellowResourcePath;
+                case PlayerShipType.Purple:
+                    return PlayerShipPurpleResourcePath;
+                case PlayerShipType.Azure:
+                    return PlayerShipAzureResourcePath;
+                case PlayerShipType.Green:
+                default:
+                    return PlayerShipRedResourcePath;
+            }
+        }
+
+        public static Sprite GetPlayerShipSprite(PlayerShipType type)
+        {
+            string resourcePath = GetPlayerShipResourcePath(type);
+            return GetResourceSpriteOrFallback("player-ship-" + type, resourcePath, GetRaidenFighterJetSprite);
         }
 
         public static Sprite GetEnemyInterceptorSprite()

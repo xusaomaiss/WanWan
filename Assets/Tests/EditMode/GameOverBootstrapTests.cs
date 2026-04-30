@@ -58,11 +58,51 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
-        public void VictoryScreen_UsesAiSupplyBackdropResource()
+        public void VictoryScreen_UsesSlicedFramesInsteadOfFullCompositeBackdrop()
         {
             Assert.That(GameOverBootstrap.VictorySupplyScreenResourcePath, Is.EqualTo("RaidenArt/Cinematics/victory_supply_screen_ai"));
-            Assert.That(Resources.Load<Texture2D>(GameOverBootstrap.VictorySupplyScreenResourcePath), Is.Not.Null);
+            Texture2D compositeBackdrop = Resources.Load<Texture2D>(GameOverBootstrap.VictorySupplyScreenResourcePath);
+            Assert.That(compositeBackdrop, Is.Not.Null);
+            foreach (string path in GameOverBootstrap.VictorySlicedResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+
+            GameObject host = BuildVictoryGameOver();
+            try
+            {
+                Image background = GameObject.Find("Background").GetComponent<Image>();
+                Assert.That(background.sprite.texture, Is.Not.SameAs(compositeBackdrop));
+            }
+            finally
+            {
+                CleanupGameOver(host);
+            }
         }
+
+        [Test]
+        public void FailureScreen_UsesDedicatedHudFramesAndShortButtons()
+        {
+            foreach (string path in GameOverBootstrap.FailureSlicedResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
+
+            GameObject host = BuildFailureGameOver();
+            try
+            {
+                Assert.That(GameObject.Find("FailureTitleFrame")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(GameObject.Find("FailureStageFrame")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(FindTextByContent("任务失败"), Is.Not.Null);
+                Assert.That(FindTextByContent("重新挑战"), Is.Not.Null);
+                Assert.That(FindTextByContent("返回"), Is.Not.Null);
+            }
+            finally
+            {
+                CleanupGameOver(host);
+            }
+        }
+
 
         [Test]
         public void VictoryMountShop_CreatesVerticalRows()
@@ -81,6 +121,10 @@ namespace Wanwan.Tests.EditMode
                 Assert.That(GameObject.Find("导弹舱BuyButton"), Is.Not.Null);
                 Assert.That(GameObject.Find("防卫机BuyButton"), Is.Not.Null);
                 Assert.That(GameObject.Find("护盾发生器BuyButton"), Is.Not.Null);
+                Assert.That(GameObject.Find("MountShopPanel")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(GameObject.Find("VictoryTitleFrame")?.GetComponent<Image>()?.sprite, Is.Not.Null);
+                Assert.That(FindTextByContent("继续"), Is.Not.Null);
+                Assert.That(FindTextByContent("返回"), Is.Not.Null);
             }
             finally
             {
@@ -123,12 +167,35 @@ namespace Wanwan.Tests.EditMode
             Assert.That(text.verticalOverflow, Is.EqualTo(VerticalWrapMode.Overflow));
         }
 
+        private static Text FindTextByContent(string content)
+        {
+            foreach (Text text in Object.FindObjectsByType<Text>(FindObjectsSortMode.None))
+            {
+                if (text.text == content)
+                {
+                    return text;
+                }
+            }
+
+            return null;
+        }
+
         private static GameObject BuildVictoryGameOver(int spendableScore = 100000)
         {
             SessionState.ResetProgress();
             SessionState.AddSpendableScore(spendableScore);
             SessionState.CommitRunScore(0, true);
             GameObject host = new GameObject("GameOverBootstrapHost");
+            GameOverBootstrap bootstrap = host.AddComponent<GameOverBootstrap>();
+            typeof(GameOverBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bootstrap, null);
+            return host;
+        }
+
+        private static GameObject BuildFailureGameOver()
+        {
+            SessionState.ResetProgress();
+            SessionState.CommitRunScore(1000, false);
+            GameObject host = new GameObject("GameOverBootstrapFailureHost");
             GameOverBootstrap bootstrap = host.AddComponent<GameOverBootstrap>();
             typeof(GameOverBootstrap).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bootstrap, null);
             return host;
