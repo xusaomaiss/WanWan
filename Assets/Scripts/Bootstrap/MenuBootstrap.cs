@@ -39,6 +39,29 @@ namespace Wanwan.Runtime
         public const string IconShipSelectLargeResourcePath = "MainMenu/Icons/icon_ship_select_large";
         public const string IconHelpResourcePath = "MainMenu/Icons/icon_help";
         public const string ParticleStarResourcePath = "MainMenu/Effects/particle_star";
+        public const string ShipSelectPanelFrameResourcePath = "MainMenu/ShipSelect/panel_frame";
+        public const string ShipSelectCardFrameResourcePath = "MainMenu/ShipSelect/card_frame";
+        public const string ShipSelectCardSelectedFrameResourcePath = "MainMenu/ShipSelect/card_selected_frame";
+        public const string ShipSelectButtonBackResourcePath = "MainMenu/ShipSelect/button_back";
+        public const string ShipSelectButtonConfirmResourcePath = "MainMenu/ShipSelect/button_confirm";
+        public const string ShipSelectBadgeFrameResourcePath = "MainMenu/ShipSelect/badge_frame";
+        public const string ShipSelectStatTrackResourcePath = "MainMenu/ShipSelect/stat_track";
+        public const string ShipSelectStatFillResourcePath = "MainMenu/ShipSelect/stat_fill";
+        public const string ShipSelectStarFullResourcePath = "MainMenu/ShipSelect/star_full";
+        public const string ShipSelectStarEmptyResourcePath = "MainMenu/ShipSelect/star_empty";
+        public static readonly string[] ShipSelectSlicedResourcePaths =
+        {
+            ShipSelectPanelFrameResourcePath,
+            ShipSelectCardFrameResourcePath,
+            ShipSelectCardSelectedFrameResourcePath,
+            ShipSelectButtonBackResourcePath,
+            ShipSelectButtonConfirmResourcePath,
+            ShipSelectBadgeFrameResourcePath,
+            ShipSelectStatTrackResourcePath,
+            ShipSelectStatFillResourcePath,
+            ShipSelectStarFullResourcePath,
+            ShipSelectStarEmptyResourcePath
+        };
         public static readonly string[] TitlePrimaryLabels = { "开始游戏", "退出" };
         public static readonly Vector2 ModernTitleButtonSize = new Vector2(486f, 96f);
         public static readonly Vector2 ModernTitleIconSize = new Vector2(112f, 112f);
@@ -427,26 +450,24 @@ namespace Wanwan.Runtime
             state = MenuUiState.ShipSelect;
             Image background = CreateBackground("ShipSelectBackground");
             Transform t = background.transform;
-            Image frame = UiFactory.CreatePanel(t, "ShipSelectFrame", new Color(0.04f, 0.36f, 0.28f, 0.96f), new Vector2(0.035f, 0.035f), new Vector2(0.965f, 0.965f));
+            Image frame = UiFactory.CreateSpritePanel(t, "ShipSelectFrame", ShipSelectPanelFrameResourcePath, Color.white, new Vector2(0.035f, 0.14f), new Vector2(0.965f, 0.895f));
             frame.raycastTarget = false;
-            Image inner = UiFactory.CreatePanel(frame.transform, "ShipSelectInner", new Color(0.02f, 0.18f, 0.14f, 0.88f), new Vector2(0.03f, 0.025f), new Vector2(0.97f, 0.975f));
-            inner.raycastTarget = false;
-            UiFactory.CreateDivider(frame.transform, "ShipSelectTopEdge", new Color(0.38f, 0.92f, 0.78f, 0.6f), new Vector2(0.02f, 0.965f), new Vector2(0.98f, 0.972f));
-            UiFactory.CreateDivider(frame.transform, "ShipSelectBottomEdge", new Color(0.38f, 0.92f, 0.78f, 0.45f), new Vector2(0.02f, 0.028f), new Vector2(0.98f, 0.035f));
+            UiFactory.CreateDivider(frame.transform, "ShipSelectTopGlow", new Color(0.38f, 0.95f, 1f, 0.52f), new Vector2(0.06f, 0.965f), new Vector2(0.94f, 0.972f));
+            UiFactory.CreateDivider(frame.transform, "ShipSelectBottomGlow", new Color(0.38f, 0.95f, 1f, 0.36f), new Vector2(0.06f, 0.025f), new Vector2(0.94f, 0.032f));
 
-            UiFactory.CreateArcadeLabel(t, "FIGHTER SELECT", 34, TextAnchor.MiddleCenter, new Color(0.86f, 1f, 0.93f, 0.9f), FontStyle.Bold, new Vector2(0.08f, 0.90f), new Vector2(0.92f, 0.95f), Vector2.zero);
+            UiFactory.CreateArcadeLabel(t, "选择战机", 58, TextAnchor.MiddleCenter, new Color(0.86f, 1f, 0.96f, 0.96f), FontStyle.Bold, new Vector2(0.08f, 0.90f), new Vector2(0.92f, 0.965f), Vector2.zero);
             for (int i = 0; i < ShipSelectRoster.Length; i++)
             {
-                const float top = 0.865f;
-                const float rowHeight = 0.152f;
-                const float gap = 0.017f;
+                const float top = 0.845f;
+                const float rowHeight = 0.126f;
+                const float gap = 0.012f;
                 float rowTop = top - (i * (rowHeight + gap));
-                CreateShipCard(background.transform, ShipSelectRoster[i], i + 1, new Vector2(0.08f, rowTop - rowHeight), new Vector2(0.92f, rowTop));
+                CreateShipCard(background.transform, ShipSelectRoster[i], i + 1, new Vector2(0.07f, rowTop - rowHeight), new Vector2(0.93f, rowTop));
             }
 
-            Button back = UiFactory.CreatePixelButton(background.transform, "返回", ArcadeTheme.DimGray, new Vector2(220f, 64f), new Vector2(-340f, -846f));
+            Button back = CreateShipSelectActionButton(background.transform, "返回", ShipSelectButtonBackResourcePath, new Vector2(-270f, -820f));
             back.onClick.AddListener(ShowTitle);
-            Button next = UiFactory.CreatePixelButton(background.transform, "确认", ArcadeTheme.EnergyYellow, new Vector2(220f, 64f), new Vector2(340f, -846f));
+            Button next = CreateShipSelectActionButton(background.transform, "确认", ShipSelectButtonConfirmResourcePath, new Vector2(270f, -820f));
             next.onClick.AddListener(() =>
             {
                 SessionState.SelectShip(selectedShip);
@@ -459,12 +480,11 @@ namespace Wanwan.Runtime
         {
             ShipDefinition ship = ShipDefinition.Get(shipType);
             bool selected = selectedShip == shipType;
-            Color edge = selected ? ArcadeTheme.EnergyYellow : new Color(0.32f, 0.9f, 0.76f, 0.68f);
-            Button cardButton = UiFactory.CreateButton(parent, string.Empty, new Color(0.04f, 0.32f, 0.26f, selected ? 0.96f : 0.78f), Color.clear, Vector2.zero, Vector2.zero, anchorMin, anchorMax);
+            Button cardButton = UiFactory.CreateButton(parent, string.Empty, Color.clear, Color.clear, Vector2.zero, Vector2.zero, anchorMin, anchorMax);
             cardButton.gameObject.name = ship.DisplayName + "ShipRow";
             Image card = cardButton.GetComponent<Image>();
-            card.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
-            card.type = Image.Type.Sliced;
+            card.sprite = null;
+            card.color = new Color(1f, 1f, 1f, 0.001f);
             card.raycastTarget = true;
             RectTransform cardRect = card.rectTransform;
             cardRect.offsetMin = Vector2.zero;
@@ -475,42 +495,30 @@ namespace Wanwan.Runtime
                 emptyLabel.raycastTarget = false;
             }
 
-            Image outline = UiFactory.CreatePanel(card.transform, "RowOutline", edge, Vector2.zero, Vector2.one);
-            outline.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
-            outline.type = Image.Type.Sliced;
-            outline.raycastTarget = false;
-            outline.rectTransform.offsetMin = new Vector2(2f, 2f);
-            outline.rectTransform.offsetMax = new Vector2(-2f, -2f);
-            Image fill = UiFactory.CreatePanel(outline.transform, "RowFill", new Color(0.03f, 0.28f, 0.22f, selected ? 0.84f : 0.64f), Vector2.zero, Vector2.one);
-            fill.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
-            fill.type = Image.Type.Sliced;
-            fill.raycastTarget = false;
-            fill.rectTransform.offsetMin = new Vector2(4f, 4f);
-            fill.rectTransform.offsetMax = new Vector2(-4f, -4f);
+            Image frame = UiFactory.CreateSpritePanel(card.transform, selected ? "SelectedCardSlice" : "CardSlice", selected ? ShipSelectCardSelectedFrameResourcePath : ShipSelectCardFrameResourcePath, Color.white, Vector2.zero, Vector2.one);
+            frame.raycastTarget = false;
+            Image accentWash = UiFactory.CreatePanel(card.transform, "AccentWash", new Color(ship.AccentColor.r, ship.AccentColor.g, ship.AccentColor.b, selected ? 0.15f : 0.055f), new Vector2(0.02f, 0.08f), new Vector2(0.98f, 0.92f));
+            accentWash.raycastTarget = false;
 
             CreateRankBadge(card.transform, rank, selected, ship.AccentColor);
             CreateSelectionChevron(card.transform, rank, selected, ship.AccentColor);
 
-            Image shipPanel = UiFactory.CreatePanel(card.transform, "ShipPanel", new Color(0.02f, 0.18f, 0.16f, 0.94f), new Vector2(0.20f, 0.08f), new Vector2(0.42f, 0.92f));
-            shipPanel.sprite = RuntimeSpriteFactory.GetRoundedSquareSprite();
-            shipPanel.type = Image.Type.Sliced;
+            Image shipPanel = UiFactory.CreatePanel(card.transform, "ShipPanel", new Color(0.02f, 0.1f, 0.12f, 0.52f), new Vector2(0.205f, 0.06f), new Vector2(0.43f, 0.94f));
             shipPanel.raycastTarget = false;
-            UiFactory.CreateDivider(shipPanel.transform, "ShipPanelGlowTop", new Color(0.3f, 1f, 0.82f, 0.42f), new Vector2(0.02f, 0.96f), new Vector2(0.98f, 0.985f));
+            UiFactory.CreateDivider(shipPanel.transform, "ShipPanelGlowTop", new Color(0.3f, 1f, 0.82f, 0.30f), new Vector2(0.05f, 0.94f), new Vector2(0.95f, 0.97f));
             Image shipImage = UiFactory.CreatePanel(shipPanel.transform, "ShipImage", Color.white, Vector2.zero, Vector2.one);
             ConfigureShipPreview(shipImage, ship.AccentColor, rank);
 
-            Text name = UiFactory.CreateArcadeLabel(card.transform, ship.DisplayName, 43, TextAnchor.MiddleLeft, Color.white, FontStyle.Bold, new Vector2(0.47f, 0.46f), new Vector2(0.67f, 0.84f), Vector2.zero);
-            UiFactory.ConfigureConstrainedText(name, 24, 43);
-            Text attack = UiFactory.CreateArcadeLabel(card.transform, ship.MainWeapon, 24, TextAnchor.MiddleLeft, new Color(0.86f, 1f, 0.92f), FontStyle.Bold, new Vector2(0.47f, 0.19f), new Vector2(0.67f, 0.46f), Vector2.zero);
+            Text name = UiFactory.CreateArcadeLabel(card.transform, ship.DisplayName, 34, TextAnchor.MiddleLeft, Color.white, FontStyle.Bold, new Vector2(0.46f, 0.51f), new Vector2(0.66f, 0.84f), Vector2.zero);
+            UiFactory.ConfigureConstrainedText(name, 22, 34);
+            Text attack = UiFactory.CreateArcadeLabel(card.transform, ship.MainWeapon, 23, TextAnchor.MiddleLeft, new Color(0.58f, 1f, 0.96f), FontStyle.Bold, new Vector2(0.46f, 0.22f), new Vector2(0.66f, 0.50f), Vector2.zero);
             UiFactory.ConfigureSingleLine(attack);
 
-            Text stars = UiFactory.CreateArcadeLabel(card.transform, BuildStarString(ship.PowerStars), 30, TextAnchor.MiddleRight, ArcadeTheme.EnergyYellow, FontStyle.Bold, new Vector2(0.77f, 0.70f), new Vector2(0.97f, 0.92f), Vector2.zero);
-            UiFactory.ConfigureSingleLine(stars);
-
-            CreateStatBar(card.transform, "POWER", ship.PowerStars, new Vector2(0.68f, 0.54f), new Vector2(0.96f, 0.66f));
-            CreateStatBar(card.transform, "ATTACK", ship.AttackStars, new Vector2(0.68f, 0.39f), new Vector2(0.96f, 0.51f));
-            CreateStatBar(card.transform, "DEFENCE", ship.DefenseStars, new Vector2(0.68f, 0.24f), new Vector2(0.96f, 0.36f));
-            CreateStatBar(card.transform, "SPEED", ship.SpeedStars, new Vector2(0.68f, 0.09f), new Vector2(0.96f, 0.21f));
+            CreateStarRating(card.transform, ship.PowerStars, new Vector2(0.72f, 0.68f), new Vector2(0.94f, 0.88f));
+            CreateStatBar(card.transform, "火力", ship.PowerStars, new Vector2(0.66f, 0.52f), new Vector2(0.94f, 0.63f));
+            CreateStatBar(card.transform, "攻击", ship.AttackStars, new Vector2(0.66f, 0.39f), new Vector2(0.94f, 0.50f));
+            CreateStatBar(card.transform, "防御", ship.DefenseStars, new Vector2(0.66f, 0.26f), new Vector2(0.94f, 0.37f));
+            CreateStatBar(card.transform, "速度", ship.SpeedStars, new Vector2(0.66f, 0.13f), new Vector2(0.94f, 0.24f));
 
             cardButton.onClick.AddListener(() =>
             {
@@ -521,13 +529,9 @@ namespace Wanwan.Runtime
 
         private static void CreateRankBadge(Transform parent, int rank, bool selected, Color accent)
         {
-            Image outer = UiFactory.CreatePanel(parent, "RankBadgeOuter", selected ? ArcadeTheme.EnergyYellow : Color.Lerp(accent, ArcadeTheme.DimGray, 0.45f), new Vector2(0.045f, 0.18f), new Vector2(0.15f, 0.82f));
-            outer.sprite = RuntimeSpriteFactory.GetCircleSprite();
+            Image outer = UiFactory.CreateSpritePanel(parent, "RankBadgeOuter", ShipSelectBadgeFrameResourcePath, selected ? Color.Lerp(Color.white, ArcadeTheme.EnergyYellow, 0.18f) : Color.Lerp(Color.white, accent, 0.36f), new Vector2(0.045f, 0.20f), new Vector2(0.155f, 0.82f));
             outer.raycastTarget = false;
-            Image inner = UiFactory.CreatePanel(outer.transform, "RankBadgeInner", new Color(0.03f, 0.08f, 0.08f, 0.94f), new Vector2(0.16f, 0.16f), new Vector2(0.84f, 0.84f));
-            inner.sprite = RuntimeSpriteFactory.GetCircleSprite();
-            inner.raycastTarget = false;
-            Text number = UiFactory.CreateArcadeLabel(outer.transform, rank.ToString(), 48, TextAnchor.MiddleCenter, selected ? ArcadeTheme.EnergyYellow : Color.white, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
+            Text number = UiFactory.CreateArcadeLabel(outer.transform, rank.ToString(), 44, TextAnchor.MiddleCenter, selected ? ArcadeTheme.EnergyYellow : Color.white, FontStyle.Bold, Vector2.zero, Vector2.one, Vector2.zero);
             number.raycastTarget = false;
             UiFactory.ConfigureSingleLine(number);
         }
@@ -535,20 +539,46 @@ namespace Wanwan.Runtime
         private static void CreateSelectionChevron(Transform parent, int rank, bool selected, Color accent)
         {
             Color color = selected ? new Color(0.54f, 1f, 0.44f, 0.95f) : (rank < 4 ? new Color(1f, 0.28f, 0.2f, 0.86f) : new Color(0.5f, 1f, 1f, 0.76f));
-            Text chevron = UiFactory.CreateArcadeLabel(parent, selected ? "▲" : (rank < 4 ? "▼" : "◆"), 36, TextAnchor.MiddleCenter, Color.Lerp(color, accent, selected ? 0.12f : 0f), FontStyle.Bold, new Vector2(0.03f, 0.66f), new Vector2(0.085f, 0.92f), Vector2.zero);
+            Text chevron = UiFactory.CreateArcadeLabel(parent, selected ? "▲" : (rank < 4 ? "▼" : "◆"), 31, TextAnchor.MiddleCenter, Color.Lerp(color, accent, selected ? 0.12f : 0f), FontStyle.Bold, new Vector2(0.035f, 0.66f), new Vector2(0.085f, 0.92f), Vector2.zero);
             chevron.raycastTarget = false;
         }
 
         private static void CreateStatBar(Transform parent, string label, int value, Vector2 anchorMin, Vector2 anchorMax)
         {
-            UiFactory.CreateArcadeLabel(parent, label, 17, TextAnchor.MiddleLeft, new Color(0.86f, 1f, 0.92f), FontStyle.Bold, anchorMin, new Vector2(anchorMin.x + 0.095f, anchorMax.y), Vector2.zero).raycastTarget = false;
-            Image track = UiFactory.CreatePanel(parent, label + "Track", new Color(0.92f, 0.98f, 1f, 0.92f), new Vector2(anchorMin.x + 0.11f, anchorMin.y + 0.018f), anchorMax);
+            UiFactory.CreateArcadeLabel(parent, label, 17, TextAnchor.MiddleLeft, new Color(0.86f, 1f, 0.92f), FontStyle.Bold, anchorMin, new Vector2(anchorMin.x + 0.075f, anchorMax.y), Vector2.zero).raycastTarget = false;
+            Image track = UiFactory.CreateSpritePanel(parent, label + "Track", ShipSelectStatTrackResourcePath, Color.white, new Vector2(anchorMin.x + 0.085f, anchorMin.y + 0.018f), anchorMax);
             track.raycastTarget = false;
             float fill = Mathf.Clamp01(value / 5f);
-            Image bar = UiFactory.CreatePanel(track.transform, label + "Fill", new Color(0.46f, 0.88f, 0.32f, 0.98f), Vector2.zero, new Vector2(fill, 1f));
+            Image bar = UiFactory.CreateSpritePanel(track.transform, label + "Fill", ShipSelectStatFillResourcePath, Color.white, Vector2.zero, new Vector2(fill, 1f));
             bar.raycastTarget = false;
-            Image cap = UiFactory.CreatePanel(track.transform, label + "Cap", new Color(0.75f, 1f, 0.66f, 0.95f), new Vector2(Mathf.Max(0f, fill - 0.035f), 0f), new Vector2(fill, 1f));
-            cap.raycastTarget = false;
+            bar.type = Image.Type.Filled;
+            bar.fillMethod = Image.FillMethod.Horizontal;
+            bar.fillAmount = fill;
+        }
+
+        private static void CreateStarRating(Transform parent, int value, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Image root = UiFactory.CreatePanel(parent, "StarRating", Color.clear, anchorMin, anchorMax);
+            root.raycastTarget = false;
+            for (int i = 0; i < 5; i++)
+            {
+                float x0 = i / 5f;
+                float x1 = (i + 0.92f) / 5f;
+                Image star = UiFactory.CreateSpritePanel(root.transform, "Star" + (i + 1), i < value ? ShipSelectStarFullResourcePath : ShipSelectStarEmptyResourcePath, Color.white, new Vector2(x0, 0.08f), new Vector2(x1, 0.92f));
+                star.raycastTarget = false;
+                star.preserveAspect = true;
+            }
+        }
+
+        private static Button CreateShipSelectActionButton(Transform parent, string label, string resourcePath, Vector2 anchoredPosition)
+        {
+            Button button = UiFactory.CreateSpriteButton(parent, label, resourcePath, Color.white, new Vector2(360f, 82f), anchoredPosition);
+            Text text = button.GetComponentInChildren<Text>();
+            text.fontSize = 34;
+            text.resizeTextMinSize = 24;
+            text.resizeTextMaxSize = 34;
+            text.fontStyle = FontStyle.Bold;
+            return button;
         }
 
         private static void ConfigureShipPreview(Image image, Color tint, int rank)

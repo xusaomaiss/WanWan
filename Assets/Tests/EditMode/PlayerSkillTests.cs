@@ -62,6 +62,16 @@ namespace Wanwan.Tests.EditMode
         }
 
         [Test]
+        public void ShipDefinition_UsesChineseDisplayNames()
+        {
+            Assert.That(ShipDefinition.Get(PlayerShipType.Green).DisplayName, Is.EqualTo("赤焰战机"));
+            Assert.That(ShipDefinition.Get(PlayerShipType.Blue).DisplayName, Is.EqualTo("蓝翼A1"));
+            Assert.That(ShipDefinition.Get(PlayerShipType.Yellow).DisplayName, Is.EqualTo("黄蜂战机"));
+            Assert.That(ShipDefinition.Get(PlayerShipType.Purple).DisplayName, Is.EqualTo("紫电战机"));
+            Assert.That(ShipDefinition.Get(PlayerShipType.Azure).DisplayName, Is.EqualTo("苍蓝战机"));
+        }
+
+        [Test]
         public void GameManager_HasApplyShipSkillMethod()
         {
             var method = typeof(GameManager).GetMethod("ApplyShipSkill",

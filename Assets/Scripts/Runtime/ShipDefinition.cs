@@ -39,16 +39,16 @@ namespace Wanwan.Runtime
             switch (type)
             {
                 case PlayerShipType.Blue:
-                    return new ShipDefinition(type, "BLUE A1", "FIRE ATTACK", "追踪导弹", 3, 4, 4, 5, ArcadeTheme.ElectricBlue, PlayerSkill.BetterGraze);
+                    return new ShipDefinition(type, "蓝翼A1", "火力攻击", "追踪导弹", 3, 4, 4, 5, ArcadeTheme.ElectricBlue, PlayerSkill.BetterGraze);
                 case PlayerShipType.Yellow:
-                    return new ShipDefinition(type, "YELLOW", "FIRE ATTACK", "聚能火箭", 4, 3, 4, 3, ArcadeTheme.EnergyYellow, PlayerSkill.Level2Weapon);
+                    return new ShipDefinition(type, "黄蜂战机", "火力攻击", "聚能火箭", 4, 3, 4, 3, ArcadeTheme.EnergyYellow, PlayerSkill.Level2Weapon);
                 case PlayerShipType.Purple:
-                    return new ShipDefinition(type, "PURPLE", "FIRE ATTACK", "脉冲护航", 3, 2, 4, 5, new Color(0.72f, 0.24f, 1f), PlayerSkill.BetterGraze);
+                    return new ShipDefinition(type, "紫电战机", "火力攻击", "脉冲护航", 3, 2, 4, 5, new Color(0.72f, 0.24f, 1f), PlayerSkill.BetterGraze);
                 case PlayerShipType.Azure:
-                    return new ShipDefinition(type, "BLUE", "FIRE ATTACK", "均衡挂载", 3, 1, 4, 5, new Color(0.12f, 0.5f, 1f), PlayerSkill.None);
+                    return new ShipDefinition(type, "苍蓝战机", "火力攻击", "均衡挂载", 3, 1, 4, 5, new Color(0.12f, 0.5f, 1f), PlayerSkill.None);
                 case PlayerShipType.Green:
                 default:
-                    return new ShipDefinition(PlayerShipType.Green, "RED JET", "FIRE ATTACK", "追踪导弹", 3, 5, 4, 5, ArcadeTheme.WarningRed, PlayerSkill.ExtraShield);
+                    return new ShipDefinition(PlayerShipType.Green, "赤焰战机", "火力攻击", "追踪导弹", 3, 5, 4, 5, ArcadeTheme.WarningRed, PlayerSkill.ExtraShield);
             }
         }
     }

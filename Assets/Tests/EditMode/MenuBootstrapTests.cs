@@ -38,6 +38,8 @@ namespace Wanwan.Tests.EditMode
             }));
             Assert.That(MenuBootstrap.TitleStartButtonSliceResourcePath, Is.EqualTo("MainMenu/Buttons/button_start_game"));
             Assert.That(MenuBootstrap.TitleExitButtonSliceResourcePath, Is.EqualTo("MainMenu/Buttons/button_exit"));
+            Assert.That(MenuBootstrap.ShipSelectSlicedResourcePaths, Does.Contain("MainMenu/ShipSelect/panel_frame"));
+            Assert.That(MenuBootstrap.ShipSelectSlicedResourcePaths, Does.Contain("MainMenu/ShipSelect/card_selected_frame"));
             Assert.That(MenuBootstrap.TitleStarfieldResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_space_far"));
             Assert.That(MenuBootstrap.TitleSparkleOverlayResourcePath, Is.EqualTo("MainMenu/Backgrounds/bg_space_front_stars"));
             Assert.That(MenuBootstrap.TitleLogoBackplateResourcePath, Is.EqualTo("MainMenu/Titles/title_raiden"));
@@ -81,6 +83,10 @@ namespace Wanwan.Tests.EditMode
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.IconShopResourcePath), Is.Not.Null);
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.IconShipSelectLargeResourcePath), Is.Not.Null);
             Assert.That(Resources.Load<Texture2D>(MenuBootstrap.IconHelpResourcePath), Is.Not.Null);
+            foreach (string path in MenuBootstrap.ShipSelectSlicedResourcePaths)
+            {
+                Assert.That(Resources.Load<Texture2D>(path), Is.Not.Null, path);
+            }
         }
 
         [Test]
@@ -224,6 +230,11 @@ namespace Wanwan.Tests.EditMode
 
                 Assert.That(rowCount, Is.EqualTo(5));
                 Assert.That(statTrackCount, Is.EqualTo(20));
+                Assert.That(FindTextByContent("赤焰战机"), Is.Not.Null);
+                Assert.That(FindTextByContent("蓝翼A1"), Is.Not.Null);
+                Assert.That(FindTextByContent("黄蜂战机"), Is.Not.Null);
+                Assert.That(FindTextByContent("紫电战机"), Is.Not.Null);
+                Assert.That(FindTextByContent("苍蓝战机"), Is.Not.Null);
                 Assert.That(FindButtonByLabel("确认"), Is.Not.Null);
                 Assert.That(FindButtonByLabel("返回"), Is.Not.Null);
             }
@@ -256,6 +267,19 @@ namespace Wanwan.Tests.EditMode
                 if (text != null && text.text == label)
                 {
                     return button;
+                }
+            }
+
+            return null;
+        }
+
+        private static Text FindTextByContent(string content)
+        {
+            foreach (Text text in Object.FindObjectsByType<Text>(FindObjectsSortMode.None))
+            {
+                if (text.text == content)
+                {
+                    return text;
                 }
             }
 
